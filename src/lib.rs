@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use deunicode::deunicode;
-use regex::Regex;
+use regex::{Regex, RegexSet};
 
 struct ParSubstituicao {
     regexp: Regex,
@@ -20,6 +20,7 @@ impl ParSubstituicao {
 #[derive(Default)]
 struct Padronizador {
     substituicoes: Vec<ParSubstituicao>,
+    grupo_regex: RegexSet,
 }
 
 impl Padronizador {
@@ -28,8 +29,21 @@ impl Padronizador {
             .push(ParSubstituicao::new(regex, substituicao));
         self
     }
+    fn preparar(&mut self) {
+        let regexes: Vec<&str> = self
+            .substituicoes
+            .iter()
+            .map(|par| par.regexp.as_str())
+            .collect();
+
+        self.grupo_regex = RegexSet::new(regexes).unwrap();
+    }
     fn padronizar(&self, valor: &str) -> String {
         let mut preproc = deunicode(valor.to_uppercase().trim());
+
+        if !self.grupo_regex.is_match(preproc.as_str()) {
+            return preproc;
+        }
 
         // TODO: deve ter uma forma mais elegante de fazer isso
         // sem precisar ficar fazendo casting das strings
@@ -292,6 +306,7 @@ fn criar_padronizador_logradouros() -> Padronizador {
 
     // ALM é um caso complicado, pode ser alameda ou almirante. Inclusive no mesmo endereço podem aparecer os dois rs
 
+    padronizador.preparar();
     padronizador
 }
 
