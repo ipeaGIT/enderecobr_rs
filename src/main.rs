@@ -1,5 +1,9 @@
 use enderecobr_rs::padronizar_logradouros;
-use std::{collections::HashSet, io, time::SystemTime};
+use std::{
+    collections::{HashMap, HashSet},
+    io,
+    time::SystemTime,
+};
 
 // Roubei da internet
 fn timeit<F: Fn() -> T, T>(f: F) -> T {
@@ -23,18 +27,36 @@ fn load_data() -> Vec<String> {
     vetor
 }
 
-fn process_data(vetor: &[String]) {
-    let _res: Vec<String> = vetor
+fn save_data(path: &str, data: Vec<String>) {
+    let mut writer = csv::Writer::from_path(path).unwrap();
+    writer.write_record(["", "logradouros"]).unwrap();
+    for (i, l) in data.iter().enumerate() {
+        writer.write_record([&i.to_string(), l]).unwrap();
+    }
+    writer.flush().unwrap();
+}
+
+fn process_data(vetor: &[String]) -> Vec<String> {
+    let mut cache = HashMap::<&String, String>::new();
+
+    vetor
         .iter()
-        .collect::<HashSet<&String>>()
-        .into_iter()
-        .map(|x| padronizar_logradouros(x.to_string()))
-        .collect();
+        .map(|x| {
+            if let Some(valor_cacheado) = cache.get(&x) {
+                return valor_cacheado.clone();
+            }
+
+            let resultado = padronizar_logradouros(x);
+            cache.insert(x, resultado.clone());
+            resultado
+        })
+        .collect()
 }
 
 fn main() {
     let vetor = timeit(load_data);
-    timeit(|| process_data(&vetor));
+    let resultado = timeit(|| process_data(&vetor));
+    save_data("resultado.csv", resultado);
     println!(
         "Finalizado para {} registros ({} unicos)",
         vetor.len(),

@@ -1,5 +1,6 @@
 use std::sync::LazyLock;
 
+use deunicode::deunicode;
 use regex::Regex;
 
 struct ParSubstituicao {
@@ -27,8 +28,8 @@ impl Padronizador {
             .push(ParSubstituicao::new(regex, substituicao));
         self
     }
-    fn padronizar(&self, valor: String) -> String {
-        let mut preproc = valor.to_uppercase().trim().to_string();
+    fn padronizar(&self, valor: &str) -> String {
+        let mut preproc = deunicode(valor.to_uppercase().trim());
 
         // TODO: deve ter uma forma mais elegante de fazer isso
         // sem precisar ficar fazendo casting das strings
@@ -300,7 +301,7 @@ fn criar_padronizador_logradouros() -> Padronizador {
 static PADRONIZADOR_LOGRADOUROS: LazyLock<Padronizador> =
     LazyLock::new(criar_padronizador_logradouros);
 
-pub fn padronizar_logradouros(valor: String) -> String {
+pub fn padronizar_logradouros(valor: &str) -> String {
     // Forma de obter a variável lazy
     let padronizador = &*PADRONIZADOR_LOGRADOUROS;
     padronizador.padronizar(valor)
