@@ -40,19 +40,26 @@ impl Padronizador {
     }
     fn padronizar(&self, valor: &str) -> String {
         let mut preproc = deunicode(valor.to_uppercase().trim());
+        let mut ultimo_idx: Option<usize> = None;
 
-        if !self.grupo_regex.is_match(preproc.as_str()) {
-            return preproc;
-        }
+        while self.grupo_regex.is_match(preproc.as_str()) {
+            let idx_substituicao = self
+                .grupo_regex
+                .matches(preproc.as_str())
+                .iter()
+                .find(|idx| ultimo_idx.is_none_or(|ultimo| *idx > ultimo));
 
-        // TODO: deve ter uma forma mais elegante de fazer isso
-        // sem precisar ficar fazendo casting das strings
+            if idx_substituicao.is_none() {
+                break;
+            }
 
-        for subst in self.substituicoes.iter() {
-            preproc = subst
+            ultimo_idx = Some(idx_substituicao.unwrap());
+            let par = self.substituicoes.get(idx_substituicao.unwrap()).unwrap();
+
+            preproc = par
                 .regexp
-                .replace_all(preproc.as_str(), subst.substituicao.as_str())
-                .to_string()
+                .replace_all(preproc.as_str(), par.substituicao.as_str())
+                .to_string();
         }
 
         preproc.to_string()
