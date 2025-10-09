@@ -73,9 +73,9 @@ fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\.\.+", ".") // ponto repetido
         .adicionar(r",,+", ",")   // virgula repetida
         .adicionar(r"(\d)\.(\d{3})", "$1$2") // remoção de separador de milhar
-        .adicionar(r"\\.([^ ,])", "\\. $1") // garantir que haja um espaço depois dos pontos
+        .adicionar(r"\.([^ ,])", "\\. $1") // garantir que haja um espaço depois dos pontos
         .adicionar(r",([^ ])" , ", $1") // garantir que haja um espaço depois das virgulas
-        .adicionar(r" \\.", "\\.") // garantir que não haja um espaço antes dos pontos
+        .adicionar(r" \.", "\\.") // garantir que não haja um espaço antes dos pontos
         .adicionar(r" ," , ",") // garantir que não haja um espaço antes dos pontos
         .adicionar(r"\.$", "") // remoção de ponto final
 
@@ -84,9 +84,16 @@ fn criar_padronizador_logradouros() -> Padronizador {
 
         // Valores non-sense
         .adicionar(r"^(0|-)+$", "") // - --+ 0 00+
-        // FIXME: backreferences are not supported
-        // .adicionar(r"^([^\dIX])\1{1,}$", "") // qualquer valor não numérico ou romano repetido 2+ vezes
-        // .adicionar(r"^(\d)\1{3,}$", "") // assumindo que qualquer numero que apareça 4 ou mais vezes repetido eh um erro de digitação
+        // PS: A regex original era ^([^\dIX])\1{1,}$ que usa uma back-reference.
+        // Ou seja, qualquer coisa que comece com algo que não seja um com um dígito, I ou X, e repete ele até o fim da string, pelo menos uma vez.
+        // O motor do Rust não permite esse tipo de coisa. Troquei para os casos concretos.
+        // FIXME: Precisa colocar pontuação também aqui ou retirar casos não permitidos.
+        .adicionar(r"^(AA+|BB+|CC+|DD+|EE+|FF+|GG+|HH+|JJ+|KK+|LL+|MM+|NN+|OO+|PP+|QQ+|RR+|SS+|TT+|UU+|VV+|WW+|YY+|ZZ+)$", "") // qualquer valor não numérico ou romano repetido 2+ vezes
+
+        // PS: A regex original era ^(\d)\1{3,}$ que usa uma back-reference.
+        // Ou seja, começa com um dígito e repete ele até o fim da string, pelo menos 3 vezes.
+        // O motor do Rust não permite esse tipo de coisa. Troquei para os casos concretos.
+        .adicionar(r"^(1111+|2222+|3333+|4444+|5555+|6666+|7777+|8888+|9999+|0000+)$", "") // assumindo que qualquer numero que apareça 4 ou mais vezes repetido eh um erro de digitação
 
         .adicionar(r"^I{4,}$", "") // IIII+
         .adicionar(r"^X{3,}$", "") // XXX+
@@ -230,11 +237,13 @@ fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bSEN\b\.?", "SENADOR")
         .adicionar(r"\bPREF\b\.?", "PREFEITO")
         .adicionar(r"\bDEP\b\.?", "DEPUTADO")
-        // FIXME: look-around, including look-ahead and look-behind, is not supported
-        // .adicionar(r"\bVER\b\.?(?!$)", "VEREADOR")
+        // PS: Regex original tinha um look-ahead (?!$) que o motor do Rust não permite.
+        // Troquei ele por um espaço em branco para garantir que não é no fim da string.
+        .adicionar(r"\bVER\b\.? ", "VEREADOR ")
         .adicionar(r"\bESPL?\.? (DOS )?MIN(IST(ERIOS?)?)?\b\.?", "ESPLANADA DOS MINISTERIOS")
-        // FIXME: look-around, including look-ahead and look-behind, is not supported
-        // .adicionar(r"\bMIN\b\.?(?!$)", "MINISTRO")
+        // PS: Regex original tinha um look-ahead (?!$) que o motor do Rust não permite.
+        // Troquei ele por um espaço em branco para garantir que não é no fim da string.
+        .adicionar(r"\bMIN\b\.? ", "MINISTRO ")
 
         // Abreviações
         .adicionar(r"\bJAR DIM\b", "JARDIM")
@@ -298,18 +307,18 @@ fn criar_padronizador_logradouros() -> Padronizador {
 
         // PS: Mudei todos os JAN(?!EIRO) para JAN(EIRO)?
         // PS: Mudei todos os DE? para ( DE)?
-        .adicionar(r"\b(\d+)( DE)? JAN(EIRO)?\b", "$1 DE JANEIRO")
-        .adicionar(r"\b(\d+)( DE)? FEV(EREIRO)?\b", "$1 DE FEVEREIRO")
-        .adicionar(r"\b(\d+)( DE)? MAR(CO)?\b", "$1 DE MARCO")
-        .adicionar(r"\b(\d+)( DE)? ABR(IL)?\b", "$1 DE ABRIL")
-        .adicionar(r"\b(\d+)( DE)? MAI(O)?\b", "$1 DE MAIO")
-        .adicionar(r"\b(\d+)( DE)? JUN(HO)?\b", "$1 DE JUNHO")
-        .adicionar(r"\b(\d+)( DE)? JUL(HO)?\b", "$1 DE JULHO")
-        .adicionar(r"\b(\d+)( DE)? AGO(STO)?\b", "$1 DE AGOSTO")
-        .adicionar(r"\b(\d+)( DE)? SET(EMBRO)?\b", "$1 DE SETEMBRO")
-        .adicionar(r"\b(\d+)( DE)? OUT(UBRO)?\b", "$1 DE OUTUBRO")
-        .adicionar(r"\b(\d+)( DE)? NOV(EMBRO)?\b", "$1 DE NOVEMBRO")
-        .adicionar(r"\b(\d+)( DE)? DEZ(EMBRO)?\b", "$1 DE DEZEMBRO");
+        .adicionar(r"\b(\d+) DE? JAN(EIRO)?\b", "$1 DE JANEIRO")
+        .adicionar(r"\b(\d+) DE? FEV(EREIRO)?\b", "$1 DE FEVEREIRO")
+        .adicionar(r"\b(\d+) DE? MAR(CO)?\b", "$1 DE MARCO")
+        .adicionar(r"\b(\d+) DE? ABR(IL)?\b", "$1 DE ABRIL")
+        .adicionar(r"\b(\d+) DE? MAI(O)?\b", "$1 DE MAIO")
+        .adicionar(r"\b(\d+) DE? JUN(HO)?\b", "$1 DE JUNHO")
+        .adicionar(r"\b(\d+) DE? JUL(HO)?\b", "$1 DE JULHO")
+        .adicionar(r"\b(\d+) DE? AGO(STO)?\b", "$1 DE AGOSTO")
+        .adicionar(r"\b(\d+) DE? SET(EMBRO)?\b", "$1 DE SETEMBRO")
+        .adicionar(r"\b(\d+) DE? OUT(UBRO)?\b", "$1 DE OUTUBRO")
+        .adicionar(r"\b(\d+) DE? NOV(EMBRO)?\b", "$1 DE NOVEMBRO")
+        .adicionar(r"\b(\d+) DE? DEZ(EMBRO)?\b", "$1 DE DEZEMBRO");
 
     // ALM é um caso complicado, pode ser alameda ou almirante. Inclusive no mesmo endereço podem aparecer os dois rs
 
