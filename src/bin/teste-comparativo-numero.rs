@@ -1,18 +1,18 @@
 use duckdb::Connection;
-use enderecobr_rs::padronizar_logradouros;
+use enderecobr_rs::padronizar_numeros;
 
 #[derive(Debug)]
 struct Endereco {
     pos: i32,
-    logradouro: Option<String>,
-    logradouro_padr: Option<String>,
+    numero: Option<String>,
+    numero_padr: Option<String>,
 }
 
 fn main() {
     let arquivo = std::env::args().next_back().unwrap();
 
     let query = format!(
-        "SELECT logradouro, logradouro_padr FROM read_parquet('{}');",
+        "SELECT numero, numero_padr FROM read_parquet('{}');",
         arquivo
     );
 
@@ -25,8 +25,8 @@ fn main() {
             i += 1;
             Ok(Endereco {
                 pos: i,
-                logradouro: row.get(0).unwrap(),
-                logradouro_padr: row.get(1).unwrap(),
+                numero: row.get(0).unwrap(),
+                numero_padr: row.get(1).unwrap(),
             })
         })
         .unwrap();
@@ -40,19 +40,20 @@ fn main() {
         let registro = e.unwrap();
 
         let novo = registro
-            .logradouro
+            .numero
             .clone()
-            .map(|x| padronizar_logradouros(x.as_str()));
+            .map(|x| padronizar_numeros(x.as_str()));
 
-        let baseline = registro.logradouro_padr;
+        let baseline = registro.numero_padr;
 
-        if novo.clone() != baseline.clone() && !(novo.clone().unwrap() == "" && baseline.is_none())
+        if novo.clone().unwrap_or(String::from("S/N"))
+            != baseline.clone().unwrap_or(String::from("S/N"))
         {
             diff += 1;
             println!(
                 "{}) {} => Original: {} | Novo: {}",
                 registro.pos,
-                registro.logradouro.unwrap_or("Null".to_string()),
+                registro.numero.unwrap_or("Null".to_string()),
                 baseline.unwrap_or("Null".to_string()),
                 novo.unwrap_or("Null".to_string())
             );
