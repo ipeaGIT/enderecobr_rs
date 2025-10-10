@@ -9,10 +9,16 @@ struct Endereco {
 }
 
 fn main() {
-    let query = "SELECT logradouro, nullif(logradouro_padr, '')
-FROM read_parquet('/mnt/storage6/usuarios/cnpj-resultado-r.parquet');";
+    let arquivo = std::env::args().next_back().unwrap();
+
+    let query = format!(
+        "SELECT DISTINCT logradouro, nullif(logradouro_padr, '')
+FROM read_parquet('{}');",
+        arquivo
+    );
+
     let conn = Connection::open_in_memory().unwrap();
-    let mut stmt = conn.prepare(query).unwrap();
+    let mut stmt = conn.prepare(query.as_str()).unwrap();
     let mut i: i32 = 0;
 
     let end_iter = stmt
@@ -29,6 +35,7 @@ FROM read_parquet('/mnt/storage6/usuarios/cnpj-resultado-r.parquet');";
     let mut total = 0;
     let mut diff = 0;
 
+    print!("Consulta realizada");
     for e in end_iter {
         total += 1;
         let registro = e.unwrap();

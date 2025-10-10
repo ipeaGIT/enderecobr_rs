@@ -1,6 +1,6 @@
 use std::sync::LazyLock;
 
-use deunicode::deunicode;
+use diacritics::remove_diacritics;
 use regex::{Regex, RegexSet};
 
 struct ParSubstituicao {
@@ -39,7 +39,7 @@ impl Padronizador {
         self.grupo_regex = RegexSet::new(regexes).unwrap();
     }
     fn padronizar(&self, valor: &str) -> String {
-        let mut preproc = deunicode(valor.to_uppercase().trim());
+        let mut preproc = remove_diacritics(valor.to_uppercase().trim());
         let mut ultimo_idx: Option<usize> = None;
 
         while self.grupo_regex.is_match(preproc.as_str()) {
@@ -69,13 +69,16 @@ impl Padronizador {
 fn criar_padronizador_logradouros() -> Padronizador {
     let mut padronizador = Padronizador::default();
     padronizador
+        // Substituição nova
+        .adicionar(r"\s{2,}", " ")
+
         // Pontuação
         .adicionar(r"\.\.+", ".") // ponto repetido
         .adicionar(r",,+", ",")   // virgula repetida
         .adicionar(r"(\d)\.(\d{3})", "$1$2") // remoção de separador de milhar
-        .adicionar(r"\.([^ ,])", "\\. $1") // garantir que haja um espaço depois dos pontos
-        .adicionar(r",([^ ])" , ", $1") // garantir que haja um espaço depois das virgulas
-        .adicionar(r" \.", "\\.") // garantir que não haja um espaço antes dos pontos
+        .adicionar(r"\.([^ ,])", ". $1") // garantir que haja um espaço depois dos pontos
+        .adicionar(r",([^ ])", ", $1") // garantir que haja um espaço depois das virgulas
+        .adicionar(r" \.", ".") // garantir que não haja um espaço antes dos pontos
         .adicionar(r" ," , ",") // garantir que não haja um espaço antes dos pontos
         .adicionar(r"\.$", "") // remoção de ponto final
 
@@ -318,7 +321,8 @@ fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\b(\d+) DE? SET(EMBRO)?\b", "$1 DE SETEMBRO")
         .adicionar(r"\b(\d+) DE? OUT(UBRO)?\b", "$1 DE OUTUBRO")
         .adicionar(r"\b(\d+) DE? NOV(EMBRO)?\b", "$1 DE NOVEMBRO")
-        .adicionar(r"\b(\d+) DE? DEZ(EMBRO)?\b", "$1 DE DEZEMBRO");
+        .adicionar(r"\b(\d+) DE? DEZ(EMBRO)?\b", "$1 DE DEZEMBRO")
+;
 
     // ALM é um caso complicado, pode ser alameda ou almirante. Inclusive no mesmo endereço podem aparecer os dois rs
 
