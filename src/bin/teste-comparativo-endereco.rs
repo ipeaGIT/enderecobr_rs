@@ -12,8 +12,7 @@ fn main() {
     let arquivo = std::env::args().next_back().unwrap();
 
     let query = format!(
-        "SELECT DISTINCT logradouro, nullif(logradouro_padr, '')
-FROM read_parquet('{}');",
+        "SELECT logradouro, logradouro_padr FROM read_parquet('{}');",
         arquivo
     );
 
