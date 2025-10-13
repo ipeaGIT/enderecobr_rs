@@ -12,7 +12,7 @@ fn main() {
     let arquivo = std::env::args().next_back().unwrap();
 
     let query = format!(
-        "SELECT bairro, bairro_padr FROM read_parquet('{}');",
+        "SELECT DISTINCT bairro, bairro_padr FROM read_parquet('{}');",
         arquivo
     );
 
