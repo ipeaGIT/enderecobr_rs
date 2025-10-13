@@ -4,6 +4,7 @@ use regex::{Regex, RegexSet};
 mod bairro;
 mod estado;
 mod logradouro;
+mod municipio;
 mod numero;
 
 #[derive(Debug)]
@@ -75,6 +76,7 @@ pub use estado::padronizar_estados_para_codigo;
 pub use estado::padronizar_estados_para_nome;
 pub use estado::padronizar_estados_para_sigla;
 pub use logradouro::padronizar_logradouros;
+pub use municipio::padronizar_municipios;
 pub use numero::padronizar_numeros;
 
 pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &str> {
@@ -85,6 +87,7 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "estado" => Ok(padronizar_estados_para_sigla),
         "estado_nome" => Ok(padronizar_estados_para_nome),
         "estado_codigo" => Ok(padronizar_estados_para_codigo),
+        "municipio" | "mun" => Ok(padronizar_municipios),
         _ => Err("Nenhum padronizador encontrado"),
     }
 }
