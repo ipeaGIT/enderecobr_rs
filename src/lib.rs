@@ -4,6 +4,7 @@ use diacritics::remove_diacritics;
 use regex::{Regex, RegexSet};
 
 mod bairro;
+mod estado;
 mod logradouro;
 mod numero;
 
@@ -104,11 +105,18 @@ pub fn padronizar_bairros(valor: &str) -> String {
     padronizador.padronizar(valor)
 }
 
+pub use estado::padronizar_estados_para_codigo;
+pub use estado::padronizar_estados_para_nome;
+pub use estado::padronizar_estados_para_sigla;
+
 pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &str> {
     match tipo {
         "logradouro" | "logr" => Ok(padronizar_logradouros),
         "numero" | "num" => Ok(padronizar_numeros),
         "bairro" => Ok(padronizar_bairros),
+        "estado" => Ok(padronizar_estados_para_sigla),
+        "estado_nome" => Ok(padronizar_estados_para_nome),
+        "estado_codigo" => Ok(padronizar_estados_para_codigo),
         _ => Err("Nenhum padronizador encontrado"),
     }
 }
