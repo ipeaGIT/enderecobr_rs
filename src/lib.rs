@@ -3,6 +3,7 @@ use std::sync::LazyLock;
 use diacritics::remove_diacritics;
 use regex::{Regex, RegexSet};
 
+#[derive(Debug)]
 struct ParSubstituicao {
     regexp: Regex,
     substituicao: String,
@@ -89,7 +90,6 @@ fn criar_padronizador_numeros() -> Padronizador {
     padronizador
 }
 
-// TODO: Terminar de testar
 fn criar_padronizador_bairros() -> Padronizador {
     let mut padronizador = Padronizador::default();
     padronizador
@@ -205,7 +205,7 @@ fn criar_padronizador_bairros() -> Padronizador {
         .adicionar(r"\bBRIGADEIRO (F\.?|FARIA) (L|LIMA)\b\.?", "BRIGADEIRO FARIA LIMA")
 
         // consertar esse presidente
-        .adicionar(r"\bPRES(ID)?\b\.?(.)", "PRESIDENTE$1")
+        .adicionar(r"\bPRES(ID)?\b\.?(.)", "PRESIDENTE$2")
         .adicionar(r"\bGOV\b\.?", "GOVERNADOR") // pode acabar com GOV. - e.g. ilha do gov
         .adicionar(r"\bPREF\b\.?(.)", "PREFEITO$1")
         .adicionar(r"\bDEP\b\.?(.)", "DEPUTADO$1")
@@ -221,18 +221,20 @@ fn criar_padronizador_bairros() -> Padronizador {
 
         // datas
 
-        .adicionar(r"\b(\d+) DE? JAN(EIRO)\b", "$1 DE JANEIRO")
-        .adicionar(r"\b(\d+) DE? FEV(EREIRO)\b", "$1 DE FEVEREIRO")
-        .adicionar(r"\b(\d+) DE? MAR(CO)\b", "$1 DE MARCO")
-        .adicionar(r"\b(\d+) DE? ABR(IL)\b", "$1 DE ABRIL")
-        .adicionar(r"\b(\d+) DE? MAI(O)\b", "$1 DE MAIO")
-        .adicionar(r"\b(\d+) DE? JUN(HO)\b", "$1 DE JUNHO")
-        .adicionar(r"\b(\d+) DE? JUL(HO)\b", "$1 DE JULHO")
-        .adicionar(r"\b(\d+) DE? AGO(STO)\b", "$1 DE AGOSTO")
-        .adicionar(r"\b(\d+) DE? SET(EMBRO)\b", "$1 DE SETEMBRO")
-        .adicionar(r"\b(\d+) DE? OUT(UBRO)\b", "$1 DE OUTUBRO")
-        .adicionar(r"\b(\d+) DE? NOV(EMBRO)\b", "$1 DE NOVEMBRO")
-        .adicionar(r"\b(\d+) DE? DEZ(EMBRO)\b", "$1 DE DEZEMBRO");
+        .adicionar(r"\b(\d+) DE? JAN(EIRO)?\b", "$1 DE JANEIRO")
+        .adicionar(r"\b(\d+) DE? FEV(EREIRO)?\b", "$1 DE FEVEREIRO")
+        .adicionar(r"\b(\d+) DE? MAR(CO)?\b", "$1 DE MARCO")
+        .adicionar(r"\b(\d+) DE? ABR(IL)?\b", "$1 DE ABRIL")
+        .adicionar(r"\b(\d+) DE? MAI(O)?\b", "$1 DE MAIO")
+        .adicionar(r"\b(\d+) DE? JUN(HO)?\b", "$1 DE JUNHO")
+        .adicionar(r"\b(\d+) DE? JUL(HO)?\b", "$1 DE JULHO")
+        .adicionar(r"\b(\d+) DE? AGO(STO)?\b", "$1 DE AGOSTO")
+        .adicionar(r"\b(\d+) DE? SET(EMBRO)?\b", "$1 DE SETEMBRO")
+        .adicionar(r"\b(\d+) DE? OUT(UBRO)?\b", "$1 DE OUTUBRO")
+        .adicionar(r"\b(\d+) DE? NOV(EMBRO)?\b", "$1 DE NOVEMBRO")
+        .adicionar(r"\b(\d+) DE? DEZ(EMBRO)?\b", "$1 DE DEZEMBRO");
+
+    padronizador.preparar();
     padronizador
 }
 
@@ -529,4 +531,13 @@ pub fn padronizar_bairros(valor: &str) -> String {
     // Forma de obter a variável lazy
     let padronizador = &*PADRONIZADOR_BAIRROS;
     padronizador.padronizar(valor)
+}
+
+pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &str> {
+    match tipo {
+        "logradouro" | "logr" => Ok(padronizar_logradouros),
+        "numero" | "num" => Ok(padronizar_numeros),
+        "bairro" => Ok(padronizar_bairros),
+        _ => Err("Nenhum padronizador encontrado"),
+    }
 }
