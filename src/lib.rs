@@ -1,5 +1,3 @@
-use std::sync::LazyLock;
-
 use diacritics::remove_diacritics;
 use regex::{Regex, RegexSet};
 
@@ -72,42 +70,12 @@ impl Padronizador {
     }
 }
 
-// Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
-// quando uso `const`. Nesse caso,  como tenho uma construção complexa da struct `Padronizador`,
-// tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
-//
-// TODO: acho que dá pra virar macro.
-
-static PADRONIZADOR_LOGRADOUROS: LazyLock<Padronizador> =
-    LazyLock::new(logradouro::criar_padronizador_logradouros);
-
-static PADRONIZADOR_NUMEROS: LazyLock<Padronizador> =
-    LazyLock::new(numero::criar_padronizador_numeros);
-
-static PADRONIZADOR_BAIRROS: LazyLock<Padronizador> =
-    LazyLock::new(bairro::criar_padronizador_bairros);
-
-pub fn padronizar_logradouros(valor: &str) -> String {
-    // Forma de obter a variável lazy
-    let padronizador = &*PADRONIZADOR_LOGRADOUROS;
-    padronizador.padronizar(valor)
-}
-
-pub fn padronizar_numeros(valor: &str) -> String {
-    // Forma de obter a variável lazy
-    let padronizador = &*PADRONIZADOR_NUMEROS;
-    padronizador.padronizar(valor)
-}
-
-pub fn padronizar_bairros(valor: &str) -> String {
-    // Forma de obter a variável lazy
-    let padronizador = &*PADRONIZADOR_BAIRROS;
-    padronizador.padronizar(valor)
-}
-
+pub use bairro::padronizar_bairros;
 pub use estado::padronizar_estados_para_codigo;
 pub use estado::padronizar_estados_para_nome;
 pub use estado::padronizar_estados_para_sigla;
+pub use logradouro::padronizar_logradouros;
+pub use numero::padronizar_numeros;
 
 pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &str> {
     match tipo {

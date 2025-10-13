@@ -1,6 +1,8 @@
+use std::sync::LazyLock;
+
 use crate::Padronizador;
 
-pub fn criar_padronizador_numeros() -> Padronizador {
+fn criar_padronizador_numeros() -> Padronizador {
     let mut padronizador = Padronizador::default();
     padronizador
         // Regexp adicional: remove espaços em branco repetidos
@@ -21,4 +23,15 @@ pub fn criar_padronizador_numeros() -> Padronizador {
 
     padronizador.preparar();
     padronizador
+}
+
+// Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
+// quando uso `const`. Nesse caso,  como tenho uma construção complexa da struct `Padronizador`,
+// tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
+static PADRONIZADOR_NUMEROS: LazyLock<Padronizador> = LazyLock::new(criar_padronizador_numeros);
+
+pub fn padronizar_numeros(valor: &str) -> String {
+    // Forma de obter a variável lazy
+    let padronizador = &*PADRONIZADOR_NUMEROS;
+    padronizador.padronizar(valor)
 }

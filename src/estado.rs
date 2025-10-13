@@ -4,12 +4,18 @@ use diacritics::remove_diacritics;
 
 use crate::Padronizador;
 
+// TODO: ver se essa é a melhor forma de definir essa struct
+
 #[derive(Debug, Clone, Copy)]
 struct Estado {
     pub codigo: u8,
     pub nome: &'static str,
     pub sigla: &'static str,
 }
+
+// Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
+// quando uso `const`. Nesse caso, como tenho uma construção complexa da struct `Padronizador`,
+// tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
 
 static ESTADOS_MAP: LazyLock<HashMap<String, Estado>> = LazyLock::new(criar_estado_map);
 
