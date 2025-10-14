@@ -44,7 +44,7 @@ impl Padronizador {
         self.grupo_regex = RegexSet::new(regexes).unwrap();
     }
     fn padronizar(&self, valor: &str) -> String {
-        let mut preproc = remove_diacritics(valor.to_uppercase().trim());
+        let mut preproc = normalizar(valor.to_uppercase().trim());
         let mut ultimo_idx: Option<usize> = None;
 
         while self.grupo_regex.is_match(preproc.as_str()) {
@@ -69,6 +69,10 @@ impl Padronizador {
 
         preproc.to_string()
     }
+}
+
+fn normalizar(valor: &str) -> String {
+    remove_diacritics(valor)
 }
 
 pub use bairro::padronizar_bairros;
