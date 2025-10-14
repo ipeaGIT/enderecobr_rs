@@ -2,6 +2,7 @@ use diacritics::remove_diacritics;
 use regex::{Regex, RegexSet};
 
 mod bairro;
+mod complemento;
 mod estado;
 mod logradouro;
 mod municipio;
@@ -76,6 +77,7 @@ fn normalizar(valor: &str) -> String {
 }
 
 pub use bairro::padronizar_bairros;
+pub use complemento::padronizar_complemento;
 pub use estado::padronizar_estados_para_codigo;
 pub use estado::padronizar_estados_para_nome;
 pub use estado::padronizar_estados_para_sigla;
@@ -88,6 +90,7 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "logradouro" | "logr" => Ok(padronizar_logradouros),
         "numero" | "num" => Ok(padronizar_numeros),
         "bairro" => Ok(padronizar_bairros),
+        "complemento" | "comp" => Ok(padronizar_complemento),
         "estado" => Ok(padronizar_estados_para_sigla),
         "estado_nome" => Ok(padronizar_estados_para_nome),
         "estado_codigo" => Ok(padronizar_estados_para_codigo),

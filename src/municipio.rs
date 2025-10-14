@@ -2,36 +2,14 @@ use std::sync::LazyLock;
 
 use crate::Padronizador;
 
-// TODO: ver se essa é a melhor forma de definir essa struct
-
-#[derive(Debug, Clone, Copy)]
-struct Municipio {
-    pub codigo: &'static str,
-    pub nome: &'static str,
-}
-
-// Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
-// quando uso `const`. Nesse caso, como tenho uma construção complexa da struct `Padronizador`,
-// tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
-
-// fn criar_estado_map() -> HashMap<String, &'static Estado> {
-//     let mut estados = HashMap::<String, &'static Estado>::with_capacity(ESTADOS.len());
-//     ESTADOS.iter().for_each(|e| {
-//         estados.insert(e.sigla.to_string(), e);
-//         estados.insert(e.codigo.to_string(), e);
-//         estados.insert(remove_diacritics(e.nome).to_string(), e);
-//     });
-//     estados
-// }
-
 static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador);
 
 fn criar_padronizador() -> Padronizador {
     let mut padronizador = Padronizador::default();
 
     padronizador
-        .adicionar(r"\b0+(\d+)\b", "$1")
-        .adicionar(r"\s{2,}", " ")
+        .adicionar(r"\b0+(\d+)\b", "$1") // Remove zeros na frente
+        .adicionar(r"\s{2,}", " ") // Remove espaços extra
         .adicionar("^MOJI MIRIM$", "MOGI MIRIM")
         .adicionar("^GRAO PARA$", "GRAO-PARA")
         .adicionar("^BIRITIBA-MIRIM$", "BIRITIBA MIRIM")
@@ -59,14 +37,15 @@ fn criar_padronizador() -> Padronizador {
         .adicionar("^FORTALEZA DO TABOCAO$", "TABOCAO")
         .adicionar("^SAO VALERIO DA NATIVIDADE$", "SAO VALERIO");
 
-    let CSV_DATA: &str = include_str!("data/municipios.csv");
+    // a include_str! embute a string no código em tempo de compilação.
+    let municipios_csv: &str = include_str!("data/municipios.csv");
 
-    for linha in CSV_DATA.lines().skip(1) {
+    for linha in municipios_csv.lines().skip(1) {
         let cols: Vec<&str> = linha.split(",").collect();
-        padronizador.adicionar(
-            format!("^{}$", cols.get(0).unwrap()).as_str(),
-            cols.get(1).unwrap(),
-        );
+        let codigo = cols.first().unwrap();
+        let nome = cols.get(1).unwrap();
+        // Adiciona código do ibge no padronizador
+        padronizador.adicionar(format!("^{}$", codigo).as_str(), nome);
     }
 
     padronizador.preparar();
@@ -79,9 +58,3 @@ pub fn padronizar_municipios(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR;
     padronizador.padronizar(valor)
 }
-
-// ============ Dados Brutos ============
-const MUNICIPIOS: [Municipio; 1] = [Municipio {
-    codigo: "1100015",
-    nome: "ALTA FLORESTA D'OESTE",
-}];
