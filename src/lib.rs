@@ -99,6 +99,9 @@ impl Padronizador {
 }
 
 fn normalizar(valor: &str) -> String {
+    // Remove mais casos problemático, mas dificulta a comparação com a implementação em R.
+    // use unicode_normalization::UnicodeNormalization;
+    // valor.nfkd().filter(|c| c.is_ascii()).collect::<String>()
     remove_diacritics(valor)
 }
 
