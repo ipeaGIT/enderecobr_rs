@@ -12,13 +12,15 @@ mod numero;
 struct ParSubstituicao {
     regexp: Regex,
     substituicao: String,
+    regexp_ignorar: Option<Regex>,
 }
 
 impl ParSubstituicao {
-    fn new(regex: &str, substituicao: &str) -> Self {
+    fn new(regex: &str, substituicao: &str, regex_ignorar: Option<&str>) -> Self {
         ParSubstituicao {
             regexp: Regex::new(regex).unwrap(),
             substituicao: substituicao.to_uppercase().to_string(),
+            regexp_ignorar: regex_ignorar.map(|r| Regex::new(r).unwrap()),
         }
     }
 }
@@ -32,7 +34,20 @@ struct Padronizador {
 impl Padronizador {
     fn adicionar(&mut self, regex: &str, substituicao: &str) -> &mut Self {
         self.substituicoes
-            .push(ParSubstituicao::new(regex, substituicao));
+            .push(ParSubstituicao::new(regex, substituicao, None));
+        self
+    }
+    fn adicionar_com_ignorar(
+        &mut self,
+        regex: &str,
+        substituicao: &str,
+        regexp_ignorar: &str,
+    ) -> &mut Self {
+        self.substituicoes.push(ParSubstituicao::new(
+            regex,
+            substituicao,
+            Some(regexp_ignorar),
+        ));
         self
     }
     fn preparar(&mut self) {
@@ -61,6 +76,17 @@ impl Padronizador {
 
             ultimo_idx = Some(idx_substituicao.unwrap());
             let par = self.substituicoes.get(idx_substituicao.unwrap()).unwrap();
+
+            // FIXME: essa solução dá problema quando eu tenho mais de um match da regexp
+            // original. Precisaria de uma heurística melhor.
+            if par
+                .regexp_ignorar
+                .as_ref()
+                .map(|r| r.is_match(preproc.as_str()))
+                .unwrap_or(false)
+            {
+                continue;
+            }
 
             preproc = par
                 .regexp

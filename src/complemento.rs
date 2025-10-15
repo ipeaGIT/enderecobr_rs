@@ -35,9 +35,7 @@ fn criar_padronizador_complemento() -> Padronizador {
 
         .adicionar(r"^I{4,}$", "") // IIII+
         .adicionar(r"^X{3,}$", "") // XXX+
-
-        
-      .adicionar(r"\bQD?-?(\d+)-?LT?-?(\d+)-?CS?-?(\d+)\b", "QUADRA $1 LOTE $2 CASA $3")
+        .adicionar(r"\bQD?-?(\d+)-?LT?-?(\d+)-?CS?-?(\d+)\b", "QUADRA $1 LOTE $2 CASA $3")
       .adicionar(r"\bQD?-?(\d+)-?CS?-?(\d+)-?LT?-?(\d+)\b", "QUADRA $1 LOTE $3 CASA $2")
       .adicionar(r"\bCS?-?(\d+)-?LT?-?(\d+)-?QD?-?(\d+)\b", "QUADRA $3 LOTE $2 CASA $1")
       .adicionar(r"\bCS?-?(\d+)-?QD?-?(\d+)-?LT?-?(\d+)\b", "QUADRA $2 LOTE $3 CASA $1")
@@ -95,16 +93,14 @@ fn criar_padronizador_complemento() -> Padronizador {
       .adicionar(r" ?-QUADRA", " QUADRA")
 
       .adicionar(r"\b(LOTE|LTE?)\.?(\d)", "LOTE $2")
-        // FIXME: removido temporariamente
-        .adicionar(r"\bL\.? (\d)", "LOTE $1")
         // FIXME: Regexp original: \b(?<!RUA |S\/)L\.? (\d)
       // Comentário original: o $1 ta certo mesmo, os (?...) nao contam. transforma L 5 em LOTE 5, mas evita que RUA L 5 LOTE 45 vire RUA LOTE 5 LOTE 45 e que S/L 205 vire S/LOTE 205
+        .adicionar_com_ignorar(r"\bL\.? (\d)", "LOTE $1", r"\b(RUA |S\/)L\.? \d")
       .adicionar(r"(\d)(LTE?|LOTE)\b\.?", "$1 LOTE")
       .adicionar(r"\bLTE?\b\.?", "LOTE")
       .adicionar(r"\bLOTE\b: ?", "LOTE ")
       .adicionar(r"\bLOTE-(\d+)", "LOTE $1")
-        // FIXME: removido temporariamente
-      .adicionar(r"\bL-(\d+)", "LOTE $2")
+      .adicionar_com_ignorar(r"\bL-(\d+)", "LOTE $1", r"\b((TV|TRAVESSA|QUADRA) )L-(\d+)")
       // FIXME: .adicionar(r"\b(?<!(TV|TRAVESSA|QUADRA) )L-(\d+)", "LOTE $2") // "L-21-NOVO HORIZONTE" ? "L-36" ?
       .adicionar(r" ?-LOTE", " LOTE")
       .adicionar(r"\b(LOTES|LTS)\.?(\d)", "LOTES $2")
@@ -193,11 +189,9 @@ fn criar_padronizador_complemento() -> Padronizador {
       .adicionar(r"\bNUC\b\.?", "NUCLEO")
       .adicionar(r"\bNUCLEO H(AB)?\b\.?", "NUCLEO HABITACIONAL")
       .adicionar(r"\bNUCLEO COL\b\.?", "NUCLEO COLONIAL")
-    // FIXME: removido temporariamente
-      .adicionar(r"\b(NUCLEO RES|N\.? RES(IDENCIAL)?)\b\.?", "NUCLEO RESIDENCIAL")
+      .adicionar_com_ignorar(r"\b(NUCLEO RES|N\.? RES(IDENCIAL)?)\b\.?", "NUCLEO RESIDENCIAL", r"\b(NUCLEO RES|(S/)N\.? RES(IDENCIAL)?)\b\.?")
       // FIXME: .adicionar(r"\b(NUCLEO RES|(?<!S/)N\.? RES(IDENCIAL)?)\b\.?", "NUCLEO RESIDENCIAL")
-    // FIXME: removido temporariamente
-      .adicionar(r"\b(NUCLEO RUR|N\.? RURAL)\b\.?", "NUCLEO RURAL") // evita coisas como "S/N RURAL"
+      .adicionar_com_ignorar(r"\b(NUCLEO RUR|N\.? RURAL)\b\.?", "NUCLEO RURAL", r"\b(NUCLEO RUR|(S/)N\.? RURAL)\b\.?") // evita coisas como "S/N RURAL"
       // FIXME: .adicionar(r"\b(NUCLEO RUR|(?<!S/)N\.? RURAL)\b\.?", "NUCLEO RURAL") // evita coisas como "S/N RURAL"
       .adicionar(r"\bASSENT\b\.?", "ASSENTAMENTO")
 
