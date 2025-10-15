@@ -178,11 +178,11 @@ fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bDEP\b\.?", "DEPUTADO")
         // PS: Regex original tinha um look-ahead (?!$) que o motor do Rust não permite.
         // Troquei ele por um espaço em branco para garantir que não é no fim da string.
-        .adicionar(r"\bVER\b\.? ", "VEREADOR ")
+        .adicionar(r"\bVER\b\.?(.)", "VEREADOR$1")
         .adicionar(r"\bESPL?\.? (DOS )?MIN(IST(ERIOS?)?)?\b\.?", "ESPLANADA DOS MINISTERIOS")
         // PS: Regex original tinha um look-ahead (?!$) que o motor do Rust não permite.
         // Troquei ele por um espaço em branco para garantir que não é no fim da string.
-        .adicionar(r"\bMIN\b\.? ", "MINISTRO ")
+        .adicionar(r"\bMIN\b\.?(.)", "MINISTRO$1")
 
         // Abreviações
         .adicionar(r"\bJAR DIM\b", "JARDIM")
