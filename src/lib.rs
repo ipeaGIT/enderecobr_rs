@@ -2,6 +2,7 @@ use diacritics::remove_diacritics;
 use regex::{Regex, RegexSet};
 
 mod bairro;
+mod cep;
 mod complemento;
 mod estado;
 mod logradouro;
@@ -106,6 +107,9 @@ fn normalizar(valor: &str) -> String {
 }
 
 pub use bairro::padronizar_bairros;
+pub use cep::padronizar_cep;
+pub use cep::padronizar_cep_leniente;
+pub use cep::padronizar_cep_numerico;
 pub use complemento::padronizar_complemento;
 pub use estado::padronizar_estados_para_codigo;
 pub use estado::padronizar_estados_para_nome;
@@ -124,6 +128,8 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "estado_nome" => Ok(padronizar_estados_para_nome),
         "estado_codigo" => Ok(padronizar_estados_para_codigo),
         "municipio" | "mun" => Ok(padronizar_municipios),
+        "cep" => Ok(|cep| padronizar_cep(cep).unwrap_or("".to_string())),
+        "cep_leniente" => Ok(padronizar_cep_leniente),
         _ => Err("Nenhum padronizador encontrado"),
     }
 }
