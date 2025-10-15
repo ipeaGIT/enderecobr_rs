@@ -26,7 +26,7 @@ fn criar_padronizador_complemento() -> Padronizador {
         // Ou seja, qualquer coisa que comece com algo que não seja um com um dígito, I ou X, e repete ele até o fim da string, pelo menos uma vez.
         // O motor do Rust não permite esse tipo de coisa. Troquei para os casos concretos.
         // FIXME: Precisa colocar pontuação também aqui ou retirar casos não permitidos.
-        .adicionar(r"^(AA+|BB+|CC+|DD+|EE+|FF+|GG+|HH+|JJ+|KK+|LL+|MM+|NN+|OO+|PP+|QQ+|RR+|SS+|TT+|UU+|VV+|WW+|YY+|ZZ+)$", "") // qualquer valor não numérico ou romano repetido 2+ vezes
+        .adicionar(r"^(AA+|BB+|CC+|DD+|EE+|FF+|GG+|HH+|JJ+|KK+|LL+|MM+|NN+|OO+|PP+|QQ+|RR+|SS+|TT+|UU+|VV+|WW+|YY+|ZZ+|[*][*]+|__+|;;+|//+|,,+|::+|''+)$", "") // qualquer valor não numérico ou romano repetido 2+ vezes
 
         // PS: A regex original era ^(\d)\1{3,}$ que usa uma back-reference.
         // Ou seja, começa com um dígito e repete ele até o fim da string, pelo menos 3 vezes.
@@ -189,9 +189,9 @@ fn criar_padronizador_complemento() -> Padronizador {
       .adicionar(r"\bNUC\b\.?", "NUCLEO")
       .adicionar(r"\bNUCLEO H(AB)?\b\.?", "NUCLEO HABITACIONAL")
       .adicionar(r"\bNUCLEO COL\b\.?", "NUCLEO COLONIAL")
-      .adicionar_com_ignorar(r"\b(NUCLEO RES|N\.? RES(IDENCIAL)?)\b\.?", "NUCLEO RESIDENCIAL", r"\b(NUCLEO RES|(S/)N\.? RES(IDENCIAL)?)\b\.?")
+      .adicionar_com_ignorar(r"\b(NUCLEO RES|N\.? RES(IDENCIAL)?)\b\.?", "NUCLEO RESIDENCIAL", r"\bS/N\.? RES(IDENCIAL)?")
       // FIXME: .adicionar(r"\b(NUCLEO RES|(?<!S/)N\.? RES(IDENCIAL)?)\b\.?", "NUCLEO RESIDENCIAL")
-      .adicionar_com_ignorar(r"\b(NUCLEO RUR|N\.? RURAL)\b\.?", "NUCLEO RURAL", r"\b(NUCLEO RUR|(S/)N\.? RURAL)\b\.?") // evita coisas como "S/N RURAL"
+      .adicionar_com_ignorar(r"\b(NUCLEO RUR|N\.? RURAL)\b\.?", "NUCLEO RURAL", r"\b(S/N\.? RURAL)") // evita coisas como "S/N RURAL"
       // FIXME: .adicionar(r"\b(NUCLEO RUR|(?<!S/)N\.? RURAL)\b\.?", "NUCLEO RURAL") // evita coisas como "S/N RURAL"
       .adicionar(r"\bASSENT\b\.?", "ASSENTAMENTO")
 
@@ -223,8 +223,8 @@ fn criar_padronizador_complemento() -> Padronizador {
       .adicionar(r"\bGOV\b\.?", "GOVERNADOR")
       .adicionar(r"\bVISC\b\.?", "VISCONDE")
 
-      .adicionar(r"\b(\d+)\. (O|\u00BA)\b", "$1O") // o que fazer com "6O ANDAR"? transformar em "6 ANDAR"? de forma geral, o que fazer com numeros ordinais
-      .adicionar(r"\b(\d+)(O|\u00BA)\b\.", "$1O")
+      .adicionar(r"\b(\d+)\. (O|\u00BA)\b", "${1}O") // o que fazer com "6O ANDAR"? transformar em "6 ANDAR"? de forma geral, o que fazer com numeros ordinais
+      .adicionar(r"\b(\d+)(O|\u00BA)\b\.", "${1}O")
 
 
         // datas
