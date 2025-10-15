@@ -1,8 +1,10 @@
-use std::sync::LazyLock;
+use std::{collections::HashMap, sync::LazyLock};
 
-use crate::Padronizador;
+use crate::{Padronizador, normalizar};
 
 static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador);
+
+static MUNICIPIOS_MAP: LazyLock<HashMap<String, String>> = LazyLock::new(criar_municipio_map);
 
 fn criar_padronizador() -> Padronizador {
     let mut padronizador = Padronizador::default();
@@ -37,24 +39,33 @@ fn criar_padronizador() -> Padronizador {
         .adicionar("^FORTALEZA DO TABOCAO$", "TABOCAO")
         .adicionar("^SAO VALERIO DA NATIVIDADE$", "SAO VALERIO");
 
+    padronizador.preparar();
+    padronizador
+}
+
+fn criar_municipio_map() -> HashMap<String, String> {
     // a include_str! embute a string no código em tempo de compilação.
     let municipios_csv: &str = include_str!("data/municipios.csv");
+    let mut mapa = HashMap::<String, String>::new();
 
     for linha in municipios_csv.lines().skip(1) {
         let cols: Vec<&str> = linha.split(",").collect();
         let codigo = cols.first().unwrap();
-        let nome = cols.get(1).unwrap();
-        // Adiciona código do ibge no padronizador
-        padronizador.adicionar(format!("^{}$", codigo).as_str(), nome);
-    }
+        let nome = normalizar(cols.get(1).unwrap());
 
-    padronizador.preparar();
-    padronizador
+        // Adiciona código do ibge no mapa
+        mapa.insert(codigo.to_string(), nome.clone());
+        mapa.insert(codigo[..codigo.len() - 1].to_string(), nome.clone());
+    }
+    mapa
 }
 
 // ====== Funções Públicas =======
 
 pub fn padronizar_municipios(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR;
-    padronizador.padronizar(valor)
+    let res = padronizador.padronizar(valor);
+
+    let municipios = &*MUNICIPIOS_MAP;
+    municipios.get(&res).unwrap_or(&res).to_string()
 }
