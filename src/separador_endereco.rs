@@ -18,11 +18,10 @@ pub struct SeparadorEndereco {
 
 #[derive(Debug)]
 pub struct Endereco {
-    original: String,
     logradouro: Vec<String>,
-    // numero: String,
-    // complemento: String,
-    // localidade: String,
+    numero: Vec<String>,
+    complemento: Vec<String>,
+    localidade: Vec<String>,
 }
 
 impl SeparadorEndereco {
@@ -100,48 +99,93 @@ impl SeparadorEndereco {
             .collect()
     }
 
-    fn extrair_campos(&self, tokens: Vec<String>, tags: Vec<&str>) -> HashMap<String, Vec<String>> {
-        let mut grupos = HashMap::new();
+    pub fn extrair_campos(&self, tokens: Vec<String>, tags: Vec<String>) -> Endereco {
+        let mut logradouro = Vec::new();
+        let mut numero = Vec::new();
+        let mut complemento = Vec::new();
+        let mut localidade = Vec::new();
         let mut current: Option<String> = None;
 
-        for t in &tags {
-            if t == &"O" {
-                continue;
-            }
-            let (_, tipo) = t.split_at(2);
-            grupos.insert(tipo.to_string(), Vec::new());
-        }
-
-        for (tok, tag) in zip(&tokens, &tags) {
-            if tag.starts_with("B-") {
-                let tipo = &tag[2..].to_string();
-                grupos.entry(tipo.clone()).or_default().push(tok.clone());
-                current = Some(tipo.clone());
-            } else if tag.starts_with("I-") && current.is_some() {
-                let lista = grupos.get_mut(current.as_ref().unwrap());
-                let ultima = lista.unwrap().last_mut().unwrap();
-                ultima.push(' ');
-                ultima.push_str(tok);
+        for (tok, tag) in tokens.into_iter().zip(tags.into_iter()) {
+            if let Some(sufixo) = tag.strip_prefix("B-") {
+                current = Some(sufixo.to_string());
+                match current.as_deref() {
+                    Some("LOG") => logradouro.push(tok),
+                    Some("NUM") => numero.push(tok),
+                    Some("COM") => complemento.push(tok),
+                    Some("LOC") => localidade.push(tok),
+                    _ => {}
+                }
+            } else if let Some(sufixo) = tag.strip_prefix("I-") {
+                if let Some(curr) = &current {
+                    let destino = match curr.as_str() {
+                        "LOG" => &mut logradouro,
+                        "NUM" => &mut numero,
+                        "COM" => &mut complemento,
+                        "LOC" => &mut localidade,
+                        _ => continue,
+                    };
+                    if let Some(last) = destino.last_mut() {
+                        last.push(' ');
+                        last.push_str(&tok);
+                    }
+                }
             } else {
                 current = None;
             }
         }
 
-        grupos
+        Endereco {
+            logradouro,
+            numero,
+            complemento,
+            localidade,
+        }
     }
+
     fn separar_endereco(&self, texto: &str) -> Endereco {
         let mut tagger = self.model.tagger().unwrap();
         let tokens = self.tokenize(texto);
         let atributos = self.tokens2attributes(&tokens);
 
         let tags = tagger.tag(&atributos).unwrap();
-        Endereco {
-            original: texto.to_string(),
-            logradouro: tags.iter().map(|x| x.to_string()).collect(),
-        }
+        self.extrair_campos(tokens, tags)
     }
 }
 
+impl Endereco {
+    pub fn padronizar(self) -> String {
+        let log = self
+            .logradouro
+            .first()
+            .map(|x| padronizar_logradouros(x))
+            .unwrap_or("".to_string());
+
+        let num = self
+            .numero
+            .first()
+            .map(|x| padronizar_numeros(x))
+            .unwrap_or("".to_string());
+
+        let com = self
+            .complemento
+            .iter()
+            .map(|x| padronizar_complemento(x))
+            .join(" ");
+
+        let loc = self
+            .localidade
+            .first()
+            .map(|x| padronizar_bairros(x))
+            .unwrap_or("".to_string());
+
+        [log, num, com, loc]
+            .iter()
+            .map(|x| x.trim().to_string())
+            .filter(|x| !x.is_empty())
+            .join(", ")
+    }
+}
 // Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
 // quando uso `const`. Nesse caso,  como tenho uma construção complexa da struct `Padronizador`,
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
@@ -162,31 +206,5 @@ pub fn separar_endereco(texto: &str) -> Endereco {
 }
 
 pub fn padronizar_endereco_bruto(texto: &str) -> String {
-    return "".to_string();
-    // let partes = separar_endereco(texto);
-    //
-    // let log = partes
-    //     .get("LOG")
-    //     .map(|l| l.first().map(|x| padronizar_logradouros(x)))
-    //     .flatten();
-    //
-    // let num = partes
-    //     .get("NUM")
-    //     .map(|l| l.first().map(|x| padronizar_numeros(x)))
-    //     .flatten();
-    //
-    // let com = partes
-    //     .get("COM")
-    //     .map(|l| l.iter().map(|x| padronizar_complemento(x)).join(" "));
-    //
-    // let loc = partes
-    //     .get("LOC")
-    //     .map(|l| l.first().map(|x| padronizar_bairros(x)))
-    //     .flatten();
-    //
-    // [log, num, com, loc]
-    //     .into_iter()
-    //     .flatten()
-    //     .map(|x| x.trim().to_string())
-    // .join(", ")
+    separar_endereco(texto).padronizar()
 }
