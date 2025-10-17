@@ -1,6 +1,6 @@
 use std::{collections::HashMap, iter::zip, sync::LazyLock};
 
-use crfs::{Attribute, Model};
+use crfsuite::{Attribute, Model};
 
 use itertools::Itertools;
 use regex::Regex;
@@ -11,22 +11,24 @@ use crate::{
 
 // TODO: Resolver warnings deste módulo!
 
-pub struct SeparadorEndereco<'a> {
+pub struct SeparadorEndereco {
     regex_tokenizer: Regex,
-    model: Model<'a>,
+    model: Model,
 }
 
+#[derive(Debug)]
 pub struct Endereco {
+    original: String,
     logradouro: Vec<String>,
     // numero: String,
     // complemento: String,
     // localidade: String,
 }
 
-impl SeparadorEndereco<'_> {
+impl SeparadorEndereco {
     fn new() -> Self {
         let modelo_bin = include_bytes!("./data/tagger.crf");
-        let model = Model::new(modelo_bin).unwrap();
+        let model = Model::from_memory(modelo_bin).unwrap();
 
         SeparadorEndereco {
             regex_tokenizer: Regex::new(r"\w+|\S").unwrap(),
@@ -58,21 +60,35 @@ impl SeparadorEndereco<'_> {
 
         if i == 0 {
             features.push("BOS".to_string());
-        } else if i >= 1 {
+        }
+        if i >= 1 {
             features.push(format!("-1:{}", sent[i - 1].to_uppercase()));
-        } else if i >= 2 {
+        }
+        if i >= 2 {
             features.push(format!("-2:{}", sent[i - 2].to_uppercase()));
         }
 
-        if i == sent.len() {
+        if i == sent.len() - 1 {
             features.push("EOS".to_string());
-        } else if i < sent.len() - 1 {
+        }
+        if i < sent.len() - 1 {
             features.push(format!("+1:{}", sent[i + 1].to_uppercase()));
-        } else if i < sent.len() - 2 {
+        }
+        if i < sent.len() - 2 {
             features.push(format!("+2:{}", sent[i + 2].to_uppercase()));
         }
 
         features
+    }
+
+    fn criar_features(&self, texto: &str) -> Vec<Vec<String>> {
+        let tokens = self.tokenize(texto);
+
+        tokens
+            .iter()
+            .enumerate()
+            .map(|(i, _)| self.token2features(&tokens, i))
+            .collect()
     }
 
     fn tokens2attributes(&self, tokens: &Vec<String>) -> Vec<Vec<Attribute>> {
@@ -120,6 +136,7 @@ impl SeparadorEndereco<'_> {
 
         let tags = tagger.tag(&atributos).unwrap();
         Endereco {
+            original: texto.to_string(),
             logradouro: tags.iter().map(|x| x.to_string()).collect(),
         }
     }
@@ -128,10 +145,15 @@ impl SeparadorEndereco<'_> {
 // Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
 // quando uso `const`. Nesse caso,  como tenho uma construção complexa da struct `Padronizador`,
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
-static SEPARADOR: LazyLock<SeparadorEndereco<'static>> = LazyLock::new(criar_separador);
+static SEPARADOR: LazyLock<SeparadorEndereco> = LazyLock::new(criar_separador);
 
-pub fn criar_separador() -> SeparadorEndereco<'static> {
+pub fn criar_separador() -> SeparadorEndereco {
     SeparadorEndereco::new()
+}
+
+pub fn criar_features(texto: &str) -> Vec<Vec<String>> {
+    let separador = &*SEPARADOR;
+    separador.criar_features(texto)
 }
 
 pub fn separar_endereco(texto: &str) -> Endereco {

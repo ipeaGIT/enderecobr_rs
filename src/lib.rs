@@ -118,6 +118,7 @@ pub use estado::padronizar_estados_para_sigla;
 pub use logradouro::padronizar_logradouros;
 pub use municipio::padronizar_municipios;
 pub use numero::padronizar_numeros;
+pub use separador_endereco::criar_features;
 pub use separador_endereco::padronizar_endereco_bruto;
 pub use separador_endereco::separar_endereco;
 
