@@ -8,6 +8,7 @@ mod estado;
 mod logradouro;
 mod municipio;
 mod numero;
+mod separador_endereco;
 
 #[derive(Debug)]
 struct ParSubstituicao {
@@ -117,6 +118,8 @@ pub use estado::padronizar_estados_para_sigla;
 pub use logradouro::padronizar_logradouros;
 pub use municipio::padronizar_municipios;
 pub use numero::padronizar_numeros;
+pub use separador_endereco::padronizar_endereco_bruto;
+pub use separador_endereco::separar_endereco;
 
 pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &str> {
     match tipo {
@@ -130,6 +133,7 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "municipio" | "mun" => Ok(padronizar_municipios),
         "cep" => Ok(|cep| padronizar_cep(cep).unwrap_or("".to_string())),
         "cep_leniente" => Ok(padronizar_cep_leniente),
+        "completo" => Ok(padronizar_endereco_bruto),
         _ => Err("Nenhum padronizador encontrado"),
     }
 }
