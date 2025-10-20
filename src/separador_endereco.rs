@@ -1,4 +1,4 @@
-use std::{collections::HashMap, iter::zip, sync::LazyLock};
+use std::sync::LazyLock;
 
 use crfsuite::{Attribute, Model};
 
@@ -9,8 +9,6 @@ use crate::{
     padronizar_bairros, padronizar_complemento, padronizar_logradouros, padronizar_numeros,
 };
 
-// TODO: Resolver warnings deste módulo!
-
 pub struct SeparadorEndereco {
     regex_tokenizer: Regex,
     model: Model,
@@ -18,10 +16,10 @@ pub struct SeparadorEndereco {
 
 #[derive(Debug)]
 pub struct Endereco {
-    logradouro: Vec<String>,
-    numero: Vec<String>,
-    complemento: Vec<String>,
-    localidade: Vec<String>,
+    pub logradouro: Option<String>,
+    pub numero: Option<String>,
+    pub complemento: Option<String>,
+    pub localidade: Option<String>,
 }
 
 impl SeparadorEndereco {
@@ -73,7 +71,7 @@ impl SeparadorEndereco {
         if i < sent.len() - 1 {
             features.push(format!("+1:{}", sent[i + 1].to_uppercase()));
         }
-        if i < sent.len() - 2 {
+        if i < sent.len() - 2 && sent.len() >= 2 {
             features.push(format!("+2:{}", sent[i + 2].to_uppercase()));
         }
 
@@ -90,7 +88,7 @@ impl SeparadorEndereco {
             .collect()
     }
 
-    fn tokens2attributes(&self, tokens: &Vec<String>) -> Vec<Vec<Attribute>> {
+    fn tokens2attributes(&self, tokens: &[String]) -> Vec<Vec<Attribute>> {
         tokens
             .iter()
             .enumerate()
@@ -99,39 +97,41 @@ impl SeparadorEndereco {
             .collect()
     }
 
+    // TODO: tornar lógica mais legível: muitos níveis de indentação.
     pub fn extrair_campos(&self, tokens: Vec<String>, tags: Vec<String>) -> Endereco {
-        let mut logradouro = Vec::new();
-        let mut numero = Vec::new();
-        let mut complemento = Vec::new();
-        let mut localidade = Vec::new();
-        let mut current: Option<String> = None;
+        let mut logradouro = None;
+        let mut numero = None;
+        let mut complemento = None;
+        let mut localidade = None;
+
+        let mut tipo_tag_atual: Option<String> = None;
 
         for (tok, tag) in tokens.into_iter().zip(tags.into_iter()) {
             if let Some(sufixo) = tag.strip_prefix("B-") {
-                current = Some(sufixo.to_string());
-                match current.as_deref() {
-                    Some("LOG") => logradouro.push(tok),
-                    Some("NUM") => numero.push(tok),
-                    Some("COM") => complemento.push(tok),
-                    Some("LOC") => localidade.push(tok),
+                tipo_tag_atual = Some(sufixo.to_string());
+                match tipo_tag_atual.as_deref() {
+                    Some("LOG") if logradouro.is_none() => logradouro = Some(tok),
+                    Some("NUM") if numero.is_none() => numero = Some(tok),
+                    Some("COM") if complemento.is_none() => complemento = Some(tok),
+                    Some("LOC") if localidade.is_none() => localidade = Some(tok),
                     _ => {}
                 }
-            } else if let Some(sufixo) = tag.strip_prefix("I-") {
-                if let Some(curr) = &current {
-                    let destino = match curr.as_str() {
+            } else if tag.strip_prefix("I-").is_some() {
+                if let Some(tipo_atual) = &tipo_tag_atual {
+                    let destino = match tipo_atual.as_str() {
                         "LOG" => &mut logradouro,
                         "NUM" => &mut numero,
                         "COM" => &mut complemento,
                         "LOC" => &mut localidade,
                         _ => continue,
                     };
-                    if let Some(last) = destino.last_mut() {
+                    if let Some(last) = destino {
                         last.push(' ');
                         last.push_str(&tok);
                     }
                 }
             } else {
-                current = None;
+                tipo_tag_atual = None;
             }
         }
 
@@ -154,36 +154,48 @@ impl SeparadorEndereco {
 }
 
 impl Endereco {
-    pub fn padronizar(self) -> String {
-        let log = self
-            .logradouro
-            .first()
-            .map(|x| padronizar_logradouros(x))
-            .unwrap_or("".to_string());
+    pub fn logradouro_padronizado(&self) -> Option<String> {
+        self.logradouro
+            .as_ref()
+            .map(|x| padronizar_logradouros(x.as_str()))
+    }
 
-        let num = self
-            .numero
-            .first()
-            .map(|x| padronizar_numeros(x))
-            .unwrap_or("".to_string());
+    pub fn numero_padronizado(&self) -> Option<String> {
+        self.numero.as_ref().map(|x| padronizar_numeros(x.as_str()))
+    }
 
-        let com = self
-            .complemento
-            .iter()
-            .map(|x| padronizar_complemento(x))
-            .join(" ");
+    pub fn complemento_padronizado(&self) -> Option<String> {
+        self.complemento
+            .as_ref()
+            .map(|x| padronizar_complemento(x.as_str()))
+    }
 
-        let loc = self
-            .localidade
-            .first()
-            .map(|x| padronizar_bairros(x))
-            .unwrap_or("".to_string());
+    pub fn localidade_padronizada(&self) -> Option<String> {
+        self.localidade
+            .as_ref()
+            .map(|x| padronizar_bairros(x.as_str()))
+    }
 
-        [log, num, com, loc]
-            .iter()
-            .map(|x| x.trim().to_string())
-            .filter(|x| !x.is_empty())
-            .join(", ")
+    pub fn endereco_padronizado(&self) -> Endereco {
+        Endereco {
+            logradouro: self.logradouro_padronizado(),
+            numero: self.numero_padronizado(),
+            complemento: self.complemento_padronizado(),
+            localidade: self.localidade_padronizada(),
+        }
+    }
+
+    pub fn formatar(&self) -> String {
+        [
+            &self.logradouro,
+            &self.numero,
+            &self.complemento,
+            &self.localidade,
+        ]
+        .iter()
+        .filter_map(|opt| opt.as_deref())
+        .map(|x| x.trim())
+        .join(", ")
     }
 }
 // Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
@@ -206,5 +218,5 @@ pub fn separar_endereco(texto: &str) -> Endereco {
 }
 
 pub fn padronizar_endereco_bruto(texto: &str) -> String {
-    separar_endereco(texto).padronizar()
+    separar_endereco(texto).endereco_padronizado().formatar()
 }

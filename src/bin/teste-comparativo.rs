@@ -80,7 +80,7 @@ fn main() {
         "Diferentes => {}/{} ({:.3}%)",
         diff,
         total,
-        diff as f64 / total as f64
+        diff as f64 / total as f64 * 100f64
     );
     println!(
         "Processado em {:.2}s ({:.1} registros/s)",
