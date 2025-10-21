@@ -171,6 +171,8 @@ pub use complemento::padronizar_complemento;
 pub use estado::padronizar_estados_para_codigo;
 pub use estado::padronizar_estados_para_nome;
 pub use estado::padronizar_estados_para_sigla;
+pub use io::ConfiguracaoCampos;
+pub use io::ParquetOutput;
 pub use logradouro::padronizar_logradouros;
 pub use municipio::padronizar_municipios;
 pub use numero::padronizar_numeros;

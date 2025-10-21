@@ -1,8 +1,11 @@
-use std::{fs::read_to_string, time::SystemTime};
+use std::{
+    fs::{File, read_to_string},
+    time::SystemTime,
+};
 
 use arrow::array::StringArray;
 use duckdb::Connection;
-use enderecobr_rs::separar_endereco;
+use enderecobr_rs::{ConfiguracaoCampos, ParquetOutput, separar_endereco};
 
 fn main() {
     let mut args = std::env::args();
@@ -16,7 +19,9 @@ fn main() {
         .unwrap();
     let schema = schema_stmt.query_arrow([]).unwrap().get_schema();
 
-    let mut stmt = conn.prepare(query.as_str()).unwrap();
+    let mut stmt = conn
+        .prepare(format!("{} limit 1000;", query).as_str())
+        .unwrap();
 
     println!("Realizando Consulta");
     let inicio_consulta = SystemTime::now();
@@ -36,6 +41,10 @@ fn main() {
     let mut diff = 0;
 
     let inicio_proc = SystemTime::now();
+
+    // ===== Escrita parquet =====
+    let file = File::create("./aaaa.parquet").unwrap();
+    let mut output = ParquetOutput::new(ConfiguracaoCampos::valores_padrao(), 1000, file);
 
     for batch in end_iter {
         let originais = batch
@@ -60,25 +69,26 @@ fn main() {
             .downcast_ref::<StringArray>()
             .unwrap();
 
-        let localidades = batch
-            .column(4)
-            .as_any()
-            .downcast_ref::<StringArray>()
-            .unwrap();
+        // let localidades = batch
+        //     .column(4)
+        //     .as_any()
+        //     .downcast_ref::<StringArray>()
+        //     .unwrap();
 
         for i in 0..batch.num_rows() {
-            let modelo = separar_endereco(originais.value(i)).endereco_padronizado();
+            let original = originais.value(i);
 
-            // let original = originais.value(i);
+            let modelo = separar_endereco(original).endereco_padronizado();
+
             let logr = logradouros.value(i);
             let num = numeros.value(i);
             let comp = complementos.value(i);
-            let loc = localidades.value(i);
+            // let loc = localidades.value(i);
 
             if modelo.logradouro.as_deref().unwrap_or("") != logr
                 || modelo.numero.as_deref().unwrap_or("") != num
                 || modelo.complemento.as_deref().unwrap_or("") != comp
-                || modelo.localidade.as_deref().unwrap_or("") != loc
+            // || modelo.localidade.as_deref().unwrap_or("") != loc
             {
                 // println!(
                 //     "- Original: {} | Modelo: {:?} |  Padronizado: {} | {} | {} | {}",
@@ -87,10 +97,24 @@ fn main() {
                 diff += 1;
             }
 
+            if total % 100000 == 99999 {
+                println!(
+                    "Diferentes => {}/{} ({:.3}%)",
+                    diff,
+                    total,
+                    100f64 * diff as f64 / total as f64
+                );
+            }
+
+            output.adicionar_endereco(modelo);
+            output.iniciar_linha();
+
             total += 1;
         }
     }
     let fim_proc = SystemTime::now();
+
+    output.close().unwrap();
 
     println!(
         "Diferentes => {}/{} ({:.3}%)",
