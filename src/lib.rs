@@ -1,14 +1,70 @@
 use diacritics::remove_diacritics;
+use itertools::Itertools;
 use regex::{Regex, RegexSet};
 
 mod bairro;
 mod cep;
 mod complemento;
 mod estado;
+mod io;
 mod logradouro;
 mod municipio;
 mod numero;
 mod separador_endereco;
+
+#[derive(Debug)]
+pub struct Endereco {
+    pub logradouro: Option<String>,
+    pub numero: Option<String>,
+    pub complemento: Option<String>,
+    pub localidade: Option<String>,
+}
+
+impl Endereco {
+    pub fn logradouro_padronizado(&self) -> Option<String> {
+        self.logradouro
+            .as_ref()
+            .map(|x| padronizar_logradouros(x.as_str()))
+    }
+
+    pub fn numero_padronizado(&self) -> Option<String> {
+        self.numero.as_ref().map(|x| padronizar_numeros(x.as_str()))
+    }
+
+    pub fn complemento_padronizado(&self) -> Option<String> {
+        self.complemento
+            .as_ref()
+            .map(|x| padronizar_complemento(x.as_str()))
+    }
+
+    pub fn localidade_padronizada(&self) -> Option<String> {
+        self.localidade
+            .as_ref()
+            .map(|x| padronizar_bairros(x.as_str()))
+    }
+
+    pub fn endereco_padronizado(&self) -> Endereco {
+        Endereco {
+            logradouro: self.logradouro_padronizado(),
+            numero: self.numero_padronizado(),
+            complemento: self.complemento_padronizado(),
+            localidade: self.localidade_padronizada(),
+        }
+    }
+
+    pub fn formatar(&self) -> String {
+        [
+            &self.logradouro,
+            &self.numero,
+            &self.complemento,
+            &self.localidade,
+        ]
+        .iter()
+        .filter_map(|opt| opt.as_deref())
+        .map(|x| x.trim())
+        .join(", ")
+    }
+}
 
 #[derive(Debug)]
 struct ParSubstituicao {

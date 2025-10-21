@@ -2,24 +2,13 @@ use std::sync::LazyLock;
 
 use crfsuite::{Attribute, Model};
 
-use itertools::Itertools;
 use regex::Regex;
 
-use crate::{
-    padronizar_bairros, padronizar_complemento, padronizar_logradouros, padronizar_numeros,
-};
+use crate::Endereco;
 
 pub struct SeparadorEndereco {
     regex_tokenizer: Regex,
     model: Model,
-}
-
-#[derive(Debug)]
-pub struct Endereco {
-    pub logradouro: Option<String>,
-    pub numero: Option<String>,
-    pub complemento: Option<String>,
-    pub localidade: Option<String>,
 }
 
 impl SeparadorEndereco {
@@ -153,51 +142,6 @@ impl SeparadorEndereco {
     }
 }
 
-impl Endereco {
-    pub fn logradouro_padronizado(&self) -> Option<String> {
-        self.logradouro
-            .as_ref()
-            .map(|x| padronizar_logradouros(x.as_str()))
-    }
-
-    pub fn numero_padronizado(&self) -> Option<String> {
-        self.numero.as_ref().map(|x| padronizar_numeros(x.as_str()))
-    }
-
-    pub fn complemento_padronizado(&self) -> Option<String> {
-        self.complemento
-            .as_ref()
-            .map(|x| padronizar_complemento(x.as_str()))
-    }
-
-    pub fn localidade_padronizada(&self) -> Option<String> {
-        self.localidade
-            .as_ref()
-            .map(|x| padronizar_bairros(x.as_str()))
-    }
-
-    pub fn endereco_padronizado(&self) -> Endereco {
-        Endereco {
-            logradouro: self.logradouro_padronizado(),
-            numero: self.numero_padronizado(),
-            complemento: self.complemento_padronizado(),
-            localidade: self.localidade_padronizada(),
-        }
-    }
-
-    pub fn formatar(&self) -> String {
-        [
-            &self.logradouro,
-            &self.numero,
-            &self.complemento,
-            &self.localidade,
-        ]
-        .iter()
-        .filter_map(|opt| opt.as_deref())
-        .map(|x| x.trim())
-        .join(", ")
-    }
-}
 // Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
 // quando uso `const`. Nesse caso,  como tenho uma construção complexa da struct `Padronizador`,
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
