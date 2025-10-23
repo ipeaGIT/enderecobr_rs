@@ -13,5 +13,5 @@ duckdb = { version = "1.4.1", features = [] }
 fancy-regex = "0.16.1"
 itertools = "0.14.0"
 parquet = "56.2.0"
-polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet"] }
+polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"] }
 regex = "1.11.1"
