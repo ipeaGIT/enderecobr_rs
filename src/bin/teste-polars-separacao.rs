@@ -1,46 +1,43 @@
-use arrow::array::StructArray;
-use enderecobr_rs::{Endereco, separar_endereco};
+use enderecobr_rs::separar_endereco;
 use polars::{
-    df,
     error::{PolarsError, PolarsResult},
     frame::DataFrame,
     prelude::{
-        Column, DataType, Field, IntoColumn, LazyFrame, NamedFrom, ParquetCompression,
-        ParquetWriteOptions, PlPath, PlSmallStr, ScanArgsParquet, SinkOptions, StatisticsOptions,
-        StringChunked, StructChunked, col, sync_on_close::SyncOnCloseType,
+        Column, DataType, Field, IntoColumn, LazyFrame, ParquetCompression, ParquetWriteOptions,
+        PlPath, PlSmallStr, ScanArgsParquet, SinkOptions, StatisticsOptions, col,
+        sync_on_close::SyncOnCloseType,
     },
-    series::Series,
 };
 
 fn expandir_endereco(col: Column) -> Result<Column, PolarsError> {
     let enderecos_chunk = col.str().unwrap();
 
-    let mut v1 = Vec::with_capacity(enderecos_chunk.len());
-    let mut v2 = Vec::with_capacity(enderecos_chunk.len());
-    let mut v3 = Vec::with_capacity(enderecos_chunk.len());
-    let mut v4 = Vec::with_capacity(enderecos_chunk.len());
+    let mut logr_vec = Vec::with_capacity(enderecos_chunk.len());
+    let mut num_vec = Vec::with_capacity(enderecos_chunk.len());
+    let mut comp_vec = Vec::with_capacity(enderecos_chunk.len());
+    let mut loc_vec = Vec::with_capacity(enderecos_chunk.len());
 
     for opt in enderecos_chunk {
         if let Some(endereco_str) = opt {
-            let endereco = separar_endereco(endereco_str);
+            let endereco = separar_endereco(endereco_str).endereco_padronizado();
 
-            v1.push(endereco.logradouro);
-            v2.push(endereco.numero);
-            v3.push(endereco.complemento);
-            v4.push(endereco.localidade);
+            logr_vec.push(endereco.logradouro);
+            num_vec.push(endereco.numero);
+            comp_vec.push(endereco.complemento);
+            loc_vec.push(endereco.localidade);
         } else {
-            v1.push(None);
-            v2.push(None);
-            v3.push(None);
-            v4.push(None);
+            logr_vec.push(None);
+            num_vec.push(None);
+            comp_vec.push(None);
+            loc_vec.push(None);
         }
     }
 
     let df = DataFrame::new(vec![
-        Column::new(PlSmallStr::from_str("logradouro"), v1),
-        Column::new(PlSmallStr::from_str("numero"), v2),
-        Column::new(PlSmallStr::from_str("complemento"), v3),
-        Column::new(PlSmallStr::from_str("localidade"), v4),
+        Column::new(PlSmallStr::from_str("logradouro"), logr_vec),
+        Column::new(PlSmallStr::from_str("numero"), num_vec),
+        Column::new(PlSmallStr::from_str("complemento"), comp_vec),
+        Column::new(PlSmallStr::from_str("localidade"), loc_vec),
     ])
     .unwrap();
 
@@ -58,7 +55,7 @@ fn main() {
     let _df = LazyFrame::scan_parquet(
         path,
         ScanArgsParquet {
-            low_memory: true,
+            low_memory: false,
             parallel: polars::prelude::ParallelStrategy::RowGroups,
             use_statistics: true,
             rechunk: true,
@@ -104,7 +101,7 @@ fn main() {
     ])
     .drop(col("endereco_processado").into_selector().unwrap())
     .sink_parquet(
-        polars::prelude::SinkTarget::Path(PlPath::new("./aaaa.parquet")),
+        polars::prelude::SinkTarget::Path(PlPath::new("./aaaa2.parquet")),
         ParquetWriteOptions {
             compression: ParquetCompression::Zstd(None),
             statistics: StatisticsOptions {
@@ -127,7 +124,7 @@ fn main() {
     .unwrap()
     .collect_with_engine(polars::prelude::Engine::Streaming);
 
-    _df.err().map(|err| {
+    if let Some(err) = _df.err() {
         println!("{}", err);
-    });
+    };
 }
