@@ -11,7 +11,8 @@ mod municipio;
 mod numero;
 mod separador_endereco;
 
-#[derive(Debug)]
+/// Representa um endereço separado em seus atributos constituintes.
+#[derive(Debug, PartialEq)]
 pub struct Endereco {
     pub logradouro: Option<String>,
     pub numero: Option<String>,
@@ -20,28 +21,34 @@ pub struct Endereco {
 }
 
 impl Endereco {
+    /// Obtém o logradouro padronizado, utilizando a função [padronizar_logradouros].
     pub fn logradouro_padronizado(&self) -> Option<String> {
         self.logradouro
             .as_ref()
             .map(|x| padronizar_logradouros(x.as_str()))
     }
 
+    /// Obtém o número padronizado, utilizando a função [padronizar_numeros].
     pub fn numero_padronizado(&self) -> Option<String> {
         self.numero.as_ref().map(|x| padronizar_numeros(x.as_str()))
     }
 
+    /// Obtém o complemento padronizado, utilizando a função [padronizar_complemento].
     pub fn complemento_padronizado(&self) -> Option<String> {
         self.complemento
             .as_ref()
             .map(|x| padronizar_complemento(x.as_str()))
     }
 
+    /// Obtém a localidade padronizada, utilizando a função [padronizar_bairros].
     pub fn localidade_padronizada(&self) -> Option<String> {
         self.localidade
             .as_ref()
             .map(|x| padronizar_bairros(x.as_str()))
     }
 
+    /// Obtém uma nova struct [Endereco] com todos os campos padronizados,
+    /// utilizando os métodos anteriores.
     pub fn endereco_padronizado(&self) -> Endereco {
         Endereco {
             logradouro: self.logradouro_padronizado(),
@@ -51,6 +58,8 @@ impl Endereco {
         }
     }
 
+    /// Obtém uma representação textual dos atributos desta struct,
+    /// separados por vírgula, caso existam.
     pub fn formatar(&self) -> String {
         [
             &self.logradouro,

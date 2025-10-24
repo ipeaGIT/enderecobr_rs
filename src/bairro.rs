@@ -155,6 +155,28 @@ fn criar_padronizador_bairros() -> Padronizador {
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
 static PADRONIZADOR_BAIRROS: LazyLock<Padronizador> = LazyLock::new(criar_padronizador_bairros);
 
+/// Padroniza uma string representando bairros de municípios brasileiros.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_bairros;
+/// assert_eq!(padronizar_bairros("PRQ IND"), "PARQUE INDUSTRIAL");
+/// assert_eq!(padronizar_bairros("NSA SEN DE FATIMA"), "NOSSA SENHORA DE FATIMA");
+/// assert_eq!(padronizar_bairros("ILHA DO GOV"), "ILHA DO GOVERNADOR");
+/// ```
+///
+/// # Detalhes
+/// Operações realizadas durante a padronização:
+/// - remoção de espaços em branco antes e depois das strings e remoção de espaços em excesso entre palavras;
+/// - conversão de caracteres para caixa alta;
+/// - remoção de acentos e caracteres não ASCII;
+/// - adição de espaços após abreviações sinalizadas por pontos;
+/// - expansão de abreviações frequentemente utilizadas através de diversas expressões regulares (regexes);
+/// - correção de alguns pequenos erros ortográficos.
+///
+/// Note que existe uma etapa de compilação das expressões regulares utilizadas,
+/// logo a primeira execução desta função pode demorar um pouco a mais.
+///
 pub fn padronizar_bairros(valor: &str) -> String {
     // Forma de obter a variável lazy
     let padronizador = &*PADRONIZADOR_BAIRROS;

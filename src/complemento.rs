@@ -251,6 +251,27 @@ fn criar_padronizador_complemento() -> Padronizador {
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
 static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador_complemento);
 
+/// Padroniza uma string representando complementos de logradouros.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_complemento;
+/// assert_eq!(padronizar_complemento("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
+/// assert_eq!(padronizar_complemento("APTO. 405"), "APARTAMENTO 405");
+/// ```
+///
+/// # Detalhes
+/// Operações realizadas durante a padronização:
+/// - remoção de espaços em branco antes e depois das strings e remoção de espaços em excesso entre palavras;
+/// - conversão de caracteres para caixa alta;
+/// - remoção de acentos e caracteres não ASCII;
+/// - adição de espaços após abreviações sinalizadas por pontos;
+/// - expansão de abreviações frequentemente utilizadas através de diversas expressões regulares (regexes);
+/// - correção de alguns pequenos erros ortográficos.
+///
+/// Note que existe uma etapa de compilação das expressões regulares utilizadas,
+/// logo a primeira execução desta função pode demorar um pouco a mais.
+///
 pub fn padronizar_complemento(valor: &str) -> String {
     // Forma de obter a variável lazy
     let padronizador = &*PADRONIZADOR;

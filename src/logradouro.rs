@@ -270,6 +270,26 @@ fn criar_padronizador_logradouros() -> Padronizador {
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
 static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador_logradouros);
 
+/// Padroniza uma string representando logradouros de municípios brasileiros.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_logradouros;
+/// assert_eq!(padronizar_logradouros("r. gen.. glicério"), "RUA GENERAL GLICERIO");
+/// ```
+///
+/// # Detalhes
+/// Operações realizadas durante a padronização:
+/// - remoção de espaços em branco antes e depois das strings e remoção de espaços em excesso entre palavras;
+/// - conversão de caracteres para caixa alta;
+/// - remoção de acentos e caracteres não ASCII;
+/// - adição de espaços após abreviações sinalizadas por pontos;
+/// - expansão de abreviações frequentemente utilizadas através de diversas expressões regulares (regexes);
+/// - correção de alguns pequenos erros ortográficos.
+///
+/// Note que existe uma etapa de compilação das expressões regulares utilizadas,
+/// logo a primeira execução desta função pode demorar um pouco a mais.
+///
 pub fn padronizar_logradouros(valor: &str) -> String {
     // Forma de obter a variável lazy
     let padronizador = &*PADRONIZADOR;

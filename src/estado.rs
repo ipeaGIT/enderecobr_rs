@@ -44,6 +44,28 @@ fn criar_padronizador() -> Padronizador {
 
 // ====== Funções Públicas =======
 
+/// Padroniza uma string representando estados brasileiros para sua sigla de duas letras.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_estados_para_sigla;
+/// assert_eq!(padronizar_estados_para_sigla("21"), "MA");
+/// assert_eq!(padronizar_estados_para_sigla("021"), "MA");
+/// assert_eq!(padronizar_estados_para_sigla("MA"), "MA");
+/// assert_eq!(padronizar_estados_para_sigla(" 21"), "MA");
+/// assert_eq!(padronizar_estados_para_sigla(" MA "), "MA");
+/// assert_eq!(padronizar_estados_para_sigla("ma"), "MA");
+/// assert_eq!(padronizar_estados_para_sigla(""), "");
+/// assert_eq!(padronizar_estados_para_sigla("me"), "");
+/// assert_eq!(padronizar_estados_para_sigla("maranhao"), "MA");
+/// ```
+///
+/// # Detalhes
+/// - remoção de espaços em branco antes e depois dos valores e remoção de espaços em excesso entre palavras;
+/// - conversão de caracteres para caixa alta;
+/// - remoção de zeros à esquerda;
+/// - busca, a partir do código numérico ou da abreviação da UF, do nome completo de cada estado;
+///
 pub fn padronizar_estados_para_sigla(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR;
     let valor_padr = padronizador.padronizar(valor);
@@ -54,6 +76,29 @@ pub fn padronizar_estados_para_sigla(valor: &str) -> String {
         .unwrap_or("")
         .to_string()
 }
+
+/// Padroniza uma string representando estados brasileiros para seu código do IBGE.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_estados_para_codigo;
+/// assert_eq!(padronizar_estados_para_codigo("21"), "21");
+/// assert_eq!(padronizar_estados_para_codigo("021"), "21");
+/// assert_eq!(padronizar_estados_para_codigo("MA"), "21");
+/// assert_eq!(padronizar_estados_para_codigo(" 21"), "21");
+/// assert_eq!(padronizar_estados_para_codigo(" MA "), "21");
+/// assert_eq!(padronizar_estados_para_codigo("ma"), "21");
+/// assert_eq!(padronizar_estados_para_codigo(""), "");
+/// assert_eq!(padronizar_estados_para_codigo("me"), "");
+/// assert_eq!(padronizar_estados_para_codigo("maranhao"), "21");
+/// ```
+///
+/// # Detalhes
+/// - remoção de espaços em branco antes e depois dos valores e remoção de espaços em excesso entre palavras;
+/// - conversão de caracteres para caixa alta;
+/// - remoção de zeros à esquerda;
+/// - busca, a partir do código numérico ou da abreviação da UF, do nome completo de cada estado;
+///
 pub fn padronizar_estados_para_codigo(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR;
     let valor_padr = padronizador.padronizar(valor);

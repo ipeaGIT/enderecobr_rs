@@ -147,20 +147,44 @@ impl SeparadorEndereco<'_> {
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
 static SEPARADOR: LazyLock<SeparadorEndereco<'static>> = LazyLock::new(criar_separador);
 
-pub fn criar_separador() -> SeparadorEndereco<'static> {
+fn criar_separador() -> SeparadorEndereco<'static> {
     SeparadorEndereco::new()
 }
 
+// TODO: remover
 pub fn criar_features(texto: &str) -> Vec<Vec<String>> {
     let separador = &*SEPARADOR;
     separador.criar_features(texto)
 }
 
+/// Tenta separa um endereço bruto utilizando um pequeno modelo probabilístico embutido nesta biblioteca.
+///
+/// # Exemplo:
+/// ```
+/// use enderecobr_rs::{separar_endereco, Endereco};
+/// let endereco = separar_endereco("av n sra copacabana, 123, apt 302");
+/// assert_eq!(Endereco {
+///     logradouro: Some("av n sra copacabana".to_string()),
+///     numero: Some("123".to_string()),
+///     complemento: Some("apt 302".to_string()),
+///     localidade: None}, endereco);
+/// ```
+///
 pub fn separar_endereco(texto: &str) -> Endereco {
     let separador = &*SEPARADOR;
     separador.separar_endereco(texto)
 }
 
+/// Função utilitária que separa o endereço recebido, padroniza seus campos,
+/// e formata eles numa nova string, separando-os por vírgula.
+///
+/// # Exemplo:
+/// ```
+/// use enderecobr_rs::padronizar_endereco_bruto;
+/// let endereco = padronizar_endereco_bruto("av n sra copacabana, 123, apt 302");
+/// assert_eq!(endereco, "AVENIDA NOSSA SENHORA COPACABANA, 123, APARTAMENTO 302");
+/// ```
+///
 pub fn padronizar_endereco_bruto(texto: &str) -> String {
     separar_endereco(texto).endereco_padronizado().formatar()
 }
