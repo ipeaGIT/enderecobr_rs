@@ -191,6 +191,7 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "cep" => Ok(|cep| padronizar_cep(cep).unwrap_or("".to_string())),
         "cep_leniente" => Ok(padronizar_cep_leniente),
         "completo" => Ok(padronizar_endereco_bruto),
+        "separar" => Ok(|val| format!("{:?}", separar_endereco(val))),
         _ => Err("Nenhum padronizador encontrado"),
     }
 }
