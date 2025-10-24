@@ -1,20 +1,20 @@
 use std::sync::LazyLock;
 
-use crfsuite::{Attribute, Model};
+use crfs::{Attribute, Model};
 
 use regex::Regex;
 
 use crate::Endereco;
 
-pub struct SeparadorEndereco {
+pub struct SeparadorEndereco<'a> {
     regex_tokenizer: Regex,
-    model: Model,
+    model: Model<'a>,
 }
 
-impl SeparadorEndereco {
+impl SeparadorEndereco<'_> {
     fn new() -> Self {
         let modelo_bin = include_bytes!("./data/tagger.crf");
-        let model = Model::from_memory(modelo_bin).unwrap();
+        let model = Model::new(modelo_bin).unwrap();
 
         SeparadorEndereco {
             regex_tokenizer: Regex::new(r"\w+|\S").unwrap(),
@@ -87,7 +87,7 @@ impl SeparadorEndereco {
     }
 
     // TODO: tornar lógica mais legível: muitos níveis de indentação.
-    pub fn extrair_campos(&self, tokens: Vec<String>, tags: Vec<String>) -> Endereco {
+    pub fn extrair_campos(&self, tokens: Vec<String>, tags: Vec<&str>) -> Endereco {
         let mut logradouro = None;
         let mut numero = None;
         let mut complemento = None;
@@ -145,9 +145,9 @@ impl SeparadorEndereco {
 // Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
 // quando uso `const`. Nesse caso,  como tenho uma construção complexa da struct `Padronizador`,
 // tenho que usar static com inicialização Lazy (o LazyLock aqui previne condições de corrida).
-static SEPARADOR: LazyLock<SeparadorEndereco> = LazyLock::new(criar_separador);
+static SEPARADOR: LazyLock<SeparadorEndereco<'static>> = LazyLock::new(criar_separador);
 
-pub fn criar_separador() -> SeparadorEndereco {
+pub fn criar_separador() -> SeparadorEndereco<'static> {
     SeparadorEndereco::new()
 }
 

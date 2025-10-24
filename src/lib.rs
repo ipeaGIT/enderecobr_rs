@@ -6,7 +6,6 @@ mod bairro;
 mod cep;
 mod complemento;
 mod estado;
-mod io;
 mod logradouro;
 mod municipio;
 mod numero;
