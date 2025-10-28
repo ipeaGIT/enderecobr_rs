@@ -12,14 +12,15 @@
 //! # Exemplo de uso
 //!
 //! ```
-//! use enderecobr_rs::{Endereco, padronizar_complemento, padronizar_endereco_bruto, padronizar_logradouros};
+//! use enderecobr_rs::{Endereco, padronizar_complemento, padronizar_endereco_bruto, padronizar_logradouros, separar_endereco};
 //! assert_eq!(padronizar_logradouros("r. gen.. glicério"), "RUA GENERAL GLICERIO");
 //! assert_eq!(padronizar_complemento("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
-//! assert_eq!(padronizar_endereco_bruto("av n sra copacabana, 123, apt 302"), "AVENIDA NOSSA SENHORA COPACABANA, 123, APARTAMENTO 302");
 //!
-//! let endereco = Endereco { logradouro: Some("av n sra copacabana".to_string()), complemento: Some("apt 301".to_string()), ..Default::default() };
-//! let esperado = Endereco { logradouro: Some("AVENIDA NOSSA SENHORA COPACABANA".to_string()), complemento: Some("APARTAMENTO 301".to_string()), ..Default::default() };
-//! assert_eq!(endereco.endereco_padronizado(), esperado);
+//! let endereco_separado = Endereco { logradouro: Some("av n sra copacabana".to_string()), numero: Some("123".to_string()), complemento: Some("apt 301".to_string()), ..Default::default() };
+//! assert_eq!(separar_endereco("av n sra copacabana 123 apt 301"), endereco_separado);
+//!
+//! let endereco_padronizado_esperado = Endereco { logradouro: Some("AVENIDA NOSSA SENHORA COPACABANA".to_string()), numero: Some("123".to_string()), complemento: Some("APARTAMENTO 301".to_string()), ..Default::default() };
+//! assert_eq!(endereco_separado.endereco_padronizado(), endereco_padronizado_esperado);
 //! ```
 //!
 use diacritics::remove_diacritics;
