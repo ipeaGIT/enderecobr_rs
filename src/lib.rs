@@ -35,6 +35,7 @@ pub mod logradouro;
 pub mod municipio;
 pub mod numero;
 pub mod separador_endereco;
+pub mod tipo_logradouro;
 
 /// Representa um endereço separado em seus atributos constituintes.
 #[derive(Debug, PartialEq, Default)]
@@ -230,12 +231,14 @@ pub use numero::padronizar_numeros;
 pub use separador_endereco::criar_features;
 pub use separador_endereco::padronizar_endereco_bruto;
 pub use separador_endereco::separar_endereco;
+pub use tipo_logradouro::padronizar_tipo_logradouro;
 
 /// Função utilitária utilizada nas ferramentas de CLI para selecionar um padronizador facilmente
 /// via uma string descritiva.
 pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &str> {
     match tipo {
         "logradouro" | "logr" => Ok(padronizar_logradouros),
+        "tipo_logradouro" | "tipo_logr" => Ok(padronizar_tipo_logradouro),
         "numero" | "num" => Ok(padronizar_numeros),
         "bairro" => Ok(padronizar_bairros),
         "complemento" | "comp" => Ok(padronizar_complemento),
