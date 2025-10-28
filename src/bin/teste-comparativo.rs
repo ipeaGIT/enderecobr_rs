@@ -7,28 +7,29 @@ use polars::prelude::{
     SinkOptions, SinkTarget, StringChunked, col,
 };
 
+/// Utilitário que serve para comparar o resultado desta lib com os valores de um
+/// arquivo parquet. Salva apenas as diferenças num arquivo `.csv` especificado.
 #[derive(Debug, Parser)]
-#[clap(author, version, about("Comparador"), long_about = None)]
+#[clap(author, version)]
 struct Args {
-    #[clap(help("Arquivo de entrada"))]
+    /// Caminho do arquivo PARQUET de entrada.
     arquivo_entrada: String,
-    #[clap(short, long, default_value = "./diff.csv", help("Arquivo saída"))]
+
+    /// Caminho do arquivo CSV de saída.
+    #[arg(short('o'), long, default_value = "./diff.csv")]
     arquivo_saida: String,
-    #[clap(
-        short,
-        long,
-        default_value = "logradouro",
-        help("Tipo de Padronizador")
-    )]
+
+    /// Tipo do padronizar a ser usado. Vide função `obter_padronizador_por_tipo`.
+    #[arg(short('t'), long, default_value = "logradouro")]
     tipo_padronizador: String,
-    #[clap(long, default_value = "logradouro", help("Campo com valor bruto"))]
+
+    /// Nome do campo a ser processado.
+    #[arg(short('b'), long, default_value = "logradouro")]
     campo_bruto: String,
-    #[clap(
-        long,
-        default_value = "logradouro_padr",
-        help("Campo com valor a ser comparado")
-    )]
-    campo_baseline: String,
+
+    /// Nome do campo a ser usado como valor de referência.
+    #[arg(short('r'), long, default_value = "logradouro_padr")]
+    campo_referencia: String,
 }
 
 fn main() {
@@ -48,7 +49,7 @@ fn main() {
     )
     .unwrap()
     .with_new_streaming(true)
-    .select([col(&args.campo_bruto), col(&args.campo_baseline)])
+    .select([col(&args.campo_bruto), col(&args.campo_referencia)])
     .with_column(
         col(&args.campo_bruto)
             .map(
@@ -61,7 +62,11 @@ fn main() {
             )
             .alias("campo_processado"),
     )
-    .filter(col("campo_processado").eq(col(&args.campo_baseline)).not())
+    .filter(
+        col("campo_processado")
+            .eq(col(&args.campo_referencia))
+            .not(),
+    )
     .unique(None, polars::frame::UniqueKeepStrategy::First)
     .sink_csv(
         SinkTarget::Path(PlPath::new(&args.arquivo_saida)),
