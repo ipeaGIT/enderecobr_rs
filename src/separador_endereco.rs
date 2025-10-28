@@ -6,7 +6,7 @@ use regex::Regex;
 
 use crate::Endereco;
 
-pub struct SeparadorEndereco<'a> {
+struct SeparadorEndereco<'a> {
     regex_tokenizer: Regex,
     model: Model<'a>,
 }
@@ -87,7 +87,7 @@ impl SeparadorEndereco<'_> {
     }
 
     // TODO: tornar lógica mais legível: muitos níveis de indentação.
-    pub fn extrair_campos(&self, tokens: Vec<String>, tags: Vec<&str>) -> Endereco {
+    fn extrair_campos(&self, tokens: Vec<String>, tags: Vec<&str>) -> Endereco {
         let mut logradouro = None;
         let mut numero = None;
         let mut complemento = None;
@@ -149,12 +149,6 @@ static SEPARADOR: LazyLock<SeparadorEndereco<'static>> = LazyLock::new(criar_sep
 
 fn criar_separador() -> SeparadorEndereco<'static> {
     SeparadorEndereco::new()
-}
-
-// TODO: remover
-pub fn criar_features(texto: &str) -> Vec<Vec<String>> {
-    let separador = &*SEPARADOR;
-    separador.criar_features(texto)
 }
 
 /// Tenta separa um endereço bruto utilizando um pequeno modelo probabilístico embutido nesta biblioteca.

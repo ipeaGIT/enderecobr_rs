@@ -7,7 +7,6 @@ edition = "2024"
 clap = { version = "4.5.50", features = ["derive"] }
 crfs = "0.2.0"
 diacritics = "0.2.2"
-duckdb = { version = "1.4.1", features = [] }
 itertools = "0.14.0"
 polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"] }
 regex = "1.11.1"

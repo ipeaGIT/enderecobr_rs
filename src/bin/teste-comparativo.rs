@@ -1,90 +1,83 @@
-use std::{fs::read_to_string, time::SystemTime};
+use std::num::NonZero;
 
-use duckdb::Connection;
+use clap::Parser;
 use enderecobr_rs::obter_padronizador_por_tipo;
+use polars::prelude::{
+    Column, CsvWriterOptions, DataType, Field, IntoColumn, LazyFrame, PlPath, ScanArgsParquet,
+    SinkOptions, SinkTarget, StringChunked, col,
+};
 
-#[derive(Debug)]
-struct Endereco {
-    pos: i32,
-    original: Option<String>,
-    padronizado_r: Option<String>,
+#[derive(Debug, Parser)]
+#[clap(author, version, about("Comparador"), long_about = None)]
+struct Args {
+    #[clap(help("Arquivo de entrada"))]
+    arquivo_entrada: String,
+    #[clap(short, long, default_value = "./diff.csv", help("Arquivo saída"))]
+    arquivo_saida: String,
+    #[clap(
+        short,
+        long,
+        default_value = "logradouro",
+        help("Tipo de Padronizador")
+    )]
+    tipo_padronizador: String,
+    #[clap(long, default_value = "logradouro", help("Campo com valor bruto"))]
+    campo_bruto: String,
+    #[clap(
+        long,
+        default_value = "logradouro_padr",
+        help("Campo com valor a ser comparado")
+    )]
+    campo_baseline: String,
 }
 
 fn main() {
-    let mut args = std::env::args();
-    let arq_consulta = args.next_back().unwrap();
-    let tipo = args.next_back().unwrap();
+    let args = Args::parse();
 
-    let padronizador = obter_padronizador_por_tipo(tipo.as_str()).unwrap();
+    let padronizador = obter_padronizador_por_tipo(&args.tipo_padronizador).unwrap();
 
-    let query = read_to_string(arq_consulta).unwrap();
-    let conn = Connection::open_in_memory().unwrap();
-    let mut stmt = conn.prepare(query.as_str()).unwrap();
-    let mut i: i32 = 0;
+    let res = LazyFrame::scan_parquet(
+        PlPath::from_string(args.arquivo_entrada),
+        ScanArgsParquet {
+            low_memory: true,
+            parallel: polars::prelude::ParallelStrategy::RowGroups,
+            use_statistics: false,
+            rechunk: true,
+            ..Default::default()
+        },
+    )
+    .unwrap()
+    .with_new_streaming(true)
+    .select([col(&args.campo_bruto), col(&args.campo_baseline)])
+    .with_column(
+        col(&args.campo_bruto)
+            .map(
+                move |campo: Column| {
+                    let iterador = campo.str().unwrap().iter().map(|opt| opt.map(padronizador));
+                    let col = StringChunked::from_iter(iterador).into_column();
+                    Ok(col)
+                },
+                |_, _| Ok(Field::new("campo_processado".into(), DataType::String)),
+            )
+            .alias("campo_processado"),
+    )
+    .filter(col("campo_processado").eq(col(&args.campo_baseline)).not())
+    .unique(None, polars::frame::UniqueKeepStrategy::First)
+    .sink_csv(
+        SinkTarget::Path(PlPath::new(&args.arquivo_saida)),
+        CsvWriterOptions {
+            batch_size: NonZero::new(100).unwrap(),
+            ..Default::default()
+        },
+        None,
+        SinkOptions {
+            ..Default::default()
+        },
+    )
+    .unwrap()
+    .collect_with_engine(polars::prelude::Engine::Streaming);
 
-    println!("Realizando Consulta");
-    let inicio_consulta = SystemTime::now();
-
-    let end_iter = stmt
-        .query_map([], |row| {
-            i += 1;
-            Ok(Endereco {
-                pos: i,
-                original: row.get(0).unwrap(),
-                padronizado_r: row.get(1).unwrap(),
-            })
-        })
-        .unwrap();
-
-    let fim_consulta = SystemTime::now();
-    println!(
-        "Consulta realizada em {}s",
-        fim_consulta
-            .duration_since(inicio_consulta)
-            .unwrap()
-            .as_secs()
-    );
-
-    let mut total = 0;
-    let mut diff = 0;
-
-    let inicio_proc = SystemTime::now();
-    for e in end_iter {
-        total += 1;
-        let registro = e.unwrap();
-
-        let novo = registro
-            .original
-            .clone()
-            .map(|x| padronizador(x.as_str()))
-            .filter(|x| !x.is_empty())
-            .unwrap_or("Null".to_string());
-
-        let baseline = registro.padronizado_r.unwrap_or("Null".to_string());
-
-        if novo.clone() != baseline.clone() {
-            diff += 1;
-            println!(
-                "{}) {} => Baseline: {} | Novo: {}",
-                registro.pos,
-                registro.original.unwrap_or("Null".to_string()),
-                baseline,
-                novo,
-            );
-        }
-    }
-    let fim_proc = SystemTime::now();
-
-    let tempo_proc = fim_proc.duration_since(inicio_proc).unwrap().as_millis();
-    println!(
-        "Diferentes => {}/{} ({:.3}%)",
-        diff,
-        total,
-        diff as f64 / total as f64 * 100f64
-    );
-    println!(
-        "Processado em {:.2}s ({:.1} registros/s)",
-        tempo_proc as f64 / 1000.0,
-        total as f64 / (tempo_proc as f64 / 1000.0)
-    );
+    if let Some(err) = res.err() {
+        println!("{}", err);
+    };
 }
