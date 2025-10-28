@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use crate::Padronizador;
 
-fn criar_padronizador_numeros() -> Padronizador {
+pub fn criar_padronizador_numeros() -> Padronizador {
     let mut padronizador = Padronizador::default();
     padronizador
         // Regexp adicional: remove espaços em branco repetidos

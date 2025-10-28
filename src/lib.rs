@@ -1,18 +1,42 @@
+//! Esta biblioteca tem por objetivo prover de funções utilizadas para padronizar endereços brasileiros,
+//! corrigindo erros comuns, expandindo abreviações etc, afim de facilitar processamentos posteriores.
+//!
+//! Esta biblioteca é uma adaptação para Rust do [enderecobr](https://github.com/ipeaGIT/enderecobr)
+//! visando ganho de eficiência e expandir seu uso para demais linguagens de programação,
+//! utilizando esta implementação como base das demais.
+//!
+//! Ela usa majoritariamente expressões regulares nas padronizações, com exceção do módulo
+//! experimental de separação de endereços, que utiliza um modelo probabilístico de
+//! [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field) já embutido na bilioteca.
+//!
+//! # Exemplo de uso
+//!
+//! ```
+//! use enderecobr_rs::{Endereco, padronizar_complemento, padronizar_endereco_bruto, padronizar_logradouros};
+//! assert_eq!(padronizar_logradouros("r. gen.. glicério"), "RUA GENERAL GLICERIO");
+//! assert_eq!(padronizar_complemento("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
+//! assert_eq!(padronizar_endereco_bruto("av n sra copacabana, 123, apt 302"), "AVENIDA NOSSA SENHORA COPACABANA, 123, APARTAMENTO 302");
+//!
+//! let endereco = Endereco { logradouro: Some("av n sra copacabana".to_string()), complemento: Some("apt 301".to_string()), ..Default::default() };
+//! let esperado = Endereco { logradouro: Some("AVENIDA NOSSA SENHORA COPACABANA".to_string()), complemento: Some("APARTAMENTO 301".to_string()), ..Default::default() };
+//! assert_eq!(endereco.endereco_padronizado(), esperado);
+//! ```
+//!
 use diacritics::remove_diacritics;
 use itertools::Itertools;
 use regex::{Regex, RegexSet};
 
-mod bairro;
-mod cep;
-mod complemento;
-mod estado;
-mod logradouro;
-mod municipio;
-mod numero;
-mod separador_endereco;
+pub mod bairro;
+pub mod cep;
+pub mod complemento;
+pub mod estado;
+pub mod logradouro;
+pub mod municipio;
+pub mod numero;
+pub mod separador_endereco;
 
 /// Representa um endereço separado em seus atributos constituintes.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Endereco {
     pub logradouro: Option<String>,
     pub numero: Option<String>,
@@ -74,8 +98,9 @@ impl Endereco {
     }
 }
 
+/// Representa um par de "regexp replace". Usado internamente no [Padronizador].
 #[derive(Debug)]
-struct ParSubstituicao {
+pub struct ParSubstituicao {
     regexp: Regex,
     substituicao: String,
     regexp_ignorar: Option<Regex>,
@@ -91,19 +116,27 @@ impl ParSubstituicao {
     }
 }
 
+/// Struct utilitária utilizada internamente para realizar padronizações dos diversos tipos.
+///
+/// Guarda os pares de regexps e suas substituições, além do RegexSet, responsável por otimizar a
+/// localização das regexp relevantes.
 #[derive(Default)]
-struct Padronizador {
+pub struct Padronizador {
     substituicoes: Vec<ParSubstituicao>,
     grupo_regex: RegexSet,
 }
 
 impl Padronizador {
-    fn adicionar(&mut self, regex: &str, substituicao: &str) -> &mut Self {
+    /// Adiciona uma regexp e sua substituição no padronizador. Compila a regexp imediatamente.
+    pub fn adicionar(&mut self, regex: &str, substituicao: &str) -> &mut Self {
         self.substituicoes
             .push(ParSubstituicao::new(regex, substituicao, None));
         self
     }
-    fn adicionar_com_ignorar(
+
+    /// Adiciona no padronizador uma regexp, sua substituição e uma regexp adicional
+    /// utilizada para condicionar a substituição. Compila ambas regexps imediatamente.
+    pub fn adicionar_com_ignorar(
         &mut self,
         regex: &str,
         substituicao: &str,
@@ -116,7 +149,8 @@ impl Padronizador {
         ));
         self
     }
-    fn preparar(&mut self) {
+    /// Compila o Regexp Set, utilizado para agilizar a localização das regexp relevantes.
+    pub fn preparar(&mut self) {
         let regexes: Vec<&str> = self
             .substituicoes
             .iter()
@@ -125,7 +159,8 @@ impl Padronizador {
 
         self.grupo_regex = RegexSet::new(regexes).unwrap();
     }
-    fn padronizar(&self, valor: &str) -> String {
+    /// Realiza a padronização de fato.
+    pub fn padronizar(&self, valor: &str) -> String {
         let mut preproc = normalizar(valor.to_uppercase().trim());
         let mut ultimo_idx: Option<usize> = None;
 
@@ -164,7 +199,16 @@ impl Padronizador {
     }
 }
 
-fn normalizar(valor: &str) -> String {
+/// Função utilitária usada internamente para normalizar uma string para processamento posterior,
+/// removendo seus diacríticos e caracteres especiais.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::normalizar;
+/// assert_eq!(normalizar("Olá, mundo"), "Ola, mundo");
+/// ```
+///
+pub fn normalizar(valor: &str) -> String {
     // Remove mais casos problemático, mas dificulta a comparação com a implementação em R.
     // use unicode_normalization::UnicodeNormalization;
     // valor.nfkd().filter(|c| c.is_ascii()).collect::<String>()
@@ -186,6 +230,8 @@ pub use separador_endereco::criar_features;
 pub use separador_endereco::padronizar_endereco_bruto;
 pub use separador_endereco::separar_endereco;
 
+/// Função utilitária utilizada nas ferramentas de CLI para selecionar um padronizador facilmente
+/// via uma string descritiva.
 pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &str> {
     match tipo {
         "logradouro" | "logr" => Ok(padronizar_logradouros),

@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use crate::Padronizador;
 
-fn criar_padronizador_bairros() -> Padronizador {
+pub fn criar_padronizador_bairros() -> Padronizador {
     let mut padronizador = Padronizador::default();
     padronizador
         // Substituição nova

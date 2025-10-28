@@ -1,12 +1,12 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use crate::{Padronizador, normalizar};
+use crate::{normalizar, Padronizador};
 
 static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador);
 
 static MUNICIPIOS_MAP: LazyLock<HashMap<String, String>> = LazyLock::new(criar_municipio_map);
 
-fn criar_padronizador() -> Padronizador {
+pub fn criar_padronizador() -> Padronizador {
     let mut padronizador = Padronizador::default();
 
     padronizador
@@ -43,7 +43,7 @@ fn criar_padronizador() -> Padronizador {
     padronizador
 }
 
-fn criar_municipio_map() -> HashMap<String, String> {
+pub fn criar_municipio_map() -> HashMap<String, String> {
     // a include_str! embute a string no código em tempo de compilação.
     let municipios_csv: &str = include_str!("data/municipios.csv");
     let mut mapa = HashMap::<String, String>::new();
@@ -62,6 +62,33 @@ fn criar_municipio_map() -> HashMap<String, String> {
 
 // ====== Funções Públicas =======
 
+/// Padroniza uma string representando município brasileiros.
+///
+/// ```
+/// use enderecobr_rs::padronizar_municipios;
+/// assert_eq!(padronizar_municipios("3304557"), "RIO DE JANEIRO");
+/// assert_eq!(padronizar_municipios("003304557"), "RIO DE JANEIRO");
+/// assert_eq!(padronizar_municipios("  3304557  "), "RIO DE JANEIRO");
+/// assert_eq!(padronizar_municipios("RIO DE JANEIRO"), "RIO DE JANEIRO");
+/// assert_eq!(padronizar_municipios("rio de janeiro"), "RIO DE JANEIRO");
+/// assert_eq!(padronizar_municipios("SÃO PAULO"), "SAO PAULO");
+/// assert_eq!(padronizar_municipios("PARATI"), "PARATY");
+/// assert_eq!(padronizar_municipios("AUGUSTO SEVERO"), "CAMPO GRANDE");
+/// assert_eq!(padronizar_municipios("SAO VALERIO DA NATIVIDADE"), "SAO VALERIO");
+/// assert_eq!(padronizar_municipios(""), "");
+/// ```
+///
+/// # Detalhes
+/// - remoção de espaços em branco antes e depois das strings e remoção de espaços em excesso entre palavras;
+/// - conversão de caracteres para caixa alta;
+/// - remoção de zeros à esquerda;
+/// - busca, a partir do código numérico, do nome completo de cada município;
+/// - remoção de acentos e caracteres não ASCII, correção de erros ortográficos frequentes e atualização
+///   de nomes conforme listagem de municípios do IBGE de 2022.
+///
+/// Note que existe uma etapa de compilação das expressões regulares utilizadas,
+/// logo a primeira execução desta função pode demorar um pouco a mais.
+///
 pub fn padronizar_municipios(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR;
     let res = padronizador.padronizar(valor);
