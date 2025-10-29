@@ -228,6 +228,8 @@ pub use estado::padronizar_estados_para_sigla;
 pub use logradouro::padronizar_logradouros;
 pub use municipio::padronizar_municipios;
 pub use numero::padronizar_numeros;
+pub use numero::padronizar_numeros_para_int;
+pub use numero::padronizar_numeros_para_string;
 pub use separador_endereco::padronizar_endereco_bruto;
 pub use separador_endereco::separar_endereco;
 pub use tipo_logradouro::padronizar_tipo_logradouro;

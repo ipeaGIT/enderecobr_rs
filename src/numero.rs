@@ -59,24 +59,72 @@ pub fn padronizar_numeros(valor: &str) -> String {
     padronizador.padronizar(valor)
 }
 
+/// Padroniza uma string representando números de logradouros para o formato numérico.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_numeros_para_int;
+/// assert_eq!(padronizar_numeros_para_int("0210"), Some(210));
+/// assert_eq!(padronizar_numeros_para_int("001"), Some(1));
+/// assert_eq!(padronizar_numeros_para_int("1"), Some(1));
+/// assert_eq!(padronizar_numeros_para_int("0"), None);
+/// assert_eq!(padronizar_numeros_para_int(""), None);
+/// assert_eq!(padronizar_numeros_para_int("S/N"), None);
+/// assert_eq!(padronizar_numeros_para_int("0180 0181"), None);
+/// ```
+///
+/// # Detalhes
+/// - remoção de espaços em branco antes e depois dos números e de espaços em branco em excesso entre números;
+/// - remoção de zeros à esquerda;
+/// - substituição de números vazios e de variações de SN (SN, S N, S.N., S./N., etc) por None
+///
+/// Note que existe uma etapa de compilação das expressões regulares utilizadas,
+/// logo a primeira execução desta função pode demorar um pouco a mais.
+///
+pub fn padronizar_numeros_para_int(valor: &str) -> Option<u32> {
+    let valor_padronizado = padronizar_numeros(valor);
+    if valor_padronizado == "S/N" {
+        return None;
+    }
+    match valor_padronizado.parse::<u32>() {
+        Ok(0) | Err(_) => None,
+        Ok(numero) => Some(numero),
+    }
+}
+
+/// Padroniza um tipo numérico para uma representação textual de números de logradouros.
+/// Substitui todos valores menores ou iguais a zero para "S/N" e trunca valores decimais.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_numeros_para_string;
+/// assert_eq!(padronizar_numeros_para_string(210), "210");
+/// assert_eq!(padronizar_numeros_para_string(1.1), "1");
+/// assert_eq!(padronizar_numeros_para_string(0), "S/N");
+/// assert_eq!(padronizar_numeros_para_string(-11), "S/N");
+/// ```
+///
+pub fn padronizar_numeros_para_string<T: Into<f64> + Copy>(valor: T) -> String {
+    // A ideia da função é aceitar qualquer tipo que possa ser convertido para double,
+    // e então processar de forma unificada.
+    let val: f64 = valor.into();
+    if val <= 0.0 {
+        "S/N".to_string()
+    } else {
+        val.trunc().to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::padronizar_numeros;
+    use super::*;
 
-    // TODO: fazer padronizador de números para string
-    //
-    // #[test]
-    // fn padroniza_corretamente_numero() {
-    //     let test_cases = [
-    //         ("0", "S/N"),
-    //         ("1", "1"),
-    //         ("1.1", "1"),
-    //         ("", "S/N"), // representa NA
-    //     ];
-    //     for (input, expected) in test_cases {
-    //         assert_eq!(padronizar_numeros(input), expected);
-    //     }
-    // }
+    #[test]
+    fn padroniza_corretamente_numero() {
+        assert_eq!(padronizar_numeros_para_string(0), "S/N");
+        assert_eq!(padronizar_numeros_para_string(1), "1");
+        assert_eq!(padronizar_numeros_para_string(1.1), "1");
+    }
 
     #[test]
     fn padroniza_corretamente_character() {
@@ -114,6 +162,45 @@ mod tests {
 
         for (input, expected) in test_cases {
             assert_eq!(padronizar_numeros(input), expected);
+        }
+    }
+
+    #[test]
+    fn test_padronizar_numeros_para_int() {
+        let casos = [
+            (" 1 ", Some(1)),
+            ("s/n", None),
+            ("NÚMERO", None),
+            ("0001", Some(1)),
+            ("01 02", None),
+            ("20.100", Some(20100)),
+            ("20.100 20.101", None),
+            ("1.028", Some(1028)),
+            ("SN", None),
+            ("SNº", None),
+            ("S N", None),
+            ("S Nº", None),
+            ("S.N.", None),
+            ("S.Nº.", None),
+            ("S. N.", None),
+            ("S. Nº.", None),
+            ("S/N", None),
+            ("S/Nº", None),
+            ("S./N.", None),
+            ("S./Nº.", None),
+            ("S./N. S N", None),
+            ("SEM NUMERO", None),
+            ("X", None),
+            ("XX", None),
+            ("0", None),
+            ("00", None),
+            ("-", None),
+            ("--", None),
+            ("", None),
+        ];
+
+        for (entrada, esperado) in casos {
+            assert_eq!(padronizar_numeros_para_int(entrada), esperado);
         }
     }
 }
