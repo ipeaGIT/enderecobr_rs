@@ -182,3 +182,16 @@ pub fn padronizar_bairros(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR_BAIRROS;
     padronizador.padronizar(valor)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn padroniza_corretamente() {
+        assert_eq!(padronizar_bairros("JARDIM  BOTÂNICO"), "JARDIM BOTANICO");
+        assert_eq!(padronizar_bairros("jardim botanico"), "JARDIM BOTANICO");
+        assert_eq!(padronizar_bairros("jd..botanico"), "JARDIM BOTANICO");
+        assert_eq!(padronizar_bairros(""), ""); // substitui NA
+    }
+}

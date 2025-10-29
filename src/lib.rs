@@ -12,9 +12,9 @@
 //! # Exemplo de uso
 //!
 //! ```
-//! use enderecobr_rs::{Endereco, padronizar_complemento, padronizar_endereco_bruto, padronizar_logradouros, separar_endereco};
+//! use enderecobr_rs::{Endereco, padronizar_complementos, padronizar_endereco_bruto, padronizar_logradouros, separar_endereco};
 //! assert_eq!(padronizar_logradouros("r. gen.. glicério"), "RUA GENERAL GLICERIO");
-//! assert_eq!(padronizar_complemento("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
+//! assert_eq!(padronizar_complementos("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
 //!
 //! let endereco_separado = Endereco { logradouro: Some("av n sra copacabana".to_string()), numero: Some("123".to_string()), complemento: Some("apt 301".to_string()), ..Default::default() };
 //! assert_eq!(separar_endereco("av n sra copacabana 123 apt 301"), endereco_separado);
@@ -63,7 +63,7 @@ impl Endereco {
     pub fn complemento_padronizado(&self) -> Option<String> {
         self.complemento
             .as_ref()
-            .map(|x| padronizar_complemento(x.as_str()))
+            .map(|x| padronizar_complementos(x.as_str()))
     }
 
     /// Obtém a localidade padronizada, utilizando a função [padronizar_bairros].
@@ -221,7 +221,7 @@ pub use bairro::padronizar_bairros;
 pub use cep::padronizar_cep;
 pub use cep::padronizar_cep_leniente;
 pub use cep::padronizar_cep_numerico;
-pub use complemento::padronizar_complemento;
+pub use complemento::padronizar_complementos;
 pub use estado::padronizar_estados_para_codigo;
 pub use estado::padronizar_estados_para_nome;
 pub use estado::padronizar_estados_para_sigla;
@@ -240,7 +240,7 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "tipo_logradouro" | "tipo_logr" => Ok(padronizar_tipo_logradouro),
         "numero" | "num" => Ok(padronizar_numeros),
         "bairro" => Ok(padronizar_bairros),
-        "complemento" | "comp" => Ok(padronizar_complemento),
+        "complemento" | "comp" => Ok(padronizar_complementos),
         "estado" => Ok(padronizar_estados_para_sigla),
         "estado_nome" => Ok(padronizar_estados_para_nome),
         "estado_codigo" => Ok(padronizar_estados_para_codigo),

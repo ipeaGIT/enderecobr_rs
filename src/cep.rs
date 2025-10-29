@@ -40,12 +40,12 @@ pub fn padronizar_cep_numerico(valor: i32) -> Result<String, String> {
 pub fn padronizar_cep(valor: &str) -> Result<String, String> {
     if valor
         .chars()
-        .any(|c| !c.is_ascii_punctuation() && !c.is_numeric())
+        .any(|c| !c.is_ascii_punctuation() && !c.is_numeric() && !c.is_whitespace())
     {
         return Err("CEP com caracteres inválidos".to_string());
     }
 
-    if valor.is_empty() {
+    if valor.trim().is_empty() {
         return Ok("".to_string());
     }
 
@@ -82,4 +82,41 @@ pub fn padronizar_cep_leniente(valor: &str) -> String {
     // Padding na esquerda
     let cep = format!("{:0>8}", valor_numerico);
     format!("{}-{}", &cep[0..5], &cep[5..8])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn erro_quando_cep_contem_letra() {
+        let erro_esperado = Err("CEP com caracteres inválidos".to_string());
+
+        assert_eq!(padronizar_cep("botafogo"), erro_esperado);
+        assert_eq!(padronizar_cep("oie"), erro_esperado);
+        assert_eq!(padronizar_cep("hehe"), erro_esperado);
+    }
+
+    #[test]
+    fn erro_quando_cep_contem_mais_de_8_digitos() {
+        let erro_esperado = Err("CEP com muitos dígitos".to_string());
+
+        assert_eq!(padronizar_cep_numerico(100000000), erro_esperado);
+        assert_eq!(padronizar_cep("222290-140"), erro_esperado);
+    }
+
+    #[test]
+    fn padroniza_corretamente() {
+        assert_eq!(padronizar_cep("22290-140").unwrap(), "22290-140");
+        assert_eq!(padronizar_cep("22290 140").unwrap(), "22290-140");
+        assert_eq!(padronizar_cep("22290- 140").unwrap(), "22290-140");
+        assert_eq!(padronizar_cep("22.290-140").unwrap(), "22290-140");
+        assert_eq!(padronizar_cep(" 22290  140 ").unwrap(), "22290-140");
+        assert_eq!(padronizar_cep("01000-000").unwrap(), "01000-000");
+        assert_eq!(padronizar_cep("1000000").unwrap(), "01000-000");
+        assert_eq!(padronizar_cep(" 1000000").unwrap(), "01000-000");
+
+        // Teste novo
+        assert_eq!(padronizar_cep("   ").unwrap(), "");
+    }
 }

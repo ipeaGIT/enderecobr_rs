@@ -58,3 +58,62 @@ pub fn padronizar_numeros(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR_NUMEROS;
     padronizador.padronizar(valor)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::padronizar_numeros;
+
+    // TODO: fazer padronizador de números para string
+    //
+    // #[test]
+    // fn padroniza_corretamente_numero() {
+    //     let test_cases = [
+    //         ("0", "S/N"),
+    //         ("1", "1"),
+    //         ("1.1", "1"),
+    //         ("", "S/N"), // representa NA
+    //     ];
+    //     for (input, expected) in test_cases {
+    //         assert_eq!(padronizar_numeros(input), expected);
+    //     }
+    // }
+
+    #[test]
+    fn padroniza_corretamente_character() {
+        let test_cases = [
+            (" 1 ", "1"),
+            ("s/n", "S/N"),
+            ("NÚMERO", "NUMERO"),
+            ("0001", "1"),
+            ("01 02", "1 2"),
+            ("20.100", "20100"),
+            ("20.100 20.101", "20100 20101"),
+            ("1.028", "1028"), // mistura dos dois casos acima - issue #37 (https://github.com/ipeaGIT/enderecobr/issues/37)
+            ("SN", "S/N"),
+            ("SNº", "S/N"),
+            ("S N", "S/N"),
+            ("S Nº", "S/N"),
+            ("S.N.", "S/N"),
+            ("S.Nº.", "S/N"),
+            ("S. N.", "S/N"),
+            ("S. Nº.", "S/N"),
+            ("S/N", "S/N"),
+            ("S/Nº", "S/N"),
+            ("S./N.", "S/N"),
+            ("S./Nº.", "S/N"),
+            ("S./N. S N", "S/N S/N"),
+            ("SEM NUMERO", "S/N"),
+            ("X", "S/N"),
+            ("XX", "S/N"),
+            ("0", "S/N"),
+            ("00", "S/N"),
+            ("-", "S/N"),
+            ("--", "S/N"),
+            ("", "S/N"),
+        ];
+
+        for (input, expected) in test_cases {
+            assert_eq!(padronizar_numeros(input), expected);
+        }
+    }
+}

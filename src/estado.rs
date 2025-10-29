@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use crate::{normalizar, Padronizador};
+use crate::{Padronizador, normalizar};
 
 // TODO: ver se essa é a melhor forma de definir essa struct
 
@@ -108,6 +108,30 @@ pub fn padronizar_estados_para_codigo(valor: &str) -> String {
         .map(|e| e.codigo.to_string())
         .unwrap_or("".to_string())
 }
+
+/// Padroniza uma string representando estados brasileiros para seu nome por extenso,
+/// porém sem diacríticos.
+///
+/// # Exemplo
+/// ```
+/// use enderecobr_rs::padronizar_estados_para_nome;
+/// assert_eq!(padronizar_estados_para_nome("21"), "MARANHAO");
+/// assert_eq!(padronizar_estados_para_nome("021"), "MARANHAO");
+/// assert_eq!(padronizar_estados_para_nome("MA"), "MARANHAO");
+/// assert_eq!(padronizar_estados_para_nome(" 21"), "MARANHAO");
+/// assert_eq!(padronizar_estados_para_nome(" MA "), "MARANHAO");
+/// assert_eq!(padronizar_estados_para_nome("ma"), "MARANHAO");
+/// assert_eq!(padronizar_estados_para_nome(""), "");
+/// assert_eq!(padronizar_estados_para_nome("me"), "");
+/// assert_eq!(padronizar_estados_para_nome("maranhao"), "MARANHAO");
+/// ```
+///
+/// # Detalhes
+/// - remoção de espaços em branco antes e depois dos valores e remoção de espaços em excesso entre palavras;
+/// - conversão de caracteres para caixa alta;
+/// - remoção de zeros à esquerda;
+/// - busca, a partir do código numérico ou da abreviação da UF, do nome completo de cada estado;
+///
 pub fn padronizar_estados_para_nome(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR;
     let valor_padr = padronizador.padronizar(valor);
@@ -124,7 +148,7 @@ pub fn padronizar_estados_para_nome(valor: &str) -> String {
 const ESTADOS: [Estado; 27] = [
     Estado {
         codigo: 11,
-        nome: "RONDÔNIA",
+        nome: "RONDONIA",
         sigla: "RO",
     },
     Estado {
@@ -144,12 +168,12 @@ const ESTADOS: [Estado; 27] = [
     },
     Estado {
         codigo: 15,
-        nome: "PARÁ",
+        nome: "PARA",
         sigla: "PA",
     },
     Estado {
         codigo: 16,
-        nome: "AMAPÁ",
+        nome: "AMAPA",
         sigla: "AP",
     },
     Estado {
@@ -159,17 +183,17 @@ const ESTADOS: [Estado; 27] = [
     },
     Estado {
         codigo: 21,
-        nome: "MARANHÃO",
+        nome: "MARANHAO",
         sigla: "MA",
     },
     Estado {
         codigo: 22,
-        nome: "PIAUÍ",
+        nome: "PIAUI",
         sigla: "PI",
     },
     Estado {
         codigo: 23,
-        nome: "CEARÁ",
+        nome: "CEARA",
         sigla: "CE",
     },
     Estado {
@@ -179,7 +203,7 @@ const ESTADOS: [Estado; 27] = [
     },
     Estado {
         codigo: 25,
-        nome: "PARAÍBA",
+        nome: "PARAIBA",
         sigla: "PB",
     },
     Estado {
@@ -209,7 +233,7 @@ const ESTADOS: [Estado; 27] = [
     },
     Estado {
         codigo: 32,
-        nome: "ESPÍRITO SANTO",
+        nome: "ESPIRITO SANTO",
         sigla: "ES",
     },
     Estado {
@@ -219,12 +243,12 @@ const ESTADOS: [Estado; 27] = [
     },
     Estado {
         codigo: 35,
-        nome: "SÃO PAULO",
+        nome: "SAO PAULO",
         sigla: "SP",
     },
     Estado {
         codigo: 41,
-        nome: "PARANÁ",
+        nome: "PARANA",
         sigla: "PR",
     },
     Estado {
@@ -249,7 +273,7 @@ const ESTADOS: [Estado; 27] = [
     },
     Estado {
         codigo: 52,
-        nome: "GOIÁS",
+        nome: "GOIAS",
         sigla: "GO",
     },
     Estado {
@@ -258,3 +282,25 @@ const ESTADOS: [Estado; 27] = [
         sigla: "DF",
     },
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn padroniza_corretamente() {
+        assert_eq!(padronizar_estados_para_nome("21"), "MARANHAO");
+        assert_eq!(padronizar_estados_para_nome("021"), "MARANHAO");
+        assert_eq!(padronizar_estados_para_nome(" 21 "), "MARANHAO");
+        assert_eq!(padronizar_estados_para_nome("ma"), "MARANHAO");
+        assert_eq!(padronizar_estados_para_nome(""), ""); // NA
+        assert_eq!(padronizar_estados_para_nome("MARANHÃO"), "MARANHAO");
+
+        assert_eq!(padronizar_estados_para_sigla("21"), "MA");
+        assert_eq!(padronizar_estados_para_sigla("021"), "MA");
+        assert_eq!(padronizar_estados_para_sigla(" 21 "), "MA");
+        assert_eq!(padronizar_estados_para_sigla("ma"), "MA");
+        assert_eq!(padronizar_estados_para_sigla(""), ""); // NA
+        assert_eq!(padronizar_estados_para_sigla("MARANHÃO"), "MA");
+    }
+}

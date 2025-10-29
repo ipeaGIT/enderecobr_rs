@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use crate::{normalizar, Padronizador};
+use crate::{Padronizador, normalizar};
 
 static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador);
 
@@ -95,4 +95,23 @@ pub fn padronizar_municipios(valor: &str) -> String {
 
     let municipios = &*MUNICIPIOS_MAP;
     municipios.get(&res).unwrap_or(&res).to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn padroniza_corretamente() {
+        assert_eq!(padronizar_municipios("3304557"), "RIO DE JANEIRO");
+        assert_eq!(padronizar_municipios("330455"), "RIO DE JANEIRO");
+        assert_eq!(padronizar_municipios("03304557"), "RIO DE JANEIRO");
+        assert_eq!(padronizar_municipios("0330455"), "RIO DE JANEIRO");
+        assert_eq!(padronizar_municipios(" 3304557 "), "RIO DE JANEIRO");
+        assert_eq!(padronizar_municipios("rio de janeiro"), "RIO DE JANEIRO");
+        assert_eq!(padronizar_municipios(""), ""); // string vazia → string vazia
+        assert_eq!(padronizar_municipios("SÃO PAULO"), "SAO PAULO");
+        assert_eq!(padronizar_municipios("MOJI MIRIM"), "MOGI MIRIM");
+        assert_eq!(padronizar_municipios("PARATI"), "PARATY");
+    }
 }

@@ -255,9 +255,9 @@ static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador_c
 ///
 /// # Exemplo
 /// ```
-/// use enderecobr_rs::padronizar_complemento;
-/// assert_eq!(padronizar_complemento("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
-/// assert_eq!(padronizar_complemento("APTO. 405"), "APARTAMENTO 405");
+/// use enderecobr_rs::padronizar_complementos;
+/// assert_eq!(padronizar_complementos("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
+/// assert_eq!(padronizar_complementos("APTO. 405"), "APARTAMENTO 405");
 /// ```
 ///
 /// # Detalhes
@@ -272,8 +272,19 @@ static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador_c
 /// Note que existe uma etapa de compilação das expressões regulares utilizadas,
 /// logo a primeira execução desta função pode demorar um pouco a mais.
 ///
-pub fn padronizar_complemento(valor: &str) -> String {
+pub fn padronizar_complementos(valor: &str) -> String {
     // Forma de obter a variável lazy
     let padronizador = &*PADRONIZADOR;
     padronizador.padronizar(valor)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn padroniza_corretamente() {
+        assert_eq!(padronizar_complementos("qd 5 bl 7"), "QUADRA 5 BLOCO 7");
+        assert_eq!(padronizar_complementos(""), "");
+    }
 }

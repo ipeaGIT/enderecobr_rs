@@ -295,3 +295,20 @@ pub fn padronizar_logradouros(valor: &str) -> String {
     let padronizador = &*PADRONIZADOR;
     padronizador.padronizar(valor)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn padroniza_corretamente() {
+        // Comentário original:
+        // complicado fazer um teste pra cada uma das regexs usadas. testando só um basiquinho da manipulação,
+        // depois pensamos melhor se vale a pena fazer um teste pra cada regex ou não
+        assert_eq!(
+            padronizar_logradouros("r. gen.. glicério"),
+            "RUA GENERAL GLICERIO"
+        );
+        assert_eq!(padronizar_logradouros(""), "");
+    }
+}
