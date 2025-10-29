@@ -61,6 +61,7 @@ fn criar_padronizador() -> Padronizador {
 /// ```
 ///
 /// # Detalhes
+/// Operações realizadas durante a padronização:
 /// - remoção de espaços em branco antes e depois dos valores e remoção de espaços em excesso entre palavras;
 /// - conversão de caracteres para caixa alta;
 /// - remoção de zeros à esquerda;
@@ -94,6 +95,7 @@ pub fn padronizar_estados_para_sigla(valor: &str) -> String {
 /// ```
 ///
 /// # Detalhes
+/// Operações realizadas durante a padronização:
 /// - remoção de espaços em branco antes e depois dos valores e remoção de espaços em excesso entre palavras;
 /// - conversão de caracteres para caixa alta;
 /// - remoção de zeros à esquerda;
@@ -127,6 +129,7 @@ pub fn padronizar_estados_para_codigo(valor: &str) -> String {
 /// ```
 ///
 /// # Detalhes
+/// Operações realizadas durante a padronização:
 /// - remoção de espaços em branco antes e depois dos valores e remoção de espaços em excesso entre palavras;
 /// - conversão de caracteres para caixa alta;
 /// - remoção de zeros à esquerda;

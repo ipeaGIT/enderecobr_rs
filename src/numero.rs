@@ -46,6 +46,7 @@ static PADRONIZADOR_NUMEROS: LazyLock<Padronizador> = LazyLock::new(criar_padron
 /// ```
 ///
 /// # Detalhes
+/// Operações realizadas durante a padronização:
 /// - remoção de espaços em branco antes e depois dos números e de espaços em branco em excesso entre números;
 /// - remoção de zeros à esquerda;
 /// - substituição de números vazios e de variações de SN (SN, S N, S.N., S./N., etc) por S/N.
@@ -74,6 +75,7 @@ pub fn padronizar_numeros(valor: &str) -> String {
 /// ```
 ///
 /// # Detalhes
+/// Operações realizadas durante a padronização:
 /// - remoção de espaços em branco antes e depois dos números e de espaços em branco em excesso entre números;
 /// - remoção de zeros à esquerda;
 /// - substituição de números vazios e de variações de SN (SN, S N, S.N., S./N., etc) por None

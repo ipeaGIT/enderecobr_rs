@@ -79,6 +79,7 @@ pub fn criar_municipio_map() -> HashMap<String, String> {
 /// ```
 ///
 /// # Detalhes
+/// Operações realizadas durante a padronização:
 /// - remoção de espaços em branco antes e depois das strings e remoção de espaços em excesso entre palavras;
 /// - conversão de caracteres para caixa alta;
 /// - remoção de zeros à esquerda;

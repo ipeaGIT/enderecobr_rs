@@ -59,7 +59,7 @@ impl Endereco {
         self.numero.as_ref().map(|x| padronizar_numeros(x.as_str()))
     }
 
-    /// Obtém o complemento padronizado, utilizando a função [padronizar_complemento].
+    /// Obtém o complemento padronizado, utilizando a função [padronizar_complementos].
     pub fn complemento_padronizado(&self) -> Option<String> {
         self.complemento
             .as_ref()
@@ -251,6 +251,9 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "cep_leniente" => Ok(padronizar_cep_leniente),
         "completo" => Ok(padronizar_endereco_bruto),
         "separar" => Ok(|val| format!("{:?}", separar_endereco(val))),
+        "separar_padronizar" => {
+            Ok(|val| format!("{:?}", separar_endereco(val).endereco_padronizado()))
+        }
         _ => Err("Nenhum padronizador encontrado"),
     }
 }
