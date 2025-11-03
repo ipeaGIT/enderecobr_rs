@@ -104,10 +104,10 @@ class EnderecoGerador:
                 continue
             if campo in params.abreviar_campos:
                 reg[campo] = self._abreviar_texto(reg[campo])
-            # if params.erro_digitacao_campos.get(campo):
-            #     reg[campo] = self._erro_digitacao(reg[campo])
-            # if params.excluir_palavra_campos.get(campo):
-            #     reg[campo] = self._excluir_palavra(reg[campo])
+            if campo in params.erro_digitacao_campos:
+                reg[campo] = self._erro_digitacao(reg[campo])
+            if campo in params.excluir_palavra_campos:
+                reg[campo] = self._excluir_palavra(reg[campo])
 
         if params.misturar_municipio_uf:
             reg["municipio"] = f"{reg['municipio']}-{reg['uf']}"
@@ -123,10 +123,13 @@ class EnderecoGerador:
             reg["numero"] = valor
 
         valor = str(reg.get("cep", "")).zfill(8)
-        if params.formato_cep == "99999-999":
-            valor = f"{valor[:5]}-{valor[5:]}"
-        elif params.formato_cep == "99.999-999":
-            valor = f"{valor[:2]}.{valor[2:5]}-{valor[5:]}"
+        match params.formato_cep:
+            case "99.999-999":
+                valor = f"{valor[:2]}.{valor[2:5]}-{valor[5:]}"
+            case "99999-999":
+                valor = f"{valor[:5]}-{valor[5:]}"
+            case "99999999":
+                pass
         reg["cep"] = valor
 
         reg["endereco_formatado"] = self._aplicar_formato(
@@ -160,8 +163,10 @@ class EnderecoGerador:
         return texto
 
     def _erro_digitacao(self, texto: str) -> str:
-        if len(texto) > 2:
-            return texto[:-1] + texto[-1].swapcase()  # exemplo fixo
+        # if len(texto) > 2:
+        #     return texto[:-1] + texto[-1].swapcase()  # exemplo fixo
+        # return texto
+        # Nada, por enquanto
         return texto
 
     def _excluir_palavra(self, texto: str) -> str:
