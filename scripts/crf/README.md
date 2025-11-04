@@ -1,0 +1,12 @@
+- https://dados.gov.br/dados/conjuntos-dados/postos-de-cadastramento-do-cadastro-unico - lat long, separado
+- https://dados.gov.br/dados/conjuntos-dados/cnes-cadastro-nacional-de-estabelecimentos-de-saude - lat long, separado
+- https://dados.gov.br/dados/conjuntos-dados/inep-microdados-do-censo-escolar-da-educacao-basica - separado, sem lat long, pode dar join com o de baixo
+- https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/inep-data/catalogo-de-escolas - endereco junto, lat long
+- https://dados.gov.br/dados/conjuntos-dados/cneas--cadastro-nacional-de-entidades-de-assistencia-social - endereco separado, sem lat long
+- https://dados.gov.br/dados/conjuntos-dados/cadastro-nacional-de-obras-cno - endereço separado, sem lat long
+- https://dados.gov.br/dados/conjuntos-dados/censo-suas - poucos dados, lat long, referencia
+- https://dados.gov.br/dados/conjuntos-dados/cadastro-de-imoveis-rurais---cafir - algumas partes do endereco juntas, sem lat long
+- https://qlik-publico.paineis.gov.br/extensions/transparencia-ativa/transparencia-ativa.html - lat long, tudo junto
+- https://dados.gov.br/dados/conjuntos-dados/sistema-de-transportes-de-servidores-publicos---taxigov-v2 - lat log, tudo junto
+- https://www.gov.br/funai/pt-br/atuacao/terras-indigenas/geoprocessamento-e-mapas - lat long, só o nome da aldeia
+- https://dados.gov.br/dados/conjuntos-dados/fiscalizacao-auto-de-infracao - lat long, tudo junto, as vezes tem endereço de referencia

@@ -74,8 +74,8 @@ using sample 400_000
     print("Realizando treinamento...")
     crf = sklearn_crfsuite.CRF(
         algorithm="lbfgs",
-        # c1=0.001,
-        # c2=0.1,
+        c1=0.001,
+        c2=0.01,
         max_iterations=100,
         all_possible_transitions=False,
         min_freq=5,
