@@ -1,10 +1,7 @@
 import pytest
 
-from crf_endereco.endereco import (
-    Endereco,
-    RotuladorEnderecoBIO,
-    tokenize,
-)
+from crf_endereco.endereco import Endereco
+from crf_endereco.preproc import RotuladorEnderecoBIO, tokenize
 
 
 @pytest.mark.parametrize(
@@ -15,6 +12,7 @@ from crf_endereco.endereco import (
             "Av. Paulista 1000 - São Paulo",
             ["Av", ".", "Paulista", "1000", "-", "São", "Paulo"],
         ),
+        # Não esperava que nº iria ficar junto.
         ("R. Azul, nº 45", ["R", ".", "Azul", ",", "nº", "45"]),
         ("CEP: 01311-200", ["CEP", ":", "01311", "-", "200"]),
         ("Bloco B apto. 12", ["Bloco", "B", "apto", ".", "12"]),
@@ -24,7 +22,6 @@ def test_tokenize(text: str, expected: list[str]):
     assert tokenize(text) == expected
 
 
-# --- FIXTURA DE ROTULADOR ---
 @pytest.fixture
 def rotulador():
     return RotuladorEnderecoBIO(tokenize)

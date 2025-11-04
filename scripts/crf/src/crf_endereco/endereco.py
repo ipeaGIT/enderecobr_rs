@@ -165,60 +165,6 @@ class EnderecoGerador:
         return " ".join(palavras)
 
 
-def tokenize(text: str):
-    return re.findall(r"\d+|\w+|[^\s\w]+", text)
-
-
-class RotuladorEnderecoBIO:
-    map_tags: dict[str, str] = {
-        "logradouro": "LOG",
-        "numero": "NUM",
-        "complemento": "COM",
-        "bairro": "LOC",
-        "municipio": "MUN",
-        "cep": "CEP",
-    }
-
-    def __init__(self, tokenizer: Callable[[str], list[str]]):
-        self.tokenizer: Callable[[str], list[str]] = tokenizer
-
-    def obter_tokenizado(self, endereco: Endereco) -> tuple[list[str], list[str]]:
-        tokens: list[str] = []
-        targets: list[str] = []
-
-        ordem_campos = endereco.formato.split(" ")
-        separador_toks = self.tokenizer(endereco.separador)
-        tam_separador = len(separador_toks)
-
-        # Transforma num dicionario para facilitar manipulação
-        reg = {
-            k: v.upper() if isinstance(v, str) else v
-            for k, v in asdict(endereco).items()
-        }
-
-        for campo in ordem_campos:
-            valor_campo = reg.get(campo)
-            tag_atual = self.map_tags.get(campo)
-
-            if not valor_campo or not tag_atual:
-                continue
-
-            # Adiciona separador no fim antes de adicionar os novos tokens,
-            # senão estiver no início e se o separador "existir"
-            if len(tokens) and tam_separador:
-                tokens += separador_toks
-                targets += ["O"] * tam_separador
-
-            tokens_atuais = self.tokenizer(valor_campo)
-            targets_atuais = [f"I-{tag_atual}"] * len(tokens_atuais)
-            targets_atuais[0] = f"B-{tag_atual}"
-
-            tokens += tokens_atuais
-            targets += targets_atuais
-
-        return tokens, targets
-
-
 ABREVIACOES_COMUNS = {
     "RUA": ["RU", "R", "R.", "R,", "RUA R", "RUA RU", "RUA R.", "RUA R,"],
     "RODOVIA": [
