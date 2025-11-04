@@ -1,7 +1,7 @@
 import re
 import random
 from dataclasses import dataclass, asdict, field
-from typing import Callable, Literal
+from typing import Literal
 
 
 @dataclass
@@ -92,10 +92,8 @@ class EnderecoGerador:
     def __init__(
         self,
         abreviacoes: dict[str, list[str]] | None = None,
-        tokenizer: Callable[[str], list[str]] | None = None,
     ):
         self.abreviacoes: dict[str, list[str]] = abreviacoes or dict()
-        self.tokenizer: Callable[[str], list[str]] | None = tokenizer
 
     def gerar_endereco(
         self, endereco: Endereco, params: EnderecoParametros

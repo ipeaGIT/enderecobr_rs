@@ -14,6 +14,9 @@ dependencies = [
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 
+[tool.uv]
+package = true
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.2",

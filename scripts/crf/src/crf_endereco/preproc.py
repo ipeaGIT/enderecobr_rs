@@ -131,11 +131,11 @@ def token2features(sent: list[str], i: int) -> list[str]:
 
 
 # Tokenizando antes
-def sent2features(text: str):
+def sent2features(text: str) -> list[dict[str, float]]:
     toks = tokenize(text)
     return tokens2features(toks)
 
 
 # Uso direto já tokenizado
-def tokens2features(toks: list[str]):
+def tokens2features(toks: list[str]) -> list[dict[str, float]]:
     return [{feat: 1.0 for feat in token2features(toks, i)} for i in range(len(toks))]
