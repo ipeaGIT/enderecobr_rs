@@ -17,31 +17,10 @@ def testa_formato_aleatorio():
         "Rio de Janeiro",
         "RJ",
         "12345678",
-        None,
     )
     assert (
-        gerador.gerar_endereco(
-            endereco, gerador_parametro.gerar_parametro()
-        ).endereco_formatado
+        gerador.gerar_endereco(endereco, gerador_parametro.gerar_parametro())
         is not None
-    )
-
-
-def testa_formato_padrao():
-    gerador = EnderecoGerador()
-    endereco = Endereco(
-        "Rua A",
-        "123",
-        "apt 101",
-        "Centro",
-        "Rio de Janeiro",
-        "RJ",
-        "12345678",
-        None,
-    )
-    assert (
-        gerador.gerar_endereco(endereco, EnderecoParametros()).endereco_formatado
-        == "RUA A, 123, APT 101, CENTRO, RIO DE JANEIRO"
     )
 
 
@@ -53,7 +32,6 @@ def testa_abreviacao():
     params = EnderecoParametros(abreviar_campos={"logradouro"})
     e = gerador.gerar_endereco(endereco, params)
     assert e.logradouro == "R. DAS FLORES"
-    assert e.endereco_formatado and "R." in e.endereco_formatado
 
 
 def testa_excluir_palavra():
@@ -66,7 +44,6 @@ def testa_excluir_palavra():
     # Remove a segunda palavra
     assert e.logradouro == "RUA FLORES"
     assert e.bairro == "CENTRO CIDADE"
-    assert e.endereco_formatado and "RUA FLORES" in e.endereco_formatado
 
 
 def testa_misturar_municipio_uf():
@@ -75,7 +52,6 @@ def testa_misturar_municipio_uf():
     params = EnderecoParametros(misturar_municipio_uf=True, separador_uf="-")
     e = gerador.gerar_endereco(endereco, params)
     assert e.municipio == "CAMPINAS-SP"
-    assert e.endereco_formatado and "CAMPINAS-SP" in e.endereco_formatado
 
 
 def testa_numero_inexistente():
@@ -84,7 +60,6 @@ def testa_numero_inexistente():
     params = EnderecoParametros(padrao_numero_inexistente="SEM NUMERO")
     e = gerador.gerar_endereco(endereco, params)
     assert e.numero == "SEM NUMERO"
-    assert e.endereco_formatado and "SEM NUMERO" in e.endereco_formatado
 
 
 def testa_numero_separador_milhar_e_prefixo():
@@ -95,7 +70,6 @@ def testa_numero_separador_milhar_e_prefixo():
     params = EnderecoParametros(numero_separado_milhar=True, prefixo_numero="Nº")
     e = gerador.gerar_endereco(endereco, params)
     assert e.numero == "Nº 12,345"
-    assert e.endereco_formatado and "12,345" in e.endereco_formatado
 
 
 def testa_formatos_cep():
