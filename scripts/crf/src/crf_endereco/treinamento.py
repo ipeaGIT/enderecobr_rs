@@ -1,4 +1,5 @@
 from collections import Counter
+from dataclasses import asdict
 from pprint import pprint
 
 import duckdb
@@ -24,32 +25,57 @@ def erros_mais_comuns(x, y_true, y_pred, n=20):
     return errors.most_common(n)
 
 
+def erros_mais_comuns_token(x, y_true, y_pred, n=20):
+    errors = Counter()
+    for feats, true, pred in zip(x, y_true, y_pred):
+        for i, (t, p) in enumerate(zip(true, pred)):
+            if t != p:
+                token_atual = [f[2:] for f in feats[i] if f.startswith("0:")]
+                if len(token_atual):
+                    errors[(str(token_atual[0]), f"true={t}", f"pred={p}")] += 1
+    return errors.most_common(n)
+
+
+def erros_mais_comuns_por_categoria(x, y_true, y_pred, categorias, n=20):
+    errors = Counter()
+    for feats, true, pred, cats in zip(x, y_true, y_pred, categorias):
+        dif_tags = set()
+        for i, (t, p) in enumerate(zip(true, pred)):
+            if t != p:
+                dif_tags.add((t, p))
+
+        for dif in dif_tags:
+            for c in cats:
+                errors[(dif, c)] += 1
+
+    return errors.most_common(n)
+
+
 def main():
     query = """
-select
-    concat_ws(' ', nullif(nom_tipo_seglogr, 'EDF'), nullif(nom_titulo_seglogr, ''), nom_seglogr) as logradouro, 
-    concat_ws(' ', nullif(num_adress, 0)) as numero,
-    concat_ws(' ', nullif(dsc_modificador, 'SN'), nom_comp_elem1, val_comp_elem1, nom_comp_elem2, val_comp_elem2, nom_comp_elem3, val_comp_elem3, nom_comp_elem4)
-        .regexp_replace('[ ]+', ' ', 'g').trim() as complemento,
-    desc_localidade as localidade,
-    cep,
-    m.municipio,
-    m.uf,
-from '/mnt/storage6/bases/DADOS/PUBLICO/CNEFE/parquet/2022/arquivos/*.parquet'
-inner join '/home/gabriel/ipea/enderecobr-rs/src/data/municipios.csv' as m on cod_ibge = code_muni
-using sample 400_000
+select 
+    coalesce(logradouro, ''), 
+    coalesce(numero, ''),
+    coalesce(complemento, ''),
+    coalesce(localidade, ''),
+    coalesce(cep, ''),
+    coalesce(municipio, ''),
+    coalesce(uf, ''),
+    coalesce(origem, ''),
+from './dados/dataset.parquet'
 """
     con = duckdb.connect()
     print("Coletando dados...")
     dados = con.sql(query).fetchall()
     con.close()
 
-    gerador_parametros = GeradorParametrosEndereco(seed=42)
+    gerador_parametros = GeradorParametrosEndereco.sem_ruido()
     gerador = EnderecoGerador(ABREVIACOES_COMUNS)
     rotulador = RotuladorEnderecoBIO(tokenize)
 
     x: list[list[dict[str, float]]] = []
     y: list[list[str]] = []
+    categorias: list[list[str]] = []
 
     print("Preprocessando dados...")
     for d in dados:
@@ -69,7 +95,17 @@ using sample 400_000
         x.append(feats)
         y.append(tags)
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+        cats = [
+            f"{k} = {str(v).upper()}"
+            for k, v in asdict(params).items()
+            if k in ("formato", "separador")
+        ]
+        cats.append(str(d[7]))
+        categorias.append(cats)
+
+    x_train, x_test, y_train, y_test, categorias_train, categorias_test = (
+        train_test_split(x, y, categorias, test_size=0.1)
+    )
 
     print("Realizando treinamento...")
     crf = sklearn_crfsuite.CRF(
@@ -90,8 +126,16 @@ using sample 400_000
     y_test_pred = crf.predict(x_test)
     print(metrics.flat_classification_report(y_test, y_test_pred))
 
+    print("Sequence Accuracy:", metrics.sequence_accuracy_score(y_test, y_test_pred))
+
     print("Erros:")
+    pprint(erros_mais_comuns_token(x_test, y_test, y_test_pred))
+    print()
     pprint(erros_mais_comuns(x_test, y_test, y_test_pred))
+    print()
+    pprint(
+        erros_mais_comuns_por_categoria(x_test, y_test, y_test_pred, categorias_test)
+    )
 
     print()
     print("TRAIN")
@@ -99,8 +143,18 @@ using sample 400_000
     y_train_pred = crf.predict(x_train)
     print(metrics.flat_classification_report(y_train, y_train_pred))
 
+    print("Sequence Accuracy:", metrics.sequence_accuracy_score(y_train, y_train_pred))
+
     print("Erros:")
+    pprint(erros_mais_comuns_token(x_train, y_train, y_train_pred))
+    print()
     pprint(erros_mais_comuns(x_train, y_train, y_train_pred))
+    print()
+    pprint(
+        erros_mais_comuns_por_categoria(
+            x_train, y_train, y_train_pred, categorias_train
+        )
+    )
 
 
 if __name__ == "__main__":

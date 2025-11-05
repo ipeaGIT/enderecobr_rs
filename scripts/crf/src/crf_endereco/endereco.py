@@ -35,54 +35,85 @@ class EnderecoParametros:
     erro_digitacao_posicao: float = 0.5
 
 
+@dataclass
 class GeradorParametrosEndereco:
-    def __init__(self, seed: int | None = None) -> None:
-        self.rnd = random.Random(seed)
+    seed: int | None = None
+    rnd: random.Random | None = None
+    campos_textuais: tuple[str, ...] = (
+        "logradouro",
+        "bairro",
+        "municipio",
+        "complemento",
+    )
+    prob_abreviar: float = 0.2
+    prob_excluir_palavra: float = 0.1
+    prob_misturar_municipio_uf: float = 0.1
+    prob_numero_separado_milhar: float = 0.05
+    prob_prefixo_numero: float = 0.05
+    prob_erro_digitacao: float = 0.01
+
+    separadores_uf: tuple[str, ...] = (" ", "-", " - ", "/")
+    padroes_numero_inexistente: tuple[str, ...] = (
+        "",
+        "S/N",
+        "SN",
+        "S N",
+        "SEM NUMERO",
+        "SEM NUM",
+    )
+    prefixos_numero: tuple[str, ...] = ("N.", "NUM", "NO", "Nº")
+    formatos: tuple[str, ...] = (
+        "logradouro numero complemento",
+        "logradouro numero complemento bairro",
+        "logradouro numero complemento bairro municipio",
+        "logradouro numero complemento bairro municipio cep",
+        "logradouro numero complemento cep bairro municipio",
+        "logradouro numero complemento bairro cep municipio",
+        "municipio bairro logradouro numero complemento",
+        "logradouro bairro numero complemento municipio",
+        "logradouro numero bairro complemento",
+    )
+    separadores: tuple[str, ...] = (", ", " ")
+
+    @classmethod
+    def sem_ruido(cls, seed: int | None = None):
+        return cls(
+            seed=seed,
+            prob_abreviar=0,
+            prob_excluir_palavra=0.0,
+            prob_numero_separado_milhar=0.0,
+            prob_erro_digitacao=0.0,
+        )
 
     def gerar_parametro(self) -> EnderecoParametros:
+        if self.rnd is None:
+            self.rnd = random.Random(self.seed)
+
         return EnderecoParametros(
             abreviar_campos={
                 c
-                for c in ["logradouro", "bairro", "municipio", "complemento"]
-                if self.rnd.random() < 0.2
+                for c in self.campos_textuais
+                if self.rnd.random() < self.prob_abreviar
             },
             excluir_palavra_campos={
                 c
-                for c in ["logradouro", "bairro", "municipio", "complemento"]
-                if self.rnd.random() < 0.1
+                for c in self.campos_textuais
+                if self.rnd.random() < self.prob_excluir_palavra
             },
-            misturar_municipio_uf=self.rnd.random() < 0.1,
-            separador_uf=self.rnd.choice([" ", "-", " - ", "/"]),
-            padrao_numero_inexistente=self.rnd.choice(
-                ["", "S/N", "SN", "S N", "SEM NUMERO", "SEM NUM"]
-            ),
-            numero_separado_milhar=self.rnd.random() < 0.05,
+            misturar_municipio_uf=self.rnd.random() < self.prob_misturar_municipio_uf,
+            separador_uf=self.rnd.choice(self.separadores_uf),
+            padrao_numero_inexistente=self.rnd.choice(self.padroes_numero_inexistente),
+            numero_separado_milhar=self.rnd.random() < self.prob_numero_separado_milhar,
             prefixo_numero=None
-            if self.rnd.random() > 0.95
-            else self.rnd.choice(["N.", "NUM", "NO", "Nº"]),
-            formato=self.rnd.choice(
-                [
-                    # Ordem usual
-                    "logradouro numero complemento",
-                    "logradouro numero complemento bairro",
-                    "logradouro numero complemento bairro municipio",
-                    "logradouro numero complemento bairro municipio cep",
-                    # cep intercalado
-                    "logradouro numero complemento cep bairro municipio",
-                    "logradouro numero complemento bairro cep municipio",
-                    # ordem inversa
-                    "municipio bairro logradouro numero complemento",
-                    # Bairro entre complemento e número
-                    "logradouro bairro numero complemento municipio",
-                    "logradouro numero bairro complemento",
-                ]
-            ),
-            separador=self.rnd.choice([", ", " "]),
-            formato_cep=self.rnd.choice(["99999-999", "99.999-999", "99999999"]),
+            if self.rnd.random() < self.prob_prefixo_numero
+            else self.rnd.choice(self.prefixos_numero),
+            formato=self.rnd.choice(self.formatos),
+            separador=self.rnd.choice(self.separadores),
+            formato_cep=self.rnd.choice(("99999-999", "99.999-999", "99999999")),
             erro_digitacao_campos={
                 c
-                for c in ["logradouro", "bairro", "municipio", "complemento"]
-                if self.rnd.random() < 0.1
+                for c in self.campos_textuais
+                if self.rnd.random() < self.prob_erro_digitacao
             },
             erro_digitacao_posicao=self.rnd.random(),
         )

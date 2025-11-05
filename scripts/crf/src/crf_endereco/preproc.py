@@ -103,6 +103,7 @@ def token2features(sent: list[str], i: int) -> list[str]:
 
     features: list[str] = []
     features.append("bias")
+    features.append(f"{int(i / len(sent) * 4)}_quarto")
     features += feat_pos(i, "0")
 
     if i == 0:

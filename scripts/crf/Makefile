@@ -1,4 +1,4 @@
-.PHONY: test
+.PHONY: test treinamento avaliacao-manual
 
 DIR_DADOS = ./dados
 DIR_BRUTOS = ./dados/brutos
@@ -9,6 +9,12 @@ DIR_SQLS = ./src/sql
 
 test:
 	uv run pytest
+
+treinamento:
+	uv run src/crf_endereco/treinamento.py
+
+avaliacao-manual:
+	uv run src/crf_endereco/teste_manual.py
 
 ### Download Brutos
 

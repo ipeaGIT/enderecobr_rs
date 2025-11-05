@@ -33,9 +33,19 @@ def extrair_campos(crf: sklearn_crfsuite.CRF, frase: str) -> dict[str, list[str]
 
 
 def main():
+    # Por algum motivo, basta só importar isso para a função
+    # input funcionar adequadamente.
+    import readline
+
     crf = sklearn_crfsuite.CRF(model_filename="../tagger.crf")
 
-    for line in sys.stdin:
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            break
+        if not line:
+            continue
         campos = extrair_campos(crf, line)
         print(campos)
 
