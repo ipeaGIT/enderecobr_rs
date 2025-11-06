@@ -14,6 +14,8 @@ test:
 avaliacao-manual:
 	uv run src/crf_endereco/teste_manual.py
 
+treinar: $(DIR_DADOS)/tagger.crf
+
 ### Download Brutos
 
 # Variável '$@' indica o nome do target.
@@ -73,7 +75,7 @@ $(DIR_DADOS)/treino.parquet $(DIR_DADOS)/teste.parquet: $(DIR_SQLS)/dataset_fina
 
 ### Treinamento efetivo do modelo
 
-# Preferi não colocar o script de treinamento aqui para não precisar executar toda ver que uma virgula nele mudar.
+# Preferi não colocar o script de treinamento aqui para não precisar executar toda ver que uma virgula nele mudar. Além de que teria que colocar todas as dependências do projeto aqui para ser justo.
 $(DIR_DADOS)/tagger.crf: $(DIR_DADOS)/treino.parquet 
 	uv run $(DIR_PYTHON)/treinamento.py
 

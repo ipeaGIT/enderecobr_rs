@@ -110,22 +110,22 @@ def token2features(sent: list[str], i: int) -> list[str]:
         features.append("BOS")
 
     prev_word_pos = get_prev_word_pos(i)
-    if prev_word_pos:
+    if prev_word_pos is not None:
         features += feat_pos(prev_word_pos, "-1")
 
         prev_prev_word_pos = get_prev_word_pos(prev_word_pos)
-        if prev_prev_word_pos:
+        if prev_prev_word_pos is not None:
             features += feat_pos(prev_prev_word_pos, "-2")
 
     if i == len(sent) - 1:
         features.append("EOS")
 
     next_word_pos = get_next_word_pos(i)
-    if next_word_pos:
+    if next_word_pos is not None:
         features += feat_pos(next_word_pos, "+1")
 
         next_next_word_pos = get_next_word_pos(next_word_pos)
-        if next_next_word_pos:
+        if next_next_word_pos is not None:
             features += feat_pos(next_next_word_pos, "+2")
 
     return features
