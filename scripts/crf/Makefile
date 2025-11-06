@@ -1,17 +1,15 @@
-.PHONY: test treinamento avaliacao-manual
+.PHONY: test avaliacao-manual eval
 
 DIR_DADOS = ./dados
 DIR_BRUTOS = ./dados/brutos
 DIR_INTERMEDIARIOS = ./dados/intermediarios
 DIR_SQLS = ./src/sql
+DIR_PYTHON = ./src/crf_endereco
 
 ### Utilitários
 
 test:
 	uv run pytest
-
-treinamento:
-	uv run src/crf_endereco/treinamento.py
 
 avaliacao-manual:
 	uv run src/crf_endereco/teste_manual.py
@@ -70,5 +68,14 @@ $(DIR_INTERMEDIARIOS)/cnpj.parquet: $(DIR_SQLS)/cnpj.sql $(DIR_INTERMEDIARIOS)/m
 
 ### Dataset final
 
-$(DIR_DADOS)/dataset.parquet: $(DIR_SQLS)/dataset_final.sql $(DIR_INTERMEDIARIOS)/cneas.parquet $(DIR_INTERMEDIARIOS)/cno.parquet $(DIR_INTERMEDIARIOS)/cnes.parquet $(DIR_INTERMEDIARIOS)/censo_escolar.parquet $(DIR_INTERMEDIARIOS)/postos_cadunico.parquet $(DIR_INTERMEDIARIOS)/cnefe.parquet $(DIR_INTERMEDIARIOS)/cnpj.parquet
+$(DIR_DADOS)/treino.parquet $(DIR_DADOS)/teste.parquet: $(DIR_SQLS)/dataset_final.sql $(DIR_INTERMEDIARIOS)/cneas.parquet $(DIR_INTERMEDIARIOS)/cno.parquet $(DIR_INTERMEDIARIOS)/cnes.parquet $(DIR_INTERMEDIARIOS)/censo_escolar.parquet $(DIR_INTERMEDIARIOS)/postos_cadunico.parquet $(DIR_INTERMEDIARIOS)/cnefe.parquet $(DIR_INTERMEDIARIOS)/cnpj.parquet
 	duckdb < $<
+
+### Treinamento efetivo do modelo
+
+# Preferi não colocar o script de treinamento aqui para não precisar executar toda ver que uma virgula nele mudar.
+$(DIR_DADOS)/tagger.crf: $(DIR_DADOS)/treino.parquet 
+	uv run $(DIR_PYTHON)/treinamento.py
+
+eval: $(DIR_DADOS)/teste.parquet $(DIR_PYTHON)/eval.py $(DIR_DADOS)/tagger.crf
+	uv run $(DIR_PYTHON)/eval.py

@@ -15,7 +15,6 @@ def extrair_campos(crf: sklearn_crfsuite.CRF, frase: str) -> dict[str, list[str]
         "COM": [],
         "LOC": [],
         "MUN": [],
-        "UF": [],
         "CEP": [],
     }
     current = None
@@ -37,7 +36,7 @@ def main():
     # input funcionar adequadamente.
     import readline
 
-    crf = sklearn_crfsuite.CRF(model_filename="../tagger.crf")
+    crf = sklearn_crfsuite.CRF(model_filename="./dados/tagger.crf")
 
     while True:
         try:

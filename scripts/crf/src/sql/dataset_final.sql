@@ -1,19 +1,32 @@
 
-copy (
-  SELECT *, 'cneas' as origem FROM read_parquet('./dados/intermediarios/cneas.parquet')
+CREATE TEMP TABLE dados AS
+  SELECT *, random() r, 'cneas' as origem FROM read_parquet('./dados/intermediarios/cneas.parquet')
   UNION
-  SELECT *, 'cno' FROM read_parquet('./dados/intermediarios/cno.parquet')
+  SELECT *, random() r, 'cno' FROM read_parquet('./dados/intermediarios/cno.parquet')
   UNION
-  SELECT *, 'cnes' FROM read_parquet('./dados/intermediarios/cnes.parquet')
+  SELECT *, random() r, 'cnes' FROM read_parquet('./dados/intermediarios/cnes.parquet')
   UNION
-  SELECT *, 'censo_escolar' FROM read_parquet('./dados/intermediarios/censo_escolar.parquet')
+  SELECT *, random() r, 'censo_escolar' FROM read_parquet('./dados/intermediarios/censo_escolar.parquet')
   UNION
-  SELECT *, 'postos_cadunico' FROM read_parquet('./dados/intermediarios/postos_cadunico.parquet')
+  SELECT *, random() r, 'postos_cadunico' FROM read_parquet('./dados/intermediarios/postos_cadunico.parquet')
   UNION
-  SELECT *, 'cnefe' FROM read_parquet('./dados/intermediarios/cnefe.parquet')
+  SELECT *, random() r, 'cnefe' FROM read_parquet('./dados/intermediarios/cnefe.parquet')
   UNION
-  SELECT *, 'cnpj' FROM read_parquet('./dados/intermediarios/cnpj.parquet')
-)
-to './dados/dataset.parquet' (format parquet);
+  SELECT *, random() r, 'cnpj' FROM read_parquet('./dados/intermediarios/cnpj.parquet');
 
-summarize './dados/dataset.parquet';
+COPY (
+    SELECT * EXCLUDE (r)
+    FROM dados
+    WHERE r < 0.9
+    ORDER BY uf, municipio, localidade, logradouro
+) TO 'dados/treino.parquet' (FORMAT 'parquet');
+
+COPY (
+    SELECT * EXCLUDE (r)
+    FROM dados
+    WHERE r >= 0.9
+    ORDER BY uf, municipio, localidade, logradouro
+) TO 'dados/teste.parquet' (FORMAT 'parquet');
+
+SUMMARIZE './dados/treino.parquet';
+SUMMARIZE './dados/teste.parquet';
