@@ -56,8 +56,8 @@ from './dados/treino.parquet'
     print("Realizando treinamento...")
     crf = sklearn_crfsuite.CRF(
         algorithm="lbfgs",
-        c1=0.001,
-        c2=0.01,
+        c1=0.07,
+        c2=0.08,
         max_iterations=100,
         all_possible_transitions=False,
         min_freq=5,

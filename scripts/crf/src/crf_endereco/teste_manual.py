@@ -1,5 +1,4 @@
 import sklearn_crfsuite
-import sys
 from crf_endereco.preproc import token2features, tokenize
 
 
@@ -7,7 +6,6 @@ def extrair_campos(crf: sklearn_crfsuite.CRF, frase: str) -> dict[str, list[str]
     tokens = tokenize(frase)
     x = [token2features(tokens, i) for i in range(len(tokens))]
     pred = crf.predict_single(x)
-    print(pred)
 
     grupos: dict[str, list[str]] = {
         "LOG": [],
@@ -34,9 +32,9 @@ def extrair_campos(crf: sklearn_crfsuite.CRF, frase: str) -> dict[str, list[str]
 def main():
     # Por algum motivo, basta só importar isso para a função
     # input funcionar adequadamente.
-    import readline
+    import readline as _
 
-    crf = sklearn_crfsuite.CRF(model_filename="./dados/tagger.crf")
+    crf = sklearn_crfsuite.CRF(model_filename="./dados/tagger_bak.crf")
 
     while True:
         try:

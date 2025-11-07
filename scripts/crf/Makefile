@@ -1,4 +1,4 @@
-.PHONY: test avaliacao-manual eval
+.PHONY: test avaliacao-manual eval treinar
 
 DIR_DADOS = ./dados
 DIR_BRUTOS = ./dados/brutos
@@ -14,7 +14,9 @@ test:
 avaliacao-manual:
 	uv run src/crf_endereco/teste_manual.py
 
-treinar: $(DIR_DADOS)/tagger.crf
+# Preferi não colocar o script de treinamento aqui para não precisar executar toda ver que uma virgula nele mudar. Além de que teria que colocar todas as dependências do projeto aqui para ser justo.
+treinar:
+	uv run $(DIR_PYTHON)/treinamento.py
 
 ### Download Brutos
 
@@ -72,12 +74,6 @@ $(DIR_INTERMEDIARIOS)/cnpj.parquet: $(DIR_SQLS)/cnpj.sql $(DIR_INTERMEDIARIOS)/m
 
 $(DIR_DADOS)/treino.parquet $(DIR_DADOS)/teste.parquet: $(DIR_SQLS)/dataset_final.sql $(DIR_INTERMEDIARIOS)/cneas.parquet $(DIR_INTERMEDIARIOS)/cno.parquet $(DIR_INTERMEDIARIOS)/cnes.parquet $(DIR_INTERMEDIARIOS)/censo_escolar.parquet $(DIR_INTERMEDIARIOS)/postos_cadunico.parquet $(DIR_INTERMEDIARIOS)/cnefe.parquet $(DIR_INTERMEDIARIOS)/cnpj.parquet
 	duckdb < $<
-
-### Treinamento efetivo do modelo
-
-# Preferi não colocar o script de treinamento aqui para não precisar executar toda ver que uma virgula nele mudar. Além de que teria que colocar todas as dependências do projeto aqui para ser justo.
-$(DIR_DADOS)/tagger.crf: $(DIR_DADOS)/treino.parquet 
-	uv run $(DIR_PYTHON)/treinamento.py
 
 eval: $(DIR_DADOS)/teste.parquet $(DIR_PYTHON)/eval.py $(DIR_DADOS)/tagger.crf
 	uv run $(DIR_PYTHON)/eval.py
