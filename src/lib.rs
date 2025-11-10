@@ -12,15 +12,9 @@
 //! # Exemplo de uso
 //!
 //! ```
-//! use enderecobr_rs::{Endereco, padronizar_complementos, padronizar_endereco_bruto, padronizar_logradouros, separar_endereco};
+//! use enderecobr_rs::{padronizar_complementos, padronizar_logradouros};
 //! assert_eq!(padronizar_logradouros("r. gen.. glicério"), "RUA GENERAL GLICERIO");
 //! assert_eq!(padronizar_complementos("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
-//!
-//! let endereco_separado = Endereco { logradouro: Some("av n sra copacabana".to_string()), numero: Some("123".to_string()), complemento: Some("apt 301".to_string()), ..Default::default() };
-//! assert_eq!(separar_endereco("av n sra copacabana 123 apt 301"), endereco_separado);
-//!
-//! let endereco_padronizado_esperado = Endereco { logradouro: Some("AVENIDA NOSSA SENHORA COPACABANA".to_string()), numero: Some("123".to_string()), complemento: Some("APARTAMENTO 301".to_string()), ..Default::default() };
-//! assert_eq!(endereco_separado.endereco_padronizado(), endereco_padronizado_esperado);
 //! ```
 //!
 use diacritics::remove_diacritics;
@@ -230,9 +224,13 @@ pub use municipio::padronizar_municipios;
 pub use numero::padronizar_numeros;
 pub use numero::padronizar_numeros_para_int;
 pub use numero::padronizar_numeros_para_string;
-pub use separador_endereco::padronizar_endereco_bruto;
-pub use separador_endereco::separar_endereco;
 pub use tipo_logradouro::padronizar_tipo_logradouro;
+
+#[cfg(feature = "experimental")]
+pub use separador_endereco::padronizar_endereco_bruto;
+
+#[cfg(feature = "experimental")]
+pub use separador_endereco::separar_endereco;
 
 /// Função utilitária utilizada nas ferramentas de CLI para selecionar um padronizador facilmente
 /// via uma string descritiva.
@@ -249,11 +247,18 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "municipio" | "mun" => Ok(padronizar_municipios),
         "cep" => Ok(|cep| padronizar_cep(cep).unwrap_or("".to_string())),
         "cep_leniente" => Ok(padronizar_cep_leniente),
+
+        #[cfg(feature = "experimental")]
         "completo" => Ok(padronizar_endereco_bruto),
+
+        #[cfg(feature = "experimental")]
         "separar" => Ok(|val| format!("{:?}", separar_endereco(val))),
+
+        #[cfg(feature = "experimental")]
         "separar_padronizar" => {
             Ok(|val| format!("{:?}", separar_endereco(val).endereco_padronizado()))
         }
+
         _ => Err("Nenhum padronizador encontrado"),
     }
 }

@@ -3,9 +3,18 @@ name = "enderecobr-rs"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "separacao-lote"
+path = "src/bin/separacao-lote.rs"
+required-features = ["experimental"]
+
+[features] 
+default = []
+experimental = ["crfs"]
+
 [dependencies]
 clap = { version = "4.5.50", features = ["derive"] }
-crfs = "0.2.0"
+crfs = { version = "0.2.0", optional = true }
 diacritics = "0.2.2"
 itertools = "0.14.0"
 polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"] }
