@@ -1,5 +1,6 @@
 import re
 from dataclasses import asdict
+from collections.abc import Iterable
 from typing import Callable
 
 from crf_endereco.endereco import Endereco
@@ -72,117 +73,124 @@ def is_pontuacao(word: str) -> bool:
     return word[0] in ",.;/:?!@#$%¨&*()-+[]{}\"'\\|"
 
 
-# Refatorar!!
-def token2features(sent: list[str], i: int) -> list[str]:
-    def feat_pos(j: int, prefix: str):
+class ExtratorFeature:
+    def __init__(self, distancias_vizinhaca: Iterable[int] = (-2, -1, 1, 2)) -> None:
+        self.distancias_vizinhaca: Iterable[int] = distancias_vizinhaca
+
+    def sent2features(self, text: str) -> list[dict[str, float]]:
+        toks = tokenize(text)
+        return self.tokens2features(toks)
+
+    # uso direto quando já tokenizado
+    def tokens2features(self, toks: list[str]) -> list[dict[str, float]]:
+        return [
+            {feat: 1.0 for feat in self._features_posicao(toks, i)}
+            for i in range(len(toks))
+        ]
+
+    def _features_posicao(self, sent: list[str], i: int) -> list[str]:
+        """Gerador de features principal, baseado somente na posição do token solicitado e seus vizinhos."""
         feats: list[str] = []
-        word = normalize(sent[j]).upper().strip()
-        feats.append(word)
+        feats.append("bias")
+        feats.append(f"{int(i / len(sent) * 4)}_pos")
+        feats += self._features_token(sent[i], "0")
 
-        word_len = len(word)
-        if word_len >= 7:
-            word_len = "7+"
-        feats.append(f"tam:{word_len}")
+        if i == 0:
+            feats.append("BOS")
 
-        if len(word) == 0:
-            feats.append("only_is_not_ascii")
-        if is_pontuacao(word):
+        if i == len(sent) - 1:
+            feats.append("EOS")
+
+        for distancia in self.distancias_vizinhaca:
+            feats += self._features_vizinhanca(
+                sent, indice_inicial=i, distancia=distancia
+            )
+
+        return feats
+
+    def _features_token(self, token: str, prefixo: str) -> list[str]:
+        """Gerador de feature para um token específico."""
+        feats: list[str] = []
+        token = normalize(token).upper().strip()
+        feats.append(token)
+
+        tam_palavra = len(token)
+        if tam_palavra >= 7:
+            tam_palavra = "7+"
+        feats.append(f"tam:{tam_palavra}")
+
+        if len(token) == 0:
+            feats.append("not_ascii")
+        if is_pontuacao(token):
             feats.append("is_punct")
-            punct_len = len(word)
+            punct_len = len(token)
             if punct_len > 2:
                 punct_len = "3+"
             feats.append(f"punct_len:{punct_len!s}")
-            feats.remove(word)
-            feats.append(word[0])
-        elif word.isdigit():
-            feats.remove(word)
-            word = re.sub("^0+", "", word)
+            feats.remove(token)
+            feats.append(token[0])
+        elif token.isdigit():
+            feats.remove(token)
+            token = re.sub("^0+", "", token)
             feats.append("is_digit")
-            word_len = len(word)
-            if word_len >= 7:
-                word_len = "7+"
-            feats.append(f"digit_len:{word_len!s}")
-        elif word.isalnum():
+            tam_palavra = len(token)
+            if tam_palavra >= 7:
+                tam_palavra = "7+"
+            feats.append(f"digit_len:{tam_palavra!s}")
+        elif token.isalnum():
             feats.append("is_alpha")
-            if any(char.isdigit() for char in word):
+            if any(char.isdigit() for char in token):
                 feats.append("has_digit")
         else:
             feats.append("is_unknown")
 
-        return [f"{prefix}:{f}" for f in feats]
+        return [f"{prefixo}:{f}" for f in feats]
 
-    def get_next_word_pos(begin_i: int):
-        j = begin_i + 1
-        while j < len(sent):
-            word = sent[j]
-            if word.isalnum():
-                return j
-            j += 1
+    def _features_vizinhanca(
+        self, sent: list[str], indice_inicial: int, distancia: int
+    ) -> list[str]:
+        # Distância zero não faz sentido
+        assert distancia != 0
 
-    def get_prev_word_pos(begin_i: int):
-        j = begin_i - 1
-        while j >= 0:
-            word = sent[j]
-            if word.isalnum():
-                return j
-            j -= 1
+        # direção da busca de novas palavras
+        direcao = 1 if distancia > 0 else -1
 
-    features: list[str] = []
-    features.append("bias")
-    features.append(f"{int(i / len(sent) * 4)}_quarto")
-    features += feat_pos(i, "0")
+        # Chamo seguidamente a função de localizar a próxima palavra para casos
+        # que desejo de vizinhos mais distantes.
+        posicao_vizinho: int | None = indice_inicial
+        posicao_vizinho_anterior: int | None = None
+        for _ in range(abs(distancia)):
+            if posicao_vizinho is not None:
+                posicao_vizinho_anterior = posicao_vizinho
+                posicao_vizinho = self._pos_prox_palavra(sent, posicao_vizinho, direcao)
 
-    if i == 0:
-        features.append("BOS")
+        if posicao_vizinho is None:
+            return []
 
-    prev_word_pos = get_prev_word_pos(i)
-    if prev_word_pos is not None:
-        features += feat_pos(prev_word_pos, "-1")
+        feats: list[str] = []
+        sinal = "+" if direcao == 1 else "-"
+        sufixo = f"{sinal}{abs(distancia)}"
 
-        if prev_word_pos < i - 1 and any(
-            [is_pontuacao(tok) for tok in sent[prev_word_pos:i]]
-        ):
-            features.append("tem_pontuacao:-1")
+        feats += self._features_token(sent[posicao_vizinho], sufixo)
 
-        prev_prev_word_pos = get_prev_word_pos(prev_word_pos)
-        if prev_prev_word_pos is not None:
-            features += feat_pos(prev_prev_word_pos, "-2")
+        # Caso o vizinho solicitado não seja na posição esperada
+        if posicao_vizinho != indice_inicial + distancia:
+            tem_pontuacao = [
+                is_pontuacao(tok)
+                for tok in sent[posicao_vizinho_anterior:posicao_vizinho]
+            ]
+            if tem_pontuacao:
+                feats.append(f"tem_pontuacao:{sufixo}")
 
-            if prev_prev_word_pos < prev_word_pos - 1 and any(
-                [is_pontuacao(tok) for tok in sent[prev_prev_word_pos:prev_word_pos]]
-            ):
-                features.append("tem_pontuacao:-2")
+        return feats
 
-    if i == len(sent) - 1:
-        features.append("EOS")
-
-    next_word_pos = get_next_word_pos(i)
-    if next_word_pos is not None:
-        features += feat_pos(next_word_pos, "+1")
-
-        if next_word_pos > i + 1 and any(
-            [is_pontuacao(tok) for tok in sent[i:next_word_pos]]
-        ):
-            features.append("tem_pontuacao:+1")
-
-        next_next_word_pos = get_next_word_pos(next_word_pos)
-        if next_next_word_pos is not None:
-            features += feat_pos(next_next_word_pos, "+2")
-
-            if next_word_pos > next_word_pos + 1 and any(
-                [is_pontuacao(tok) for tok in sent[next_word_pos:next_next_word_pos]]
-            ):
-                features.append("tem_pontuacao:+2")
-
-    return features
-
-
-# Tokenizando antes
-def sent2features(text: str) -> list[dict[str, float]]:
-    toks = tokenize(text)
-    return tokens2features(toks)
-
-
-# Uso direto já tokenizado
-def tokens2features(toks: list[str]) -> list[dict[str, float]]:
-    return [{feat: 1.0 for feat in token2features(toks, i)} for i in range(len(toks))]
+    def _pos_prox_palavra(
+        self, sent: list[str], indice_inicial: int, direcao: int
+    ) -> int | None:
+        i = indice_inicial + direcao
+        while i >= 0 and i < len(sent):
+            tok = sent[i]
+            # Alfabético ou numérico
+            if tok.isalnum():
+                return i
+            i += direcao

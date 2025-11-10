@@ -7,7 +7,11 @@ from crf_endereco.endereco import (
     EnderecoGerador,
     GeradorParametrosEndereco,
 )
-from crf_endereco.preproc import RotuladorEnderecoBIO, tokenize, tokens2features
+from crf_endereco.preproc import (
+    ExtratorFeature,
+    RotuladorEnderecoBIO,
+    tokenize,
+)
 
 
 def main():
@@ -31,6 +35,7 @@ from './dados/treino.parquet'
     gerador_parametros = GeradorParametrosEndereco.sem_ruido()
     gerador = EnderecoGerador(ABREVIACOES_COMUNS)
     rotulador = RotuladorEnderecoBIO(tokenize)
+    extrator_features = ExtratorFeature()
 
     x: list[list[dict[str, float]]] = []
     y: list[list[str]] = []
@@ -49,7 +54,7 @@ from './dados/treino.parquet'
         )
         novo_endereco = gerador.gerar_endereco(endereco, params)
         toks, tags = rotulador.obter_tokenizado(novo_endereco)
-        feats = tokens2features(toks)
+        feats = extrator_features.tokens2features(toks)
         x.append(feats)
         y.append(tags)
 
@@ -58,7 +63,7 @@ from './dados/treino.parquet'
         algorithm="lbfgs",
         c1=0.07,
         c2=0.08,
-        max_iterations=100,
+        max_iterations=50,
         all_possible_transitions=False,
         min_freq=5,
         model_filename="./dados/tagger.crf",

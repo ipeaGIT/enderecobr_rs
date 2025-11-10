@@ -1,10 +1,6 @@
-import unicodedata
-import pytest
 from crf_endereco.preproc import (
+    ExtratorFeature,
     normalize,
-    token2features,
-    tokens2features,
-    sent2features,
 )
 
 
@@ -26,11 +22,21 @@ def test_normalize_sem_acentos_retorna_igual():
 # ----------------------------
 # token2features
 # ----------------------------
+
+
+def token2features(sent: list[str], i: int):
+    return ExtratorFeature().tokens2features(sent)[i]
+
+
+def tokens2features(sent: list[str]):
+    return ExtratorFeature().tokens2features(sent)
+
+
 def test_token2features_primeiro_token_basico():
     sent = ["Rua", "das", "Flores"]
     feats = token2features(sent, 0)
     assert "bias" in feats
-    assert "0_quarto" in feats
+    assert "0_pos" in feats
     assert "0:RUA" in feats
     assert "0:is_alpha" in feats
     assert "BOS" in feats

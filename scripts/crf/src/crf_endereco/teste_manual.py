@@ -1,11 +1,13 @@
 import sklearn_crfsuite
-from crf_endereco.preproc import token2features, tokenize
+from crf_endereco.preproc import ExtratorFeature, tokenize
 from pprint import pprint
 
 
-def extrair_campos(crf: sklearn_crfsuite.CRF, frase: str) -> dict[str, list[str]]:
+def extrair_campos(
+    crf: sklearn_crfsuite.CRF, extrator: ExtratorFeature, frase: str
+) -> dict[str, list[str]]:
     tokens = tokenize(frase)
-    x = [token2features(tokens, i) for i in range(len(tokens))]
+    x = extrator.tokens2features(tokens)
     pprint(x)
     pred = crf.predict_single(x)
 
@@ -40,6 +42,7 @@ def main():
     import readline as _
 
     crf = sklearn_crfsuite.CRF(model_filename="./dados/tagger.crf")
+    extrator = ExtratorFeature()
 
     while True:
         try:
@@ -48,7 +51,7 @@ def main():
             break
         if not line:
             continue
-        campos = extrair_campos(crf, line)
+        campos = extrair_campos(crf, extrator, line)
         print(campos)
 
 
