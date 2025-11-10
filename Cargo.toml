@@ -1,6 +1,6 @@
 [package]
 name = "enderecobr_rs"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2024"
 license = "MIT"
 authors = ["Daniel Herszenhut Meirelles Santos <daniel.santos@ipea.gov.br>", "Gabriel Garcia de Almeida <gabriel.almeida@ipea.gov.br", "Rafael Henrique Moraes Pereira <rafael.pereira@ipea.gov.br>"]
