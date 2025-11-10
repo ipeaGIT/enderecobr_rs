@@ -8,7 +8,7 @@ import unicodedata
 
 
 def tokenize(text: str):
-    return re.findall(r"\d+|\w+|[^\s\w]+", text)
+    return re.findall(r"\d+|\w+|[^\s\w]", text)
 
 
 class RotuladorEnderecoBIO:
@@ -63,25 +63,51 @@ class RotuladorEnderecoBIO:
 
 def normalize(text: str):
     normalized = unicodedata.normalize("NFKD", text)
-    return "".join([c for c in normalized if not unicodedata.combining(c)])
+    return "".join([c for c in normalized if c.isascii()])
+
+
+def is_pontuacao(word: str) -> bool:
+    if len(word) == 0:
+        return False
+    return word[0] in ",.;/:?!@#$%¨&*()-+[]{}\"'\\|"
 
 
 # Refatorar!!
 def token2features(sent: list[str], i: int) -> list[str]:
     def feat_pos(j: int, prefix: str):
         feats: list[str] = []
-        word = normalize(sent[j]).upper()
+        word = normalize(sent[j]).upper().strip()
         feats.append(word)
 
-        if word[0] in ",.;/:?!@#$%¨&*()-+[]{}\"'\\|":
+        word_len = len(word)
+        if word_len >= 7:
+            word_len = "7+"
+        feats.append(f"tam:{word_len}")
+
+        if len(word) == 0:
+            feats.append("only_is_not_ascii")
+        if is_pontuacao(word):
             feats.append("is_punct")
+            punct_len = len(word)
+            if punct_len > 2:
+                punct_len = "3+"
+            feats.append(f"punct_len:{punct_len!s}")
+            feats.remove(word)
+            feats.append(word[0])
         elif word.isdigit():
+            feats.remove(word)
+            word = re.sub("^0+", "", word)
             feats.append("is_digit")
-            feats.append(f"digit_len:{len(word)}")
-        else:
+            word_len = len(word)
+            if word_len >= 7:
+                word_len = "7+"
+            feats.append(f"digit_len:{word_len!s}")
+        elif word.isalnum():
             feats.append("is_alpha")
             if any(char.isdigit() for char in word):
                 feats.append("has_digit")
+        else:
+            feats.append("is_unknown")
 
         return [f"{prefix}:{f}" for f in feats]
 
@@ -89,7 +115,7 @@ def token2features(sent: list[str], i: int) -> list[str]:
         j = begin_i + 1
         while j < len(sent):
             word = sent[j]
-            if word[0] not in ",.;/:?!@#$%¨&*()-+[]{}\"'\\|":
+            if word.isalnum():
                 return j
             j += 1
 
@@ -97,7 +123,7 @@ def token2features(sent: list[str], i: int) -> list[str]:
         j = begin_i - 1
         while j >= 0:
             word = sent[j]
-            if word[0] not in ",.;/:?!@#$%¨&*()-+[]{}\"'\\|":
+            if word.isalnum():
                 return j
             j -= 1
 
@@ -113,9 +139,19 @@ def token2features(sent: list[str], i: int) -> list[str]:
     if prev_word_pos is not None:
         features += feat_pos(prev_word_pos, "-1")
 
+        if prev_word_pos < i - 1 and any(
+            [is_pontuacao(tok) for tok in sent[prev_word_pos:i]]
+        ):
+            features.append("tem_pontuacao:-1")
+
         prev_prev_word_pos = get_prev_word_pos(prev_word_pos)
         if prev_prev_word_pos is not None:
             features += feat_pos(prev_prev_word_pos, "-2")
+
+            if prev_prev_word_pos < prev_word_pos - 1 and any(
+                [is_pontuacao(tok) for tok in sent[prev_prev_word_pos:prev_word_pos]]
+            ):
+                features.append("tem_pontuacao:-2")
 
     if i == len(sent) - 1:
         features.append("EOS")
@@ -124,9 +160,19 @@ def token2features(sent: list[str], i: int) -> list[str]:
     if next_word_pos is not None:
         features += feat_pos(next_word_pos, "+1")
 
+        if next_word_pos > i + 1 and any(
+            [is_pontuacao(tok) for tok in sent[i:next_word_pos]]
+        ):
+            features.append("tem_pontuacao:+1")
+
         next_next_word_pos = get_next_word_pos(next_word_pos)
         if next_next_word_pos is not None:
             features += feat_pos(next_next_word_pos, "+2")
+
+            if next_word_pos > next_word_pos + 1 and any(
+                [is_pontuacao(tok) for tok in sent[next_word_pos:next_next_word_pos]]
+            ):
+                features.append("tem_pontuacao:+2")
 
     return features
 

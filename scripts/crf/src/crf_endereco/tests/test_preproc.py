@@ -54,8 +54,6 @@ def test_token2features_token_final():
 def test_token2features_token_meio_com_digito():
     sent = ["Rua", "123", "Centro"]
     feats = token2features(sent, 1)
-    print(feats)
-    assert "0:123" in feats
     assert "0:is_digit" in feats
     assert "0:digit_len:3" in feats
     assert "-1:RUA" in feats
@@ -96,17 +94,20 @@ def test_token2features_ignora_pontuacoes_sucessivas():
     assert "+1:FLORES" in feats
     assert "+1:is_alpha" in feats
 
+
 def test_token2features_palavra_longa():
     sent = ["Inconstitucionalissimamente"]
     feats = token2features(sent, 0)
     assert "0:INCONSTITUCIONALISSIMAMENTE" in feats
     assert "BOS" in feats and "EOS" in feats
 
+
 def test_token2features_todos_pontuacao():
     sent = [",", ".", ";"]
     feats = token2features(sent, 1)
     assert "0:is_punct" in feats
     assert "BOS" not in feats and "EOS" not in feats
+
 
 # ----------------------------
 # tokens2features

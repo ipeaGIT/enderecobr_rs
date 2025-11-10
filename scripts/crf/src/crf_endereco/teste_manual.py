@@ -1,10 +1,12 @@
 import sklearn_crfsuite
 from crf_endereco.preproc import token2features, tokenize
+from pprint import pprint
 
 
 def extrair_campos(crf: sklearn_crfsuite.CRF, frase: str) -> dict[str, list[str]]:
     tokens = tokenize(frase)
     x = [token2features(tokens, i) for i in range(len(tokens))]
+    pprint(x)
     pred = crf.predict_single(x)
 
     grupos: dict[str, list[str]] = {
@@ -26,6 +28,9 @@ def extrair_campos(crf: sklearn_crfsuite.CRF, frase: str) -> dict[str, list[str]
         else:
             current = None
 
+    # for tag, tokens in grupos.items():
+    #     grupos[tag] = [t.strip() for t in tokens]
+
     return grupos
 
 
@@ -34,7 +39,7 @@ def main():
     # input funcionar adequadamente.
     import readline as _
 
-    crf = sklearn_crfsuite.CRF(model_filename="./dados/tagger_bak.crf")
+    crf = sklearn_crfsuite.CRF(model_filename="./dados/tagger.crf")
 
     while True:
         try:

@@ -172,8 +172,8 @@ def avaliar(enderecos: list[Endereco]):
     #     show(*a)
 
     print()
-    for classes in (("B-LOG", "I-LOG"), ("B-NUM", "I-NUM"), ("B-COM", "I-COM")):
-        amostra = amostra_erros(tokens, y, y_pred, n=2, classes=list(classes))
+    for classes in (("B-LOG"), ("I-LOG"), ("B-NUM"), ("I-NUM"), ("B-COM", "I-COM")):
+        amostra = amostra_erros(tokens, y, y_pred, n=5, classes=list(classes))
         print(f"Amostra de Erros de {classes!s}")
         for a in amostra:
             show(*a)
