@@ -1,6 +1,6 @@
 [package]
 name = "enderecobr_rs"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2024"
 license = "MIT"
 authors = ["Daniel Herszenhut Meirelles Santos <daniel.santos@ipea.gov.br>", "Gabriel Garcia de Almeida <gabriel.almeida@ipea.gov.br", "Rafael Henrique Moraes Pereira <rafael.pereira@ipea.gov.br>"]
@@ -14,16 +14,27 @@ exclude = [ "scripts/"]
 [[bin]]
 name = "separacao-lote"
 path = "src/bin/separacao-lote.rs"
-required-features = ["experimental"]
+required-features = ["experimental", "cli"]
+
+[[bin]]
+name = "padronizar"
+path = "src/bin/padronizar.rs"
+required-features = ["cli"]
+
+[[bin]]
+name = "teste-comparativo"
+path = "src/bin/teste-comparativo.rs"
+required-features = ["cli"]
 
 [features] 
 default = []
 experimental = ["crfs"]
+cli = ["polars", "clap"]
 
 [dependencies]
-clap = { version = "4.5.50", features = ["derive"] }
+clap = { version = "4.5.50", features = ["derive"], optional = true }
 crfs = { version = "0.2.0", optional = true }
 diacritics = "0.2.2"
 itertools = "0.14.0"
-polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"] }
+polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"], optional = true }
 regex = "1.11.1"
