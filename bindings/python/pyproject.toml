@@ -1,0 +1,50 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "enderecobr"
+requires-python = ">=3.9"
+version = "0.0.3"
+authors = [
+  {name = "Daniel Herszenhut Meirelles Santos", email =  "daniel.santos@ipea.gov.br"}, 
+  {name = "Gabriel Garcia de Almeida",  email ="gabriel.almeida@ipea.gov.br"}, 
+  {name = "Rafael Henrique Moraes Pereira", email= "rafael.pereira@ipea.gov.br"}
+]
+
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["address", "brazil", "brasil", "regex", "geocoding"]
+dependencies = []
+
+[project.urls]
+Homepage = 'https://github.com/ipeaGIT/enderecobr_rs'
+Source = 'https://github.com/ipeaGIT/enderecobr_rs'
+
+[tool.pytest.ini_options]
+pythonpath = ["enderecobr"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+]
+
