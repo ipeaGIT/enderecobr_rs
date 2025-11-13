@@ -3,9 +3,9 @@ use polars::{
     error::{PolarsError, PolarsResult},
     frame::DataFrame,
     prelude::{
-        Column, DataType, Field, IntoColumn, LazyFrame, ParquetCompression, ParquetWriteOptions,
-        PlPath, PlSmallStr, ScanArgsParquet, SinkOptions, StatisticsOptions, col,
-        sync_on_close::SyncOnCloseType,
+        col, sync_on_close::SyncOnCloseType, Column, DataType, Field, IntoColumn, LazyFrame,
+        ParquetCompression, ParquetWriteOptions, PlPath, PlSmallStr, ScanArgsParquet, SinkOptions,
+        StatisticsOptions,
     },
 };
 
