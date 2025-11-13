@@ -120,13 +120,12 @@ class ExtratorFeature:
         feats.append(f"tam:{tam_palavra}")
 
         if len(token) == 0:
-            feats.append("not_ascii")
-        if is_pontuacao(token):
+            # Provavelmente a palavra foi removida pelo normalize
+            feats.append("is_unknown")
+        elif is_pontuacao(token):
             feats.append("is_punct")
-            punct_len = len(token)
-            if punct_len > 2:
-                punct_len = "3+"
-            feats.append(f"punct_len:{punct_len!s}")
+            # Não acontece na prática de ter mais de uma pontuação por token,
+            # mas o tokenizador em si pode mudar e isso virar um erro silencioso.
             feats.remove(token)
             feats.append(token[0])
         elif token.isdigit():
