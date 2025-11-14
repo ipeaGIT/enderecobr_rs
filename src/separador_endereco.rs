@@ -1,9 +1,9 @@
 #![cfg(feature = "experimental")]
 //! # Exemplo de uso
 //! ```
-//! use enderecobr_rs::{padronizar_endereco_bruto, separar_endereco};
+//! use enderecobr_rs::{Endereco, padronizar_endereco_bruto, separar_endereco};
 //! let endereco_separado = Endereco { logradouro: Some("av n sra copacabana".to_string()), numero: Some("123".to_string()), complemento: Some("apt 301".to_string()), ..Default::default() };
-//! assert_eq!(separar_endereco("av n sra copacabana 123 apt 301"), endereco_separado);
+//! assert_eq!(separar_endereco("av n sra copacabana, 123, apt 301"), endereco_separado);
 //!
 //! let endereco_padronizado_esperado = Endereco { logradouro: Some("AVENIDA NOSSA SENHORA COPACABANA".to_string()), numero: Some("123".to_string()), complemento: Some("APARTAMENTO 301".to_string()), ..Default::default() };
 //! assert_eq!(endereco_separado.endereco_padronizado(), endereco_padronizado_esperado);
@@ -19,11 +19,36 @@ use crate::Endereco;
 use unicode_normalization::UnicodeNormalization;
 
 fn is_pontuacao(word: &str) -> bool {
-    if word.is_empty() {
-        return false;
-    }
-    let pontuacoes = ",.;/:?!@#$%¨&*()-+[]{}\"'\\|";
-    pontuacoes.contains(word.chars().next().unwrap())
+    let primeiro_char = word.as_bytes().first();
+    matches!(
+        primeiro_char,
+        Some(
+            b',' | b'.'
+                | b';'
+                | b':'
+                | b'/'
+                | b'?'
+                | b'!'
+                | b'@'
+                | b'#'
+                | b'$'
+                | b'%'
+                | b'&'
+                | b'_'
+                | b'('
+                | b')'
+                | b'-'
+                | b'+'
+                | b'['
+                | b']'
+                | b'{'
+                | b'}'
+                | b'"'
+                | b'\''
+                | b'\\'
+                | b'|'
+        )
+    )
 }
 
 pub struct SeparadorEndereco {
@@ -34,7 +59,6 @@ pub struct SeparadorEndereco {
 pub struct ExtratorFeature {
     distancias_vizinhaca: Vec<i32>,
     regex_tokenizer: Regex,
-    regex_zeros_esquerda: Regex,
 }
 
 impl ExtratorFeature {
@@ -42,7 +66,6 @@ impl ExtratorFeature {
         Self {
             distancias_vizinhaca: distancias_vizinhaca.unwrap_or(vec![-2, -1, 1, 2]),
             regex_tokenizer: Regex::new(r"\d+|\w+|[^\s\w]").unwrap(),
-            regex_zeros_esquerda: Regex::new("^0+").unwrap(),
         }
     }
 
@@ -81,7 +104,7 @@ impl ExtratorFeature {
 
     fn _features_token(&self, token: &str, prefixo: &str) -> Vec<String> {
         let mut feats = Vec::new();
-        let token_norm: String = normalize(token).to_uppercase().trim().to_string();
+        let token_norm: String = normalize(token).trim().to_string();
         feats.push(token_norm.clone());
 
         let mut tam = token_norm.len();
@@ -101,11 +124,8 @@ impl ExtratorFeature {
                 feats.remove(idx);
             }
             feats.push(token_norm.chars().next().unwrap().to_string());
-        } else if token_norm.chars().all(|c| c.is_ascii_digit()) {
-            let token_sem_zero = self
-                .regex_zeros_esquerda
-                .replace_all(&token_norm, "")
-                .to_string();
+        } else if token_norm.bytes().all(|c| c.is_ascii_digit()) {
+            let token_sem_zero = token_norm.trim_start_matches('0');
             feats.retain(|x| x != &token_norm);
             feats.push("is_digit".to_string());
             tam = token_sem_zero.len();
@@ -115,9 +135,9 @@ impl ExtratorFeature {
                 tam.to_string()
             };
             feats.push(format!("digit_len:{}", feat_tam));
-        } else if token_norm.chars().all(|c| c.is_alphanumeric()) {
+        } else if token_norm.bytes().all(|c| c.is_ascii_alphanumeric()) {
             feats.push("is_alpha".to_string());
-            if token_norm.chars().any(|c| c.is_ascii_digit()) {
+            if token_norm.bytes().any(|c| c.is_ascii_digit()) {
                 feats.push("has_digit".to_string());
             }
         } else {
@@ -180,7 +200,7 @@ impl ExtratorFeature {
         let mut i = indice_inicial as i32 + direcao;
         while i >= 0 && (i as usize) < sent.len() {
             let tok = &sent[i as usize];
-            if tok.chars().all(|c| c.is_alphanumeric()) {
+            if tok.bytes().all(|c| c.is_ascii_alphanumeric()) {
                 return Some(i as usize);
             }
             i += direcao;
@@ -198,7 +218,13 @@ impl ExtratorFeature {
 }
 
 fn normalize(text: &str) -> String {
-    text.nfkd().filter(|c| c.is_ascii()).collect()
+    if text.is_ascii() {
+        return text.to_ascii_uppercase().to_string();
+    }
+    text.nfkd()
+        .filter(|c| c.is_ascii())
+        .map(|b| b.to_ascii_uppercase())
+        .collect()
 }
 
 impl SeparadorEndereco {
