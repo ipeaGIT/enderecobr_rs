@@ -18,6 +18,11 @@ path = "src/bin/separacao-lote.rs"
 required-features = ["experimental", "cli"]
 
 [[bin]]
+name = "bench-separacao"
+path = "src/bin/bench-separacao.rs"
+required-features = ["experimental", "cli"]
+
+[[bin]]
 name = "padronizar"
 path = "src/bin/padronizar.rs"
 required-features = ["cli"]
@@ -25,6 +30,12 @@ required-features = ["cli"]
 [[bin]]
 name = "teste-comparativo"
 path = "src/bin/teste-comparativo.rs"
+required-features = ["cli"]
+
+
+[[bin]]
+name = "padronizacao-lote"
+path = "src/bin/padronizacao-lote.rs"
 required-features = ["cli"]
 
 [features] 
