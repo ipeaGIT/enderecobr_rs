@@ -5,9 +5,7 @@ use polars::{
     error::{PolarsError, PolarsResult},
     frame::DataFrame,
     prelude::{
-        col, sync_on_close::SyncOnCloseType, Column, DataType, Field, IntoColumn, LazyFrame,
-        ParquetCompression, ParquetWriteOptions, PlPath, PlSmallStr, ScanArgsParquet, SinkOptions,
-        StatisticsOptions,
+        col, Column, DataType, Field, IntoColumn, LazyFrame, PlPath, PlSmallStr, ScanArgsParquet,
     },
 };
 
@@ -29,8 +27,8 @@ fn temporizar(separador: &SeparadorEndereco, texto: &str) -> Resultado {
     let duracao_modelo = inicio_tags.elapsed();
 
     Resultado {
-        feats: duracao_feats.subsec_nanos(),
-        tagger: duracao_modelo.subsec_nanos(),
+        feats: duracao_feats.subsec_micros(),
+        tagger: duracao_modelo.subsec_micros(),
     }
 }
 
@@ -71,7 +69,7 @@ fn main() {
 
     let separador = SeparadorEndereco::new();
 
-    let _df = LazyFrame::scan_parquet(
+    let df = LazyFrame::scan_parquet(
         path,
         ScanArgsParquet {
             low_memory: false,
@@ -84,7 +82,7 @@ fn main() {
     .unwrap()
     .with_new_streaming(true)
     .select([col("DscEndereco")])
-    // .limit(10000)
+    .limit(100000)
     .with_column(
         col("DscEndereco")
             .map(
@@ -112,31 +110,12 @@ fn main() {
             .alias("feats"),
     ])
     .drop(col("tempos_endereco").into_selector().unwrap())
-    .sink_parquet(
-        polars::prelude::SinkTarget::Path(PlPath::new("./tempos.parquet")),
-        ParquetWriteOptions {
-            compression: ParquetCompression::Zstd(None),
-            statistics: StatisticsOptions {
-                min_value: true,
-                max_value: true,
-                distinct_count: true,
-                null_count: true,
-            },
-            row_group_size: Some(10_000),
-            data_page_size: Some(1024 * 1024),
-            ..Default::default()
-        },
-        None,
-        SinkOptions {
-            sync_on_close: SyncOnCloseType::All,
-            maintain_order: false,
-            ..Default::default()
-        },
-    )
-    .unwrap()
+    .mean()
     .collect_with_engine(polars::prelude::Engine::Streaming);
 
-    if let Some(err) = _df.err() {
+    println!("{:?}", df);
+
+    if let Some(err) = df.err() {
         println!("{}", err);
     };
 }
