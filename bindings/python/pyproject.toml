@@ -11,7 +11,7 @@ authors = [
   {name = "Gabriel Garcia de Almeida",  email ="gabriel.almeida@ipea.gov.br"}, 
   {name = "Rafael Henrique Moraes Pereira", email= "rafael.pereira@ipea.gov.br"}
 ]
-readme = "../../README.md"
+readme = "README.md"
 
 classifiers = [
     "Programming Language :: Rust",
@@ -35,6 +35,9 @@ classifiers = [
 ]
 keywords = ["address", "brazil", "brasil", "regex", "geocoding"]
 dependencies = []
+
+[tool.maturin]
+include = [ { path = "../../README.md", format = "sdist" }]
 
 [project.urls]
 Homepage = 'https://github.com/ipeaGIT/enderecobr_rs'
