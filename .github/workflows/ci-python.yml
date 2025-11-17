@@ -1,10 +1,11 @@
-name: CI Python
+name: ci-python
 
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 
 # Trecho adaptado do maturin.yml para evitar rodar todos os builds sempre
 jobs:

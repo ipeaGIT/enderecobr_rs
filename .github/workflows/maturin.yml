@@ -3,7 +3,7 @@
 #
 #    maturin generate-ci -o .github/workflows/maturin.yml -m bindings/python/Cargo.toml --pytest github
 #
-name: CI
+name: maturing-publish-pypi
 
 on:
   push:
