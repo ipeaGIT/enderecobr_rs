@@ -1,0 +1,32 @@
+name: CI Python
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+# Trecho adaptado do maturin.yml para evitar rodar todos os builds sempre
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          args: --out dist --manifest-path bindings/python/Cargo.toml
+          manylinux: auto
+      - name: pytest
+        shell: bash
+        run: |
+          set -e
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install enderecobr --find-links dist --force-reinstall
+          pip install pytest
+          cd bindings/python && pytest

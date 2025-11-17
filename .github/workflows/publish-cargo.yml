@@ -57,13 +57,6 @@ jobs:
           tool: cross
       - name: Build release binary
         run: cross build --locked --release --target ${{ matrix.job.target }}
-
-      - name: install strip command
-        if: matrix.job.target == 'aarch64-unknown-linux-gnu'
-        shell: bash
-        run: |
-          sudo apt update
-          sudo apt-get install -y binutils-aarch64-linux-gnu
       - name: Packaging final binary
         shell: bash
         run: |
@@ -71,14 +64,6 @@ jobs:
           if [[ ${{ runner.os }} == 'Windows' ]]; then
             BINARY=$BINARY.exe
           fi
-
-          ####### reduce binary size by removing debug symbols #######
-          if [[ ${{ matrix.job.target }} == aarch64-unknown-linux-gnu ]]; then
-            GCC_PREFIX="aarch64-linux-gnu-"
-          else
-            GCC_PREFIX=""
-          fi
-          "$GCC_PREFIX"strip $BINARY
 
           ########## create tar.gz ##########
           mkdir release
