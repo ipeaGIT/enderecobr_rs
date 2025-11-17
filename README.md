@@ -1,4 +1,4 @@
-# enderecobr_rs <img align="right" src="man/figures/logo.svg" alt="" width="180">
+# enderecobr_rs <img align="right" src="./assets/logo.svg" alt="" width="180">
 
 [![crates.io Latest Release](https://img.shields.io/crates/v/enderecobr_rs.svg)](https://crates.io/crates/enderecobr_rs)
 [![docs.rs](https://docs.rs/enderecobr_rs/badge.svg)](https://docs.rs/enderecobr_rs/)
@@ -22,6 +22,7 @@ experimental de separação de endereços, que utiliza um modelo probabilístico
 O repositório da versão em R se mantém em [enderecobr](https://github.com/ipeaGIT/enderecobr), utilizando
 internamente as funções desta lib. A versão em Python é feita no subdiretório `bindings/python` deste projeto.
 Algumas funções ou classes/structs da implementação em Rust podem não estar expostas em algumas linguagens.
+Vide [documentação](https://docs.rs/enderecobr_rs) do Rust para identificar tais situações.
 Para solicitar esse tipo de mudança ou bindings em outras linguagens de programação, abrir uma Issue ou
 Pull request neste repositório.
 
@@ -29,11 +30,12 @@ Pull request neste repositório.
 
 A última versão pode ser baixada do crates com o comando:
 
-``` bash
+```bash
 cargo add enderecobr_rs
 ```
 
 Ou adicionando em no seu `Cargo.toml`:
+
 ```toml
 [dependencies]
 enderecobr_rs = { version = "0.0.3" }
@@ -42,6 +44,7 @@ enderecobr_rs = { version = "0.0.3" }
 ## Exemplo de uso
 
 ### Rust:
+
 ```rust
 use enderecobr_rs::{padronizar_complementos, padronizar_logradouros};
 assert_eq!(padronizar_logradouros("r. gen.. glicério"), "RUA GENERAL GLICERIO");
@@ -49,12 +52,13 @@ assert_eq!(padronizar_complementos("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
 ```
 
 ### Python:
+
 ```python
 import enderecobr
 assert enderecobr.padronizar_logradouros("r. gen.. glicério") == "RUA GENERAL GLICERIO"
 assert enderecobr.padronizar_logradouros("QD1 LT2 CS3") == "QUADRA 1 LOTE 2 CASA 3"
 ```
 
-## Nota <a href="https://www.ipea.gov.br"><img src="man/figures/ipea_logo.png" alt="Ipea" align="right" width="300"/></a>
+## Nota <a href="https://www.ipea.gov.br"><img src="./assets/ipea_logo.png" alt="Ipea" align="right" width="300"/></a>
 
 **enderecobr** é desenvolvido por uma equipe de pesquisadores do Instituto de Pesquisa Econômica Aplicada (Ipea).

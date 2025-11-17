@@ -1,22 +1,5 @@
-//! Esta biblioteca tem por objetivo prover de funções utilizadas para padronizar endereços brasileiros,
-//! corrigindo erros comuns, expandindo abreviações etc, afim de facilitar processamentos posteriores.
-//!
-//! Esta biblioteca é uma adaptação para Rust do [enderecobr](https://github.com/ipeaGIT/enderecobr)
-//! visando ganho de eficiência e expandir seu uso para demais linguagens de programação,
-//! utilizando esta implementação como base das demais.
-//!
-//! Ela usa majoritariamente expressões regulares nas padronizações, com exceção do módulo
-//! experimental de separação de endereços, que utiliza um modelo probabilístico de
-//! [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field) já embutido na bilioteca.
-//!
-//! # Exemplo de uso
-//!
-//! ```
-//! use enderecobr_rs::{padronizar_complementos, padronizar_logradouros};
-//! assert_eq!(padronizar_logradouros("r. gen.. glicério"), "RUA GENERAL GLICERIO");
-//! assert_eq!(padronizar_complementos("QD1 LT2 CS3"), "QUADRA 1 LOTE 2 CASA 3");
-//! ```
-//!
+#![doc = include_str!("../README.md")]
+
 use diacritics::remove_diacritics;
 use itertools::Itertools;
 use regex::{Regex, RegexSet};

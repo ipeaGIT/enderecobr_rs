@@ -9,7 +9,7 @@ build:
 	cargo build --release
 
 doc:
-	cargo doc --no-deps --lib --release
+	cargo doc --no-deps --lib --release --all-features
 
 test:
 	cargo test
