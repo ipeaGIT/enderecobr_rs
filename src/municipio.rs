@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use crate::{Padronizador, normalizar};
+use crate::{normalizar, Padronizador};
 
 static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador);
 

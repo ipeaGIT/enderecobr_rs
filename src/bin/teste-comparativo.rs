@@ -3,8 +3,8 @@ use std::num::NonZero;
 use clap::Parser;
 use enderecobr_rs::obter_padronizador_por_tipo;
 use polars::prelude::{
-    Column, CsvWriterOptions, DataType, Field, IntoColumn, LazyFrame, PlPath, ScanArgsParquet,
-    SinkOptions, SinkTarget, StringChunked, col,
+    col, Column, CsvWriterOptions, DataType, Field, IntoColumn, LazyFrame, PlPath, ScanArgsParquet,
+    SinkOptions, SinkTarget, StringChunked,
 };
 
 /// Utilitário que serve para comparar o resultado desta lib com os valores de um

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use crate::{Padronizador, normalizar};
+use crate::{normalizar, Padronizador};
 
 // TODO: ver se essa é a melhor forma de definir essa struct
 
