@@ -2,6 +2,7 @@
 name = "enderecobr_py"
 version = "0.1.0"
 edition = "2021"
+readme = "../../README.md"
 
 [lib]
 name = "enderecobr"
