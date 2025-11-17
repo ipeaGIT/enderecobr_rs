@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use clap::Parser;
 use enderecobr_rs::{
     padronizar_bairros, padronizar_cep_leniente, padronizar_complementos,
@@ -6,7 +8,7 @@ use enderecobr_rs::{
 };
 use polars::prelude::{
     col, sync_on_close::SyncOnCloseType, Column, DataType, Field, IntoColumn, LazyFrame,
-    ParquetCompression, ParquetWriteOptions, PlPath, ScanArgsParquet, SinkOptions,
+    ParquetCompression, ParquetWriteOptions, PlPath, ScanArgsParquet, Schema, SinkOptions,
     StatisticsOptions, StringChunked,
 };
 
@@ -103,10 +105,20 @@ struct Args {
     campos: Vec<EspecificacaoCampo>,
 }
 
-fn processar_campo(df: LazyFrame, campo: &EspecificacaoCampo) -> LazyFrame {
+fn processar_campo(df: LazyFrame, campo: &EspecificacaoCampo, schema: &Arc<Schema>) -> LazyFrame {
     let padronizador = obter_padronizador(&campo.tipo);
     let field = Field::new(campo.destino.as_str().into(), DataType::String);
-    df.with_column(
+
+    // Verifica se o campo é float para forçar um typecast antes
+    // para int e então fazer o cast final para string
+    let mut _df = match schema.get(&campo.origem) {
+        Some(DataType::Float32) | Some(DataType::Float64) => {
+            df.with_column(col(&campo.origem).cast(DataType::Int32))
+        }
+        _ => df,
+    };
+
+    _df.with_column(
         col(&campo.origem)
             .cast(DataType::String)
             .map(
@@ -146,8 +158,9 @@ fn main() {
         df = df.limit(limite);
     }
 
+    let schema = df.collect_schema().unwrap();
     for campo in &args.campos {
-        df = processar_campo(df, campo);
+        df = processar_campo(df, campo, &schema);
     }
 
     if !args.manter_todos {
