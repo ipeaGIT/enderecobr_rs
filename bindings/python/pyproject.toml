@@ -45,6 +45,8 @@ pythonpath = ["enderecobr"]
 
 [dependency-groups]
 dev = [
+    "mkdocs>=1.6.1",
+    "mkdocstrings-python>=1.18.2",
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
 ]

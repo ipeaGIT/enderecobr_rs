@@ -108,7 +108,7 @@ pub mod enderecobr {
     /// Padroniza uma string representando município brasileiros.
     ///
     /// ```
-    /// import enderecobr_rs
+    /// import enderecobr
     /// assert enderecobr.padronizar_municipios("3304557") == "RIO DE JANEIRO"
     /// assert enderecobr.padronizar_municipios("003304557") == "RIO DE JANEIRO"
     /// assert enderecobr.padronizar_municipios("  3304557  ") == "RIO DE JANEIRO"
@@ -143,7 +143,7 @@ pub mod enderecobr {
     ///
     /// # Exemplo
     /// ```python
-    /// use enderecobr_rs::padronizar_estados_para_nome;
+    /// import enderecobr
     /// assert enderecobr.padronizar_estados_para_nome("21") == "MARANHAO"
     /// assert enderecobr.padronizar_estados_para_nome("021") == "MARANHAO"
     /// assert enderecobr.padronizar_estados_para_nome("MA") == "MARANHAO"
