@@ -3,6 +3,7 @@
 [![crates.io Latest Release](https://img.shields.io/crates/v/enderecobr_rs.svg)](https://crates.io/crates/enderecobr_rs)
 [![docs.rs](https://docs.rs/enderecobr_rs/badge.svg)](https://docs.rs/enderecobr_rs/)
 [![PyPi Latest Release](https://img.shields.io/pypi/v/enderecobr.svg)](https://pypi.org/project/enderecobr)
+[![CI](https://github.com/ipeaGIT/enderecobr_rs/workflows/CI/badge.svg)](https://github.com/ipeaGIT/enderecobr_rs/actions)
 
 > Versão experimental!
 
