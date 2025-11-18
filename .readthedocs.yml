@@ -13,7 +13,7 @@ python:
     - method: pip
       path: ./bindings/python
       extra_requirements:
-        - dev
+        - doc
 
 mkdocs:
   configuration: ./bindings/python/mkdocs.yml
