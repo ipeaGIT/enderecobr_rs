@@ -7,16 +7,11 @@ build:
   tools:
     python: "3"
     rust: latest
-  jobs:
-    pre_create_environment:
-      - "cd ./bindings/python && cargo build"
 
 python:
   install:
     - method: pip
-      path: ./bindings/python
-      extra_requirements:
-        - doc
+      path: ./bindings/python/requirements-docs.txt
 
 mkdocs:
   configuration: ./bindings/python/mkdocs.yml
