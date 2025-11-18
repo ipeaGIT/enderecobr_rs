@@ -7,6 +7,9 @@ build:
   tools:
     python: "3"
     rust: latest
+  jobs:
+    pre_create_environment:
+      - "cd ./bindings/python && cargo build"
 
 python:
   install:
