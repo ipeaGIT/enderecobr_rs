@@ -11,6 +11,7 @@ authors = [
   {name = "Gabriel Garcia de Almeida",  email ="gabriel.almeida@ipea.gov.br"}, 
   {name = "Rafael Henrique Moraes Pereira", email= "rafael.pereira@ipea.gov.br"}
 ]
+description = "Bindings em Rust para padronizar endereços brasileiros"
 dynamic = ["readme"]
 
 classifiers = [
@@ -39,6 +40,8 @@ dependencies = []
 [project.urls]
 Homepage = 'https://github.com/ipeaGIT/enderecobr_rs'
 Source = 'https://github.com/ipeaGIT/enderecobr_rs'
+Documentation = 'https://enderecobr-py.readthedocs.io'
+Issues = 'https://github.com/ipeaGIT/enderecobr_rs/issues'
 
 [project.optional-dependencies]
 doc = [
