@@ -11,7 +11,7 @@ build:
 python:
   install:
     - method: pip
-      path: .
+      path: ./bindings/python
 
 mkdocs:
   configuration: ./bindings/python/mkdocs.yml
