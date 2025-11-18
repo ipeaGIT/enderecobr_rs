@@ -49,7 +49,7 @@ clap = { version = "4.5.50", features = ["derive"], optional = true }
 crfsuite = { version = "0.3.1", optional = true}
 diacritics = "0.2.2"
 itertools = "0.14.0"
-polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"], optional = true }
+polars = { version = "0.52.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"], optional = true }
 regex = "1.11.1"
 unicode-normalization = "0.1.25"
 
