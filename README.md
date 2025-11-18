@@ -1,9 +1,12 @@
 # enderecobr_rs <img align="right" src="./assets/logo.svg" alt="" width="180">
 
 [![crates.io Latest Release](https://img.shields.io/crates/v/enderecobr_rs.svg)](https://crates.io/crates/enderecobr_rs)
-[![docs.rs](https://docs.rs/enderecobr_rs/badge.svg)](https://docs.rs/enderecobr_rs/)
+[![docs.rs Rust](https://docs.rs/enderecobr_rs/badge.svg)](https://docs.rs/enderecobr_rs/)
 [![PyPi Latest Release](https://img.shields.io/pypi/v/enderecobr.svg)](https://pypi.org/project/enderecobr)
 [![CI](https://github.com/ipeaGIT/enderecobr_rs/workflows/CI/badge.svg)](https://github.com/ipeaGIT/enderecobr_rs/actions)
+[![readthedocs Python](https://app.readthedocs.org/projects/enderecobr-py/badge)](https://enderecobr-py.readthedocs.io)
+
+Documentações: [R](https://ipeagit.github.io/enderecobr/) [Python](https://enderecobr-py.readthedocs.io) [Rust](https://docs.rs/enderecobr_rs/)
 
 > Versão experimental!
 
