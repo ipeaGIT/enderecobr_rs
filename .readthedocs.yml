@@ -10,8 +10,7 @@ build:
 
 python:
   install:
-    - method: pip
-      path: ./bindings/python/docs/requirements.txt
+    - requirements: ./bindings/python/docs/requirements.txt
 
 mkdocs:
   configuration: ./bindings/python/mkdocs.yml
