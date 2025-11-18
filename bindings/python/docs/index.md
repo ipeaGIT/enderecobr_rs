@@ -6,3 +6,4 @@ Algumas funcionalidades do [Rust](https://crates.io/crates/enderecobr_rs) não f
 caso algumas delas seja necessária para o seu caso de uso.
 
 ::: enderecobr
+::: re
