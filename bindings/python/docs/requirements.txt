@@ -1,3 +1,0 @@
-enderecobr
-mkdocs
-mkdocstrings-python

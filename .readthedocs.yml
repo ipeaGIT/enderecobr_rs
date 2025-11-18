@@ -7,10 +7,16 @@ build:
   tools:
     python: "3"
     rust: latest
-
+  jobs:
+    pre_install:
+      - pip install maturin
+      - maturin develop
 python:
   install:
-    - requirements: ./bindings/python/docs/requirements.txt
+    - method: pip
+      path: ./bindings/python
+      extra_requirements:
+        - doc
 
 mkdocs:
   configuration: ./bindings/python/mkdocs.yml
