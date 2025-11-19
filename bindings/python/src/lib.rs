@@ -218,4 +218,43 @@ pub mod enderecobr {
     // pub use estado::padronizar_estados_para_sigla;
     // pub use numero::padronizar_numeros_para_int;
     // pub use numero::padronizar_numeros_para_string;
+
+    #[pyclass]
+    struct Padronizador {
+        interno: enderecobr_rs::Padronizador,
+    }
+
+    #[pymethods]
+    impl Padronizador {
+        #[new]
+        fn __new__(pares: Vec<Vec<Option<String>>>) -> Self {
+            let interno = enderecobr_rs::Padronizador::do_vetor_pares(
+                pares
+                    .iter()
+                    .map(|inner| {
+                        inner
+                            .iter()
+                            .map(|opt| opt.as_ref().map(|s| s.as_str()))
+                            .collect()
+                    })
+                    .collect(),
+            );
+            Padronizador { interno }
+        }
+
+        fn padronizar(&self, valor: &str) -> String {
+            self.interno.padronizar(valor)
+        }
+
+        fn obter_pares(&self) -> Vec<(&str, &str, Option<&str>)> {
+            self.interno.obter_pares_como_tupla()
+        }
+    }
+
+    #[pyfunction]
+    fn obter_padronizador_bairros() -> Padronizador {
+        Padronizador {
+            interno: enderecobr_rs::criar_padronizador_bairros(),
+        }
+    }
 }

@@ -9,7 +9,7 @@ build:
 	cargo build --release
 
 build-lto:
-	cargo build --profile release-lto
+	cargo build --profile release-lto --all-features
 
 doc:
 	cargo doc --no-deps --lib --release --all-features

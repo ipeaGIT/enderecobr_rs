@@ -106,6 +106,55 @@ pub struct Padronizador {
 }
 
 impl Padronizador {
+    pub fn do_vetor_pares(pares: Vec<Vec<Option<&str>>>) -> Padronizador {
+        let mut padronizador = Padronizador::default();
+        for p in pares
+            .iter()
+            .map(|p| p.iter().filter_map(|i| i.as_ref()).collect::<Vec<_>>())
+        {
+            if p.is_empty() {
+                continue;
+            }
+            if p.len() == 1 {
+                padronizador.adicionar(p.first().unwrap(), "");
+            }
+            if p.len() == 2 {
+                padronizador.adicionar(p.first().unwrap(), p.get(1).unwrap());
+            }
+            if p.len() >= 3 {
+                padronizador.adicionar_com_ignorar(
+                    p.first().unwrap(),
+                    p.get(1).unwrap(),
+                    p.get(2).unwrap(),
+                );
+            }
+        }
+        padronizador.preparar();
+        padronizador
+    }
+
+    pub fn dos_vetores(
+        regexes: Vec<&str>,
+        substituicao: Vec<&str>,
+        regex_ignorar: Vec<Option<&str>>,
+    ) -> Padronizador {
+        assert!(
+            regexes.len() == substituicao.len() && regexes.len() == regex_ignorar.len(),
+            "O tamanho dos três vetores devem ser iguais."
+        );
+
+        let mut padronizador = Padronizador::default();
+        for ((r, s), i) in regexes.iter().zip(substituicao).zip(regex_ignorar) {
+            if let Some(regex_ignorar) = i {
+                padronizador.adicionar_com_ignorar(r, s, regex_ignorar);
+            } else {
+                padronizador.adicionar(r, s);
+            }
+        }
+        padronizador.preparar();
+        padronizador
+    }
+
     /// Adiciona uma regexp e sua substituição no padronizador. Compila a regexp imediatamente.
     pub fn adicionar(&mut self, regex: &str, substituicao: &str) -> &mut Self {
         self.substituicoes
@@ -176,6 +225,19 @@ impl Padronizador {
 
         preproc.to_string()
     }
+
+    pub fn obter_pares_como_tupla(&self) -> Vec<(&str, &str, Option<&str>)> {
+        self.substituicoes
+            .iter()
+            .map(|par| {
+                (
+                    par.regexp.as_str(),
+                    par.substituicao.as_str(),
+                    par.regexp_ignorar.as_ref().map(|i| i.as_str()),
+                )
+            })
+            .collect()
+    }
 }
 
 /// Função utilitária usada internamente para normalizar uma string para processamento posterior,
@@ -194,6 +256,7 @@ pub fn normalizar(valor: &str) -> String {
     remove_diacritics(valor)
 }
 
+pub use bairro::criar_padronizador_bairros;
 pub use bairro::padronizar_bairros;
 pub use cep::padronizar_cep;
 pub use cep::padronizar_cep_leniente;
