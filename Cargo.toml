@@ -45,14 +45,23 @@ experimental = ["crfsuite"]
 cli = ["polars", "clap"]
 
 [dependencies]
-clap = { version = "4.5.50", features = ["derive"], optional = true }
+clap = { version = "4.5.52", features = ["derive"], optional = true }
 crfsuite = { version = "0.3.1", optional = true}
 diacritics = "0.2.2"
 itertools = "0.14.0"
-polars = { version = "0.51.0", features = ["lazy", "parquet", "strings", "new_streaming", "polars-lazy", "polars-io", "polars-parquet", "object"], optional = true }
+# Feature de timezone é temporário até corrigirem a issue abaixo
+# https://github.com/pola-rs/polars/issues/25148
+polars = { version = "0.52.0", features = ["lazy", "parquet", "timezones"], optional = true }
 regex = "1.11.1"
 unicode-normalization = "0.1.25"
 
-[profile.release]
+# Perfil de release mais otimizado, porém muito mais lento de compilar.
+# https://doc.rust-lang.org/cargo/reference/profiles.html
+[profile.release-lto]
+inherits = "release"
+# Diminui o tamanho do binário apagando informações de debug
 strip = true
-# lto = true
+# Otimizações 'custo benefício' no linker. Tende a diminui o tamanho do executável.
+lto = "thin"
+# Quanto menor, aumenta o tempo de compilação mas o código fica mais otimizado
+codegen-units = 1

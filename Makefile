@@ -8,6 +8,9 @@ BIN_TESTE_COMPARATIVO = target/release/teste-comparativo
 build:
 	cargo build --release
 
+build-lto:
+	cargo build --profile release-lto
+
 doc:
 	cargo doc --no-deps --lib --release --all-features
 
