@@ -5,6 +5,8 @@
 [![PyPi Latest Release](https://img.shields.io/pypi/v/enderecobr.svg)](https://pypi.org/project/enderecobr)
 [![CI](https://github.com/ipeaGIT/enderecobr_rs/workflows/CI/badge.svg)](https://github.com/ipeaGIT/enderecobr_rs/actions)
 [![readthedocs Python](https://app.readthedocs.org/projects/enderecobr-py/badge)](https://enderecobr-py.readthedocs.io)
+[![codecov](https://codecov.io/gh/ipeaGIT/enderecobr_rs/graph/badge.svg?token=ckgU5oGbxf)](https://codecov.io/gh/ipeaGIT/enderecobr_rs)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 Documentações: [R](https://ipeagit.github.io/enderecobr/) [Python](https://enderecobr-py.readthedocs.io) [Rust](https://docs.rs/enderecobr_rs/)
 

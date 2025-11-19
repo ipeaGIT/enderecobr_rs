@@ -2,33 +2,12 @@ name: Coverage Rust
 
 on:
   push:
-    branches: ["master"]
+    branches: ["main"]
   pull_request:
-    branches: ["master"]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
-  # format:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       rust:
-  #         - nightly # Now grcov only support nightly toolchain, so we run tests on other toolchains on travis.
-  #   steps:
-  #     - uses: actions/checkout@v5
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: ${{ matrix.rust }}
-  #         override: true
-  #         components: rustfmt, clippy
-  #     - name: Install dependencies
-  #       run: sudo apt-get install libevent-dev libssl-dev
-  #     - name: Check format
-  #       uses: actions-rs/cargo@v1
-  #       with:
-  #         command: fmt
-  #         args: --all -- --check
   #https://github.com/shenxiangzhuang/bleuscore/blob/master/.github/workflows/rust.yml
   coverage:
     runs-on: ubuntu-latest
@@ -41,7 +20,9 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Generate code coverage
-        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+        # Não estou verificando o coverage de todas as features por enquanto.
+        # Tem que setar a flag --all-features para isso
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5.5.1
         with:
