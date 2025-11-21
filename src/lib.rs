@@ -106,6 +106,54 @@ pub struct Padronizador {
 }
 
 impl Padronizador {
+    /// Método utilitário usado para adicionar novos pares de substituição na forma de um
+    /// vetor com uma tripla de dados, afim de ser usado nos bindings das demais linguagens,
+    /// neste caso, tipicamente o Python.
+    pub fn adicionar_pares(&mut self, pares: &[&[Option<&str>]]) {
+        for p in pares
+            .iter()
+            .map(|p| p.iter().filter_map(|i| i.as_ref()).collect::<Vec<_>>())
+        {
+            if p.is_empty() {
+                continue;
+            }
+            if p.len() == 1 {
+                self.adicionar(p[0], "");
+            }
+            if p.len() == 2 {
+                self.adicionar(p[0], p[1]);
+            }
+            if p.len() >= 3 {
+                self.adicionar_com_ignorar(p[0], p[1], p[2]);
+            }
+        }
+        self.preparar();
+    }
+
+    /// Método utilitário usado para retornar os pares de substituição na forma de três
+    /// vetores, afim de ser usado nos bindings das demais linguagens, neste caso,
+    /// tipicamente o R.
+    pub fn adicionar_vetores(
+        &mut self,
+        regexes: &[&str],
+        substituicao: &[&str],
+        regex_ignorar: &[Option<&str>],
+    ) {
+        assert!(
+            regexes.len() == substituicao.len() && regexes.len() == regex_ignorar.len(),
+            "O tamanho dos três vetores devem ser iguais."
+        );
+
+        for ((r, s), i) in regexes.iter().zip(substituicao).zip(regex_ignorar) {
+            if let Some(regex_ignorar) = i {
+                self.adicionar_com_ignorar(r, s, regex_ignorar);
+            } else {
+                self.adicionar(r, s);
+            }
+        }
+        self.preparar();
+    }
+
     /// Adiciona uma regexp e sua substituição no padronizador. Compila a regexp imediatamente.
     pub fn adicionar(&mut self, regex: &str, substituicao: &str) -> &mut Self {
         self.substituicoes
@@ -150,12 +198,12 @@ impl Padronizador {
                 .iter()
                 .find(|idx| ultimo_idx.is_none_or(|ultimo| *idx > ultimo));
 
-            if idx_substituicao.is_none() {
+            let Some(idx) = idx_substituicao else {
                 break;
-            }
+            };
 
-            ultimo_idx = Some(idx_substituicao.unwrap());
-            let par = self.substituicoes.get(idx_substituicao.unwrap()).unwrap();
+            ultimo_idx = idx_substituicao;
+            let par = &self.substituicoes[idx];
 
             // FIXME: essa solução dá problema quando eu tenho mais de um match da regexp
             // original. Precisaria de uma heurística melhor.
@@ -175,6 +223,44 @@ impl Padronizador {
         }
 
         preproc.to_string()
+    }
+
+    /// Método utilitário usado para retornar os pares de substituição na forma de um
+    /// vetor com uma tripla de dados, afim de ser usado nos bindings das demais linguagens,
+    /// neste caso, tipicamente o Python.
+    pub fn obter_pares(&self) -> Vec<(&str, &str, Option<&str>)> {
+        self.substituicoes
+            .iter()
+            .map(|par| {
+                (
+                    par.regexp.as_str(),
+                    par.substituicao.as_str(),
+                    par.regexp_ignorar.as_ref().map(Regex::as_str),
+                )
+            })
+            .collect()
+    }
+
+    /// Método utilitário usado para retornar os pares de substituição na forma de
+    /// três vetores distintos, afim de ser usado nos bindings das demais linguagens,
+    /// neste caso, tipicamente o R.
+    pub fn obter_vetores(&self) -> (Vec<&str>, Vec<&str>, Vec<Option<&str>>) {
+        let regex = self
+            .substituicoes
+            .iter()
+            .map(|par| par.regexp.as_str())
+            .collect();
+        let subst = self
+            .substituicoes
+            .iter()
+            .map(|par| par.substituicao.as_str())
+            .collect();
+        let ignorar = self
+            .substituicoes
+            .iter()
+            .map(|par| par.regexp_ignorar.as_ref().map(Regex::as_str))
+            .collect();
+        (regex, subst, ignorar)
     }
 }
 
