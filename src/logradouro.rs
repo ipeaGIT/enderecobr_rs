@@ -65,7 +65,7 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"^(BECO|RUA|RODOVIA) BE?CO?\b(\.|,)?", "BECO")
         .adicionar(r"^BE?CO?\b(-|,|\.) *", "BECO ")
 
-        .adicionar(r"^(TV|TRV|TRAV?)\b(\.|,)?", "TRAVESSA") // tem varios casos de TR tambem, mas varios desses sao abreviacao de TRECHO, entao eh dificil fazer uma generalizacao
+        .adicionar(r"^(TV|TR|TRV|TRVS|TRAV?)\b(\.|,)?", "TRAVESSA") // tem varios casos de TR tambem, mas varios desses sao abreviacao de TRECHO, entao eh dificil fazer uma generalizacao
         .adicionar(r"^(TRAVESSA|RODOVIA) (TRAVESSA|TV|TRV|TRAV?)\b(\.|,)?", "TRAVESSA") // nao botei RUA nas opcoes iniciais porque tem varios ruas que realmente sao RUA TRAVESSA ...
         .adicionar(r"^TRAVESSA\b(-|,|\.) *", "TRAVESSA ")
         .adicionar(r"^(TRAVESSA|RUA|RODOVIA) (TRAVESSA|TV|TRV|TRAV?)\b- *", "TRAVESSA ") // aqui ja acho que faz sentido botar o RUA porque so da match com padroes como RUA TRAVESSA-1
@@ -97,6 +97,18 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"^LAD\b(\.|,)?", "LADEIRA")
         .adicionar(r"^LADEIRA LADEIRA\b(\.|,)?", "LADEIRA")
         .adicionar(r"^LADEIRA?\b(-|,|\.) *", "LADEIRA ")
+
+        .adicionar(r"^SER\b(\.|,)?", "SERRA")
+        .adicionar(r"^(MR|MRR|MO|MOR)\b(\.|,)?", "MORRO")
+        .adicionar(r"^(LD|LAD|LDR)\b(\.|,)?", "LADEIRA")
+        .adicionar(r"^(CPO)\b(\.|,)?", "CAMPO")
+        .adicionar(r"^(FV|FAV)\b(\.|,)?", "FAVELA")
+        .adicionar(r"^(CAN)\b(\.|,)?", "CANAL")
+        .adicionar(r"^(CB|CAB)\b(\.|,)?", "CABO")
+        .adicionar(r"^(VIAD|VDT)\b(\.|,)?", "VIADUTO")
+        .adicionar(r"^(PTE|PNT)\b(\.|,)?", "PONTE")
+        .adicionar(r"^(ESC)\b(\.|,)?", "ESCOLA")
+        .adicionar(r"^(TUN)\b(\.|,)?", "TUNEL")
 
         .adicionar(r"^DT\b(\.|,)?", "DISTRITO")
         .adicionar(r"\bDISTR?\b\.?", "DISTRITO")
@@ -228,7 +240,7 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bBEIRA-MAR\b", "BEIRA MAR")
 
         // rodovias
-        .adicionar(r"\b(RODOVIA|BR\.?|RODOVIA BR\.?) CENTO D?E (DESESSEIS|DESESEIS|DEZESSEIS|DEZESEIS)\b", "RODOVIA BR-116")
+        .adicionar(r"\b(RD|RODOVIA|BR\.?|RODOVIA BR\.?) CENTO D?E (DESESSEIS|DESESEIS|DEZESSEIS|DEZESEIS)\b", "RODOVIA BR-116")
         .adicionar(r"\b(RODOVIA|BR\.?|RODOVIA BR\.?) CENTO D?E H?UM\b", "RODOVIA BR-101")
         // será que essas duas de baixo valem?
         .adicionar(r"\bBR\.? ?(\d{3})", "BR-$1")
