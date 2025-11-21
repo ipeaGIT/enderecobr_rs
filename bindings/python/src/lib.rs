@@ -227,34 +227,76 @@ pub mod enderecobr {
     #[pymethods]
     impl Padronizador {
         #[new]
-        fn __new__(pares: Vec<Vec<Option<String>>>) -> Self {
-            let interno = enderecobr_rs::Padronizador::do_vetor_pares(
-                pares
-                    .iter()
-                    .map(|inner| {
-                        inner
-                            .iter()
-                            .map(|opt| opt.as_ref().map(|s| s.as_str()))
-                            .collect()
-                    })
-                    .collect(),
-            );
-            Padronizador { interno }
+        fn novo() -> Padronizador {
+            Padronizador {
+                interno: enderecobr_rs::Padronizador::default(),
+            }
+        }
+        /// Adiciona um conjunto de substituições na forma de uma lista de listas, na qual
+        /// valores Nones são ignorados. Segue o padrão:
+        /// (regexp, substituição, regex_ignorar).
+        fn adicionar_substituicoes(&mut self, pares: Vec<Vec<Option<String>>>) {
+            // PS: Aparentemente preciso que seja um Vec de Vec quando não uso
+            // os struct específicos do PyO3.
+
+            // Converte Option<String> em Option<&str>
+            let pares_str: Vec<Vec<Option<&str>>> = pares
+                .iter()
+                .map(|inner| inner.iter().map(|opt| opt.as_deref()).collect())
+                .collect();
+
+            // Converte para um vetor de slices
+            let slices: Vec<&[Option<&str>]> = pares_str.iter().map(Vec::as_slice).collect();
+
+            self.interno.adicionar_pares(&slices);
         }
 
+        /// Efetiva a padronização configurada via a lista de substituições.
         fn padronizar(&self, valor: &str) -> String {
             self.interno.padronizar(valor)
         }
 
-        fn obter_pares(&self) -> Vec<(&str, &str, Option<&str>)> {
-            self.interno.obter_pares_como_tupla()
+        /// Obtém os pares de substituição utilizados internamente no formato
+        /// [(regex, substituição, regex_ignorar)].
+        fn obter_substituicoes(&self) -> Vec<(&str, &str, Option<&str>)> {
+            self.interno.obter_pares()
+        }
+    }
+
+    // ========= Padronizadores pré prontos ==========
+
+    #[pyfunction]
+    fn obter_padronizador_logradouros() -> Padronizador {
+        Padronizador {
+            interno: enderecobr_rs::logradouro::criar_padronizador_logradouros(),
+        }
+    }
+
+    #[pyfunction]
+    fn obter_padronizador_numeros() -> Padronizador {
+        Padronizador {
+            interno: enderecobr_rs::numero::criar_padronizador_numeros(),
         }
     }
 
     #[pyfunction]
     fn obter_padronizador_bairros() -> Padronizador {
         Padronizador {
-            interno: enderecobr_rs::criar_padronizador_bairros(),
+            interno: enderecobr_rs::bairro::criar_padronizador_bairros(),
+        }
+    }
+
+    #[pyfunction]
+    fn obter_padronizador_complementos() -> Padronizador {
+        Padronizador {
+            interno: enderecobr_rs::complemento::criar_padronizador_complemento(),
+        }
+    }
+
+    #[pyfunction]
+    fn obter_padronizador_tipos_logradouros() -> Padronizador {
+        Padronizador {
+            interno: enderecobr_rs::tipo_logradouro::criar_padronizador_tipo_logradouro(),
         }
     }
 }
