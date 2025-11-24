@@ -43,6 +43,7 @@ pub mod enderecobr {
 
     use pyo3::prelude::*;
 
+    #[pymodule_export]
     use super::Padronizador;
 
     #[pyfunction]
@@ -128,11 +129,5 @@ pub mod enderecobr {
         Padronizador {
             interno: enderecobr_rs::tipo_logradouro::criar_padronizador_tipo_logradouro(),
         }
-    }
-
-    #[pymodule_init]
-    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
-        m.add_class::<Padronizador>()?;
-        Ok(())
     }
 }
