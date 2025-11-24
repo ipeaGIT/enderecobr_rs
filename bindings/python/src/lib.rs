@@ -43,7 +43,6 @@ pub mod enderecobr {
 
     use pyo3::prelude::*;
 
-    #[pymodule_export]
     use super::Padronizador;
 
     #[pyfunction]
