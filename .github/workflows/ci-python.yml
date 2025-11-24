@@ -28,6 +28,6 @@ jobs:
           set -e
           python3 -m venv .venv
           source .venv/bin/activate
-          pip install enderecobr --find-links dist --force-reinstall
+          pip install enderecobr --no-index --find-links dist --force-reinstall
           pip install pytest
           cd bindings/python && pytest
