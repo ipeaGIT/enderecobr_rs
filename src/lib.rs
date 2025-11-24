@@ -386,3 +386,75 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         _ => Err("Nenhum padronizador encontrado"),
     }
 }
+
+/////////////////
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_obter_pares_e_vetores_vazios() {
+        let pad = Padronizador::default();
+        assert_eq!(pad.obter_pares(), vec![]);
+        assert_eq!(pad.obter_vetores(), (vec![], vec![], vec![]));
+    }
+
+    #[test]
+    fn test_adicionar_pares() {
+        let mut pad = Padronizador::default();
+        pad.adicionar_pares(&[
+            &[Some("R"), Some("RUA")],                         // par (regex, subst)
+            &[Some("AV"), Some("AVENIDA"), Some("COMERCIAL")], // tripla com ignorar
+            &[Some("ESC"), None, Some("ESCOLA")],              // ignora None
+            &[None],                                           // ignora totalmente
+        ]);
+
+        let pares = pad.obter_pares();
+        assert_eq!(
+            pares,
+            vec![
+                ("R", "RUA", None),
+                ("AV", "AVENIDA", Some("COMERCIAL")),
+                ("ESC", "ESCOLA", None),
+            ]
+        );
+
+        let (regex, subst, ignorar) = pad.obter_vetores();
+        assert_eq!(regex, vec!["R", "AV", "ESC"]);
+        assert_eq!(subst, vec!["RUA", "AVENIDA", "ESCOLA"]);
+        assert_eq!(ignorar, vec![None, Some("COMERCIAL"), None]);
+    }
+
+    #[test]
+    fn test_adicionar_vetores() {
+        let mut pad = Padronizador::default();
+        pad.adicionar_vetores(
+            &["NUM", "R", "AV"],
+            &["NUMERO", "RUA", "AVENIDA"],
+            &[None, Some("R$"), Some("AVENIDA COMERCIAL")],
+        );
+
+        let pares = pad.obter_pares();
+        assert_eq!(
+            pares,
+            vec![
+                ("NUM", "NUMERO", None),
+                ("R", "RUA", Some("R$")),
+                ("AV", "AVENIDA", Some("AVENIDA COMERCIAL")),
+            ]
+        );
+
+        let (regex, subst, ignorar) = pad.obter_vetores();
+        assert_eq!(regex, vec!["NUM", "R", "AV"]);
+        assert_eq!(subst, vec!["NUMERO", "RUA", "AVENIDA"]);
+        assert_eq!(ignorar, vec![None, Some("R$"), Some("AVENIDA COMERCIAL")]);
+    }
+
+    #[test]
+    #[should_panic(expected = "O tamanho dos três vetores devem ser iguais.")]
+    fn test_adicionar_vetores_tamanho_diferente() {
+        let mut pad = Padronizador::default();
+        pad.adicionar_vetores(&["a"], &["b"], &[Some("x"), Some("y")]);
+    }
+}
