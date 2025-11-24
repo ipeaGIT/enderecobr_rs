@@ -130,4 +130,10 @@ pub mod enderecobr {
             interno: enderecobr_rs::tipo_logradouro::criar_padronizador_tipo_logradouro(),
         }
     }
+
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        m.add_class::<Padronizador>()?;
+        Ok(())
+    }
 }
