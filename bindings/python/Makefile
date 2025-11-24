@@ -1,4 +1,4 @@
-.PHONY: build doc test
+.PHONY: build doc test ativar-venv
 
 build:
 	maturin develop

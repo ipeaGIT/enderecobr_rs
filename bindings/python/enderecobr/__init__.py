@@ -1,4 +1,4 @@
-from .enderecobr import (
+from enderecobr.enderecobr import (
     Padronizador,
     obter_padronizador_bairros,
     obter_padronizador_complementos,
