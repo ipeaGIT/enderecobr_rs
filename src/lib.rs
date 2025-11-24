@@ -95,10 +95,12 @@ impl ParSubstituicao {
     }
 }
 
-/// Struct utilitária utilizada internamente para realizar padronizações dos diversos tipos.
+/// Estrutura responsável por padronizar textos de endereços com base em regras de substituição
+/// regulares condicionais.
 ///
-/// Guarda os pares de regexps e suas substituições, além do RegexSet, responsável por otimizar a
-/// localização das regexp relevantes.
+/// O `Padronizador` permite definir regras de substituição com expressões regulares, incluindo
+/// condições de exclusão (`regexp_ignorar`). Ele otimiza o processamento usando um [`RegexSet`]
+/// para identificar rapidamente quais regras se aplicam a cada estágio da padronização.
 #[derive(Default)]
 pub struct Padronizador {
     substituicoes: Vec<ParSubstituicao>,
@@ -106,9 +108,19 @@ pub struct Padronizador {
 }
 
 impl Padronizador {
-    /// Método utilitário usado para adicionar novos pares de substituição na forma de um
-    /// vetor com uma tripla de dados, afim de ser usado nos bindings das demais linguagens,
-    /// neste caso, tipicamente o Python.
+    /// Adiciona múltiplas regras de substituição a partir de uma lista de triplas.
+    ///
+    /// Cada entrada é um slice de até três elementos: `[regex, substituição, ignorar]`.
+    /// Valores ausentes (`None`) são descartados e as triplas serão interpretados da seguinte forma:
+    /// - Se existir um elemento não nulo: equivalente a `[regex, '']`;
+    /// - Se existirem dois elementos não nulos: equivalente a `[regex, substituição]`;
+    /// - Se existirem três ou mais elementos não nulos: equivalente a `[regex, substituição,
+    /// ignorar]`;
+    ///
+    /// O método [`preparar`](Self::preparar) é chamado automaticamente no término da execução.
+    ///
+    /// Este método é projetado para interoperabilidade com linguagens dinâmicas (ex: Python),
+    /// onde estruturas heterogêneas são comuns.
     pub fn adicionar_pares(&mut self, pares: &[&[Option<&str>]]) {
         for p in pares
             .iter()
@@ -130,9 +142,19 @@ impl Padronizador {
         self.preparar();
     }
 
-    /// Método utilitário usado para retornar os pares de substituição na forma de três
-    /// vetores, afim de ser usado nos bindings das demais linguagens, neste caso,
-    /// tipicamente o R.
+    /// Adiciona regras de substituição a partir de três vetores paralelos: regexes, substituições
+    /// e regexes de exclusão opcional.
+    ///
+    /// O método [`preparar`](Self::preparar) é chamado automaticamente no término da execução.
+    ///
+    /// Todos os vetores devem ter o mesmo comprimento. O terceiro vetor pode conter `None`
+    /// para indicar ausência de condição de exclusão.
+    ///
+    /// Este formato facilita a integração com R, onde dados tabulares são naturais.
+    ///
+    /// # Panics
+    ///
+    /// Panic se os vetores não tiverem o mesmo tamanho.
     pub fn adicionar_vetores(
         &mut self,
         regexes: &[&str],
@@ -154,15 +176,30 @@ impl Padronizador {
         self.preparar();
     }
 
-    /// Adiciona uma regexp e sua substituição no padronizador. Compila a regexp imediatamente.
+    /// Adiciona uma regra simples de substituição: toda ocorrência de `regex` será substituída
+    /// por `substituicao`.
+    ///
+    /// A expressão regular é compilada imediatamente. Use [`preparar`](Self::preparar) após
+    /// adicionar as regras para o correto funcionamento da padronização.
+    ///
+    /// Retorna uma referência mutável para encadeamento (builder pattern).
     pub fn adicionar(&mut self, regex: &str, substituicao: &str) -> &mut Self {
         self.substituicoes
             .push(ParSubstituicao::new(regex, substituicao, None));
         self
     }
 
-    /// Adiciona no padronizador uma regexp, sua substituição e uma regexp adicional
-    /// utilizada para condicionar a substituição. Compila ambas regexps imediatamente.
+    /// Adiciona uma regra condicional de substituição: `regex` será substituído por `substituicao`
+    /// apenas se `regexp_ignorar` **não** corresponder ao texto.
+    ///
+    /// Ambas as expressões regulares são compiladas imediatamente.
+    ///
+    /// Útil para evitar substituições em contextos indesejados (ex: não converter "R" em "RUA"
+    /// dentro de "APT R 10").
+    ///
+    /// Use [`preparar`](Self::preparar) após adicionar as regras para o correto funcionamento da padronização.
+    ///
+    /// Retorna uma referência mutável para encadeamento (padrão builder).
     pub fn adicionar_com_ignorar(
         &mut self,
         regex: &str,
@@ -176,7 +213,12 @@ impl Padronizador {
         ));
         self
     }
-    /// Compila o Regexp Set, utilizado para agilizar a localização das regexp relevantes.
+
+    /// Compila o conjunto de expressões regulares principais em um [`RegexSet`] para acelerar
+    /// a detecção de matches durante a padronização. Essencial para o correto funcionamento
+    /// da função de padronização.
+    ///
+    /// Deve ser chamado após adicionar, antes de usar [`padronizar`](Self::padronizar).
     pub fn preparar(&mut self) {
         let regexes: Vec<&str> = self
             .substituicoes
@@ -186,7 +228,15 @@ impl Padronizador {
 
         self.grupo_regex = RegexSet::new(regexes).unwrap();
     }
-    /// Realiza a padronização de fato.
+
+    /// Aplica todas as regras de substituição ao texto de entrada até que nenhuma nova
+    /// substituição seja possível.
+    ///
+    /// O texto é primeiro normalizado (remoção de acentos, conversão para maiúsculas e
+    /// remoção de espaços extras). As regras são aplicadas em ordem, mas apenas
+    /// se a condição de exclusão (se presente) não for satisfeita.
+    ///
+    /// Retorna uma nova `String` com o texto padronizado.
     pub fn padronizar(&self, valor: &str) -> String {
         let mut preproc = normalizar(valor.to_uppercase().trim());
         let mut ultimo_idx: Option<usize> = None;
@@ -225,9 +275,12 @@ impl Padronizador {
         preproc.to_string()
     }
 
-    /// Método utilitário usado para retornar os pares de substituição na forma de um
-    /// vetor com uma tripla de dados, afim de ser usado nos bindings das demais linguagens,
-    /// neste caso, tipicamente o Python.
+    /// Retorna todas as regras atuais como um vetor de triplas.
+    ///
+    /// Cada tripla contém: `(regex, substituicao, regex_ignorar)`.
+    ///
+    /// Útil para inspeção ou incremento dos padrões.
+    ///
     pub fn obter_pares(&self) -> Vec<(&str, &str, Option<&str>)> {
         self.substituicoes
             .iter()
@@ -241,9 +294,11 @@ impl Padronizador {
             .collect()
     }
 
-    /// Método utilitário usado para retornar os pares de substituição na forma de
-    /// três vetores distintos, afim de ser usado nos bindings das demais linguagens,
-    /// neste caso, tipicamente o R.
+    /// Retorna as regras como três vetores paralelos: regexes, substituições e regexes de exclusão.
+    ///
+    /// Ideal para uso em R, onde estruturas vetoriais são preferidas.
+    ///
+    /// Retorna uma tupla de vetores `(regex, substituicao, ignorar)`, onde `ignorar` é um vetor de `Option<&str>`.
     pub fn obter_vetores(&self) -> (Vec<&str>, Vec<&str>, Vec<Option<&str>>) {
         let regex = self
             .substituicoes
