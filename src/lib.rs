@@ -95,10 +95,12 @@ impl ParSubstituicao {
     }
 }
 
-/// Struct utilitária utilizada internamente para realizar padronizações dos diversos tipos.
+/// Estrutura responsável por padronizar textos de endereços com base em regras de substituição
+/// regulares condicionais.
 ///
-/// Guarda os pares de regexps e suas substituições, além do RegexSet, responsável por otimizar a
-/// localização das regexp relevantes.
+/// O `Padronizador` permite definir regras de substituição com expressões regulares, incluindo
+/// condições de exclusão (`regexp_ignorar`). Ele otimiza o processamento usando um [`RegexSet`]
+/// para identificar rapidamente quais regras se aplicam a cada estágio da padronização.
 #[derive(Default)]
 pub struct Padronizador {
     substituicoes: Vec<ParSubstituicao>,
@@ -106,15 +108,98 @@ pub struct Padronizador {
 }
 
 impl Padronizador {
-    /// Adiciona uma regexp e sua substituição no padronizador. Compila a regexp imediatamente.
+    /// Adiciona múltiplas regras de substituição a partir de uma lista de triplas.
+    ///
+    /// Cada entrada é um slice de até três elementos: `[regex, substituição, ignorar]`.
+    /// Valores ausentes (`None`) são descartados e as triplas serão interpretados da seguinte forma:
+    /// - Se existir um elemento não nulo: equivalente a `[regex, '']`;
+    /// - Se existirem dois elementos não nulos: equivalente a `[regex, substituição]`;
+    /// - Se existirem três ou mais elementos não nulos: equivalente a `[regex, substituição,
+    /// ignorar]`;
+    ///
+    /// O método [`preparar`](Self::preparar) é chamado automaticamente no término da execução.
+    ///
+    /// Este método é projetado para interoperabilidade com linguagens dinâmicas (ex: Python),
+    /// onde estruturas heterogêneas são comuns.
+    pub fn adicionar_pares(&mut self, pares: &[&[Option<&str>]]) {
+        for p in pares
+            .iter()
+            .map(|p| p.iter().filter_map(|i| i.as_ref()).collect::<Vec<_>>())
+        {
+            if p.is_empty() {
+                continue;
+            }
+            if p.len() == 1 {
+                self.adicionar(p[0], "");
+            }
+            if p.len() == 2 {
+                self.adicionar(p[0], p[1]);
+            }
+            if p.len() >= 3 {
+                self.adicionar_com_ignorar(p[0], p[1], p[2]);
+            }
+        }
+        self.preparar();
+    }
+
+    /// Adiciona regras de substituição a partir de três vetores paralelos: regexes, substituições
+    /// e regexes de exclusão opcional.
+    ///
+    /// O método [`preparar`](Self::preparar) é chamado automaticamente no término da execução.
+    ///
+    /// Todos os vetores devem ter o mesmo comprimento. O terceiro vetor pode conter `None`
+    /// para indicar ausência de condição de exclusão.
+    ///
+    /// Este formato facilita a integração com R, onde dados tabulares são naturais.
+    ///
+    /// # Panics
+    ///
+    /// Panic se os vetores não tiverem o mesmo tamanho.
+    pub fn adicionar_vetores(
+        &mut self,
+        regexes: &[&str],
+        substituicao: &[&str],
+        regex_ignorar: &[Option<&str>],
+    ) {
+        assert!(
+            regexes.len() == substituicao.len() && regexes.len() == regex_ignorar.len(),
+            "O tamanho dos três vetores devem ser iguais."
+        );
+
+        for ((r, s), i) in regexes.iter().zip(substituicao).zip(regex_ignorar) {
+            if let Some(regex_ignorar) = i {
+                self.adicionar_com_ignorar(r, s, regex_ignorar);
+            } else {
+                self.adicionar(r, s);
+            }
+        }
+        self.preparar();
+    }
+
+    /// Adiciona uma regra simples de substituição: toda ocorrência de `regex` será substituída
+    /// por `substituicao`.
+    ///
+    /// A expressão regular é compilada imediatamente. Use [`preparar`](Self::preparar) após
+    /// adicionar as regras para o correto funcionamento da padronização.
+    ///
+    /// Retorna uma referência mutável para encadeamento (builder pattern).
     pub fn adicionar(&mut self, regex: &str, substituicao: &str) -> &mut Self {
         self.substituicoes
             .push(ParSubstituicao::new(regex, substituicao, None));
         self
     }
 
-    /// Adiciona no padronizador uma regexp, sua substituição e uma regexp adicional
-    /// utilizada para condicionar a substituição. Compila ambas regexps imediatamente.
+    /// Adiciona uma regra condicional de substituição: `regex` será substituído por `substituicao`
+    /// apenas se `regexp_ignorar` **não** corresponder ao texto.
+    ///
+    /// Ambas as expressões regulares são compiladas imediatamente.
+    ///
+    /// Útil para evitar substituições em contextos indesejados (ex: não converter "R" em "RUA"
+    /// dentro de "APT R 10").
+    ///
+    /// Use [`preparar`](Self::preparar) após adicionar as regras para o correto funcionamento da padronização.
+    ///
+    /// Retorna uma referência mutável para encadeamento (padrão builder).
     pub fn adicionar_com_ignorar(
         &mut self,
         regex: &str,
@@ -128,7 +213,12 @@ impl Padronizador {
         ));
         self
     }
-    /// Compila o Regexp Set, utilizado para agilizar a localização das regexp relevantes.
+
+    /// Compila o conjunto de expressões regulares principais em um [`RegexSet`] para acelerar
+    /// a detecção de matches durante a padronização. Essencial para o correto funcionamento
+    /// da função de padronização.
+    ///
+    /// Deve ser chamado após adicionar, antes de usar [`padronizar`](Self::padronizar).
     pub fn preparar(&mut self) {
         let regexes: Vec<&str> = self
             .substituicoes
@@ -138,7 +228,15 @@ impl Padronizador {
 
         self.grupo_regex = RegexSet::new(regexes).unwrap();
     }
-    /// Realiza a padronização de fato.
+
+    /// Aplica todas as regras de substituição ao texto de entrada até que nenhuma nova
+    /// substituição seja possível.
+    ///
+    /// O texto é primeiro normalizado (remoção de acentos, conversão para maiúsculas e
+    /// remoção de espaços extras). As regras são aplicadas em ordem, mas apenas
+    /// se a condição de exclusão (se presente) não for satisfeita.
+    ///
+    /// Retorna uma nova `String` com o texto padronizado.
     pub fn padronizar(&self, valor: &str) -> String {
         let mut preproc = normalizar(valor.to_uppercase().trim());
         let mut ultimo_idx: Option<usize> = None;
@@ -150,12 +248,12 @@ impl Padronizador {
                 .iter()
                 .find(|idx| ultimo_idx.is_none_or(|ultimo| *idx > ultimo));
 
-            if idx_substituicao.is_none() {
+            let Some(idx) = idx_substituicao else {
                 break;
-            }
+            };
 
-            ultimo_idx = Some(idx_substituicao.unwrap());
-            let par = self.substituicoes.get(idx_substituicao.unwrap()).unwrap();
+            ultimo_idx = idx_substituicao;
+            let par = &self.substituicoes[idx];
 
             // FIXME: essa solução dá problema quando eu tenho mais de um match da regexp
             // original. Precisaria de uma heurística melhor.
@@ -175,6 +273,49 @@ impl Padronizador {
         }
 
         preproc.to_string()
+    }
+
+    /// Retorna todas as regras atuais como um vetor de triplas.
+    ///
+    /// Cada tripla contém: `(regex, substituicao, regex_ignorar)`.
+    ///
+    /// Útil para inspeção ou incremento dos padrões.
+    ///
+    pub fn obter_pares(&self) -> Vec<(&str, &str, Option<&str>)> {
+        self.substituicoes
+            .iter()
+            .map(|par| {
+                (
+                    par.regexp.as_str(),
+                    par.substituicao.as_str(),
+                    par.regexp_ignorar.as_ref().map(Regex::as_str),
+                )
+            })
+            .collect()
+    }
+
+    /// Retorna as regras como três vetores paralelos: regexes, substituições e regexes de exclusão.
+    ///
+    /// Ideal para uso em R, onde estruturas vetoriais são preferidas.
+    ///
+    /// Retorna uma tupla de vetores `(regex, substituicao, ignorar)`, onde `ignorar` é um vetor de `Option<&str>`.
+    pub fn obter_vetores(&self) -> (Vec<&str>, Vec<&str>, Vec<Option<&str>>) {
+        let regex = self
+            .substituicoes
+            .iter()
+            .map(|par| par.regexp.as_str())
+            .collect();
+        let subst = self
+            .substituicoes
+            .iter()
+            .map(|par| par.substituicao.as_str())
+            .collect();
+        let ignorar = self
+            .substituicoes
+            .iter()
+            .map(|par| par.regexp_ignorar.as_ref().map(Regex::as_str))
+            .collect();
+        (regex, subst, ignorar)
     }
 }
 
@@ -243,5 +384,77 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         }
 
         _ => Err("Nenhum padronizador encontrado"),
+    }
+}
+
+/////////////////
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_obter_pares_e_vetores_vazios() {
+        let pad = Padronizador::default();
+        assert_eq!(pad.obter_pares(), vec![]);
+        assert_eq!(pad.obter_vetores(), (vec![], vec![], vec![]));
+    }
+
+    #[test]
+    fn test_adicionar_pares() {
+        let mut pad = Padronizador::default();
+        pad.adicionar_pares(&[
+            &[Some("R"), Some("RUA")],                         // par (regex, subst)
+            &[Some("AV"), Some("AVENIDA"), Some("COMERCIAL")], // tripla com ignorar
+            &[Some("ESC"), None, Some("ESCOLA")],              // ignora None
+            &[None],                                           // ignora totalmente
+        ]);
+
+        let pares = pad.obter_pares();
+        assert_eq!(
+            pares,
+            vec![
+                ("R", "RUA", None),
+                ("AV", "AVENIDA", Some("COMERCIAL")),
+                ("ESC", "ESCOLA", None),
+            ]
+        );
+
+        let (regex, subst, ignorar) = pad.obter_vetores();
+        assert_eq!(regex, vec!["R", "AV", "ESC"]);
+        assert_eq!(subst, vec!["RUA", "AVENIDA", "ESCOLA"]);
+        assert_eq!(ignorar, vec![None, Some("COMERCIAL"), None]);
+    }
+
+    #[test]
+    fn test_adicionar_vetores() {
+        let mut pad = Padronizador::default();
+        pad.adicionar_vetores(
+            &["NUM", "R", "AV"],
+            &["NUMERO", "RUA", "AVENIDA"],
+            &[None, Some("R$"), Some("AVENIDA COMERCIAL")],
+        );
+
+        let pares = pad.obter_pares();
+        assert_eq!(
+            pares,
+            vec![
+                ("NUM", "NUMERO", None),
+                ("R", "RUA", Some("R$")),
+                ("AV", "AVENIDA", Some("AVENIDA COMERCIAL")),
+            ]
+        );
+
+        let (regex, subst, ignorar) = pad.obter_vetores();
+        assert_eq!(regex, vec!["NUM", "R", "AV"]);
+        assert_eq!(subst, vec!["NUMERO", "RUA", "AVENIDA"]);
+        assert_eq!(ignorar, vec![None, Some("R$"), Some("AVENIDA COMERCIAL")]);
+    }
+
+    #[test]
+    #[should_panic(expected = "O tamanho dos três vetores devem ser iguais.")]
+    fn test_adicionar_vetores_tamanho_diferente() {
+        let mut pad = Padronizador::default();
+        pad.adicionar_vetores(&["a"], &["b"], &[Some("x"), Some("y")]);
     }
 }

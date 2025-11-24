@@ -1,1 +1,33 @@
-from .enderecobr import *
+from enderecobr.enderecobr import (
+    Padronizador,
+    obter_padronizador_bairros,
+    obter_padronizador_complementos,
+    obter_padronizador_logradouros,
+    obter_padronizador_numeros,
+    obter_padronizador_tipos_logradouros,
+    padronizar_bairros,
+    padronizar_cep_leniente,
+    padronizar_complementos,
+    padronizar_estados_para_nome,
+    padronizar_logradouros,
+    padronizar_municipios,
+    padronizar_numeros,
+    padronizar_tipo_logradouro,
+)
+
+__all__ = [
+    "Padronizador",
+    "obter_padronizador_bairros",
+    "obter_padronizador_complementos",
+    "obter_padronizador_logradouros",
+    "obter_padronizador_numeros",
+    "obter_padronizador_tipos_logradouros",
+    "padronizar_bairros",
+    "padronizar_cep_leniente",
+    "padronizar_complementos",
+    "padronizar_estados_para_nome",
+    "padronizar_logradouros",
+    "padronizar_municipios",
+    "padronizar_numeros",
+    "padronizar_tipo_logradouro",
+]

@@ -28,6 +28,8 @@ jobs:
           set -e
           python3 -m venv .venv
           source .venv/bin/activate
-          pip install enderecobr --find-links dist --force-reinstall
+          # Força a instalação local (--no-index) via pasta dist (--find-links), 
+          # que recebeu o arquivo compilado no passo anterior (maturin build).
+          pip install enderecobr --no-index --find-links dist --force-reinstall
           pip install pytest
           cd bindings/python && pytest

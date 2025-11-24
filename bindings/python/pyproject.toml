@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "enderecobr"
 requires-python = ">=3.9"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
   {name = "Daniel Herszenhut Meirelles Santos", email =  "daniel.santos@ipea.gov.br"}, 
   {name = "Gabriel Garcia de Almeida",  email ="gabriel.almeida@ipea.gov.br"}, 
@@ -50,6 +50,8 @@ doc = [
 
 [tool.pytest.ini_options]
 pythonpath = ["enderecobr"]
+# Testa também docstrings dos arquivos `.pyi`.
+addopts = ["--doctest-glob=*.py", "--doctest-glob=*.pyi"]
 
 # Dev dependencies são consideradas dependências locais apenas
 # https://docs.astral.sh/uv/concepts/projects/dependencies/#development-dependencies

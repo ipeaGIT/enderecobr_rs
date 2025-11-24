@@ -14,6 +14,8 @@ plugins:
               # useful when merging such docstrings into their parent class'.
               ignore_init_summary: true
 
+            docstring_style: numpy
+
             # Tables are generally too large, lists will fix this.
             docstring_section_style: list
 
