@@ -50,6 +50,8 @@ doc = [
 
 [tool.pytest.ini_options]
 pythonpath = ["enderecobr"]
+# Testa também docstrings dos arquivos `.pyi`.
+addopts = ["--doctest-glob=*.py", "--doctest-glob=*.pyi"]
 
 # Dev dependencies são consideradas dependências locais apenas
 # https://docs.astral.sh/uv/concepts/projects/dependencies/#development-dependencies

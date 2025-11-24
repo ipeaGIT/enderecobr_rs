@@ -30,3 +30,10 @@ def testa_padronizar_tipo_logradouro():
 
 def testa_padronizar_cep_leniente():
     assert enderecobr.padronizar_cep_leniente("a123b45  6") == "00123-456"
+
+
+def testa_padronizar_adhoc():
+    pad = enderecobr.Padronizador()
+    pad.adicionar_substituicoes([[r"R\.", "RUA"]])
+    assert pad.padronizar("R. AZUL") == "RUA AZUL"
+    assert pad.obter_substituicoes() == [(r"R\.", "RUA", None)]

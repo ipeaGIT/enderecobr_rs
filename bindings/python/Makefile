@@ -8,3 +8,6 @@ doc:
 
 test:
 	pytest --cov
+
+ativar-venv:
+	source .venv/bin/activate
