@@ -1,9 +1,50 @@
 use pyo3::prelude::*;
 
+#[pyclass]
+struct Padronizador {
+    interno: enderecobr_rs::Padronizador,
+}
+
+#[pymethods]
+impl Padronizador {
+    #[new]
+    fn novo() -> Padronizador {
+        Padronizador {
+            interno: enderecobr_rs::Padronizador::default(),
+        }
+    }
+    fn adicionar_substituicoes(&mut self, pares: Vec<Vec<Option<String>>>) {
+        // PS: Aparentemente preciso que seja um Vec de Vec quando não uso
+        // os struct específicos do PyO3.
+
+        // Converte Option<String> em Option<&str>
+        let pares_str: Vec<Vec<Option<&str>>> = pares
+            .iter()
+            .map(|inner| inner.iter().map(|opt| opt.as_deref()).collect())
+            .collect();
+
+        // Converte para um vetor de slices
+        let slices: Vec<&[Option<&str>]> = pares_str.iter().map(Vec::as_slice).collect();
+
+        self.interno.adicionar_pares(&slices);
+    }
+
+    fn padronizar(&self, valor: &str) -> String {
+        self.interno.padronizar(valor)
+    }
+
+    fn obter_substituicoes(&self) -> Vec<(&str, &str, Option<&str>)> {
+        self.interno.obter_pares()
+    }
+}
+
 #[pymodule]
 pub mod enderecobr {
 
     use pyo3::prelude::*;
+
+    #[pymodule_export]
+    use super::Padronizador;
 
     #[pyfunction]
     fn padronizar_logradouros(valor: &str) -> String {
@@ -52,44 +93,6 @@ pub mod enderecobr {
     // pub use estado::padronizar_estados_para_sigla;
     // pub use numero::padronizar_numeros_para_int;
     // pub use numero::padronizar_numeros_para_string;
-
-    #[pyclass]
-    struct Padronizador {
-        interno: enderecobr_rs::Padronizador,
-    }
-
-    #[pymethods]
-    impl Padronizador {
-        #[new]
-        fn novo() -> Padronizador {
-            Padronizador {
-                interno: enderecobr_rs::Padronizador::default(),
-            }
-        }
-        fn adicionar_substituicoes(&mut self, pares: Vec<Vec<Option<String>>>) {
-            // PS: Aparentemente preciso que seja um Vec de Vec quando não uso
-            // os struct específicos do PyO3.
-
-            // Converte Option<String> em Option<&str>
-            let pares_str: Vec<Vec<Option<&str>>> = pares
-                .iter()
-                .map(|inner| inner.iter().map(|opt| opt.as_deref()).collect())
-                .collect();
-
-            // Converte para um vetor de slices
-            let slices: Vec<&[Option<&str>]> = pares_str.iter().map(Vec::as_slice).collect();
-
-            self.interno.adicionar_pares(&slices);
-        }
-
-        fn padronizar(&self, valor: &str) -> String {
-            self.interno.padronizar(valor)
-        }
-
-        fn obter_substituicoes(&self) -> Vec<(&str, &str, Option<&str>)> {
-            self.interno.obter_pares()
-        }
-    }
 
     // ========= Padronizadores pré prontos ==========
 
