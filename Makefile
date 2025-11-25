@@ -17,6 +17,13 @@ doc:
 test:
 	cargo test
 
+test_snapshot:
+	cargo test --features snap_test
+
+# Tem que instalar o utilitário deles
+snapshot_avaliar:
+	cargo insta review
+
 # ==== Testes comparativos com a implementação em R ====
 
 testes-comparativos: diff/logr.csv diff/num.csv diff/comp.csv diff/bairro.csv diff/cep.csv
