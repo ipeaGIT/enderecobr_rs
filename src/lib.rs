@@ -11,6 +11,7 @@ pub mod estado;
 pub mod logradouro;
 pub mod municipio;
 pub mod numero;
+pub mod numero_extenso;
 pub mod separador_endereco;
 pub mod tipo_logradouro;
 
