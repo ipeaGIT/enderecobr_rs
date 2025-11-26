@@ -125,10 +125,41 @@ const ORDENS_GRANDEZA: [(&str, &str); 7] = [
     ("UM SEXTILHAO", "SEXTILHOES"),
 ];
 
-// pub fn padronizar_numeros(texto: &str) -> String {
-//     texto.char_indices().map(|x| x.1.is_ascii_digit());
-//     "".to_string()
-// }
+pub fn padronizar_numeros_por_extenso(texto: &str) -> String {
+    let mut numero_atual = String::new();
+    let mut resultado = String::with_capacity(texto.len());
+
+    for caracter in texto.chars() {
+        if caracter.is_ascii_digit() {
+            // Achei um número, adiciono ele na minha string de números.
+            numero_atual.push(caracter);
+        } else {
+            // Quando não é um número
+            if !numero_atual.is_empty() {
+                // Se existia um número na string, devo salvar ele por extenso...
+                match numero_atual.parse::<i32>() {
+                    Ok(n) => resultado.push_str(&numero_por_extenso(n)),
+                    Err(_) => resultado.push_str(&numero_atual),
+                }
+
+                // ... E limpar número atual.
+                numero_atual.clear();
+            }
+            // Salvo o carácter atual (não número) no resultado final
+            resultado.push(caracter);
+        }
+    }
+
+    // Finalizo salvando o número pendente.
+    if !numero_atual.is_empty() {
+        match numero_atual.parse::<i32>() {
+            Ok(n) => resultado.push_str(&numero_por_extenso(n)),
+            Err(_) => resultado.push_str(&numero_atual),
+        }
+    }
+
+    resultado
+}
 
 pub fn numero_por_extenso(n: i32) -> String {
     // Função auxiliar: converte números de 0 a 999
@@ -324,5 +355,34 @@ mod tests {
     fn testes_limites() {
         assert_eq!(numero_por_extenso(i32::MAX), "DOIS BILHOES CENTO QUARENTA SETE MILHOES QUATROCENTOS OITENTA TRES MIL SEISCENTOS QUARENTA SETE");
         assert_eq!(numero_por_extenso(i32::MIN), "MENOS DOIS BILHOES CENTO QUARENTA SETE MILHOES QUATROCENTOS OITENTA TRES MIL SEISCENTOS QUARENTA OITO");
+    }
+
+    #[test]
+    fn teste_padronizacao_string_por_extenso() {
+        // Caso de borda
+        assert_eq!(padronizar_numeros_por_extenso(""), "");
+
+        // Caso sem número
+        assert_eq!(padronizar_numeros_por_extenso("RUA AZUL"), "RUA AZUL");
+
+        // Caso simples
+        assert_eq!(
+            padronizar_numeros_por_extenso("RUA 222"),
+            "RUA DUZENTOS VINTE DOIS"
+        );
+
+        assert_eq!(
+            padronizar_numeros_por_extenso("RUA 2 LOTE B"),
+            "RUA DOIS LOTE B"
+        );
+
+        // Só número
+        assert_eq!(padronizar_numeros_por_extenso("1001"), "MIL UM");
+
+        // Vários números na string
+        assert_eq!(
+            padronizar_numeros_por_extenso("RUA 222 NUMERO 14 APT 101"),
+            "RUA DUZENTOS VINTE DOIS NUMERO QUATORZE APT CENTO UM"
+        );
     }
 }
