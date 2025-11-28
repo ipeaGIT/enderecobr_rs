@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 const ATE_CEM: [&str; 101] = [
     "ZERO",
     "UM",
@@ -125,9 +127,35 @@ const ORDENS_GRANDEZA: [(&str, &str); 7] = [
     ("UM SEXTILHAO", "SEXTILHOES"),
 ];
 
-pub fn padronizar_numeros_por_extenso(texto: &str) -> String {
+/// Converte sequências de dígitos em uma string para seus equivalentes por extenso em português.
+///
+/// A função percorre a string de entrada e, ao encontrar números inteiros (em formato ASCII),
+/// os substitui pelo nome completo do número (ex: "2" → "dois"), utilizando a função `numero_por_extenso`.
+///
+/// # Notas
+/// - Números muito grandes ou inválidos (ex: overflow no parse para `i32`) são deixados inalterados.
+/// - Não trata número negativos ou decimais.
+/// - Se a string de entrada não contém nenhum dígito ASCII, a função retorna imediatamente uma referência
+///   emprestada (`Cow::Borrowed`) para evitar alocação.
+///
+/// # Exemplos
+/// ```rust
+/// use enderecobr_rs::numero_extenso::padronizar_numeros_por_extenso;
+/// assert_eq!(padronizar_numeros_por_extenso("RUA 2"), "RUA DOIS");
+/// assert_eq!(padronizar_numeros_por_extenso("RUA -2"), "RUA -DOIS");
+/// assert_eq!(padronizar_numeros_por_extenso("RUA -2.2"), "RUA -DOIS.DOIS");
+/// assert_eq!(padronizar_numeros_por_extenso("Sem números"), "Sem números");
+/// ```
+///
+pub fn padronizar_numeros_por_extenso(texto: &str) -> Cow<'_, str> {
+    // Retorna imediatamente a mesma referência de string
+    // caso não existam números na string
+    if !texto.as_bytes().iter().any(|c| c.is_ascii_digit()) {
+        return Cow::Borrowed(texto);
+    }
+
     let mut numero_atual = String::new();
-    let mut resultado = String::with_capacity(texto.len());
+    let mut resultado = String::with_capacity(texto.len() + 5);
 
     for caracter in texto.chars() {
         if caracter.is_ascii_digit() {
@@ -158,15 +186,31 @@ pub fn padronizar_numeros_por_extenso(texto: &str) -> String {
         }
     }
 
-    resultado
+    // Retorno um resultado owned (borrow seria quando é só uma referência)
+    Cow::Owned(resultado)
 }
 
-pub fn numero_por_extenso(n: i32) -> String {
+/// Converte um número inteiro para sua representação por extenso em português.
+///
+/// Retorna uma referência estática (`Cow::Borrowed`) quando possível (números até 100),
+/// ou uma string alocada dinamicamente (`Cow::Owned`) para casos compostos (negativos, grandes números).
+///
+/// # Exemplos
+///
+/// ```
+/// use enderecobr_rs::numero_extenso::numero_por_extenso;
+/// assert_eq!(numero_por_extenso(0), "ZERO");
+/// assert_eq!(numero_por_extenso(42), "QUARENTA DOIS");
+/// assert_eq!(numero_por_extenso(-1500), "MENOS MIL QUINHENTOS");
+/// assert_eq!(numero_por_extenso(2_001_000), "DOIS MILHOES MIL");
+/// ```
+pub fn numero_por_extenso(n: i32) -> Cow<'static, str> {
     // Função auxiliar: converte números de 0 a 999
-    fn resolver_centenas(n: u32) -> String {
+    // Retorna a referência estática para os casos até 100
+    fn resolver_centenas(n: u32) -> Cow<'static, str> {
         // Se for menor que 100, usa a tabela ATE_CEM
         if n < ATE_CEM.len() as u32 {
-            return ATE_CEM[n as usize].to_string();
+            return Cow::Borrowed(ATE_CEM[n as usize]);
         }
 
         let centena = n / 100; // extrai a casa das centenas
@@ -190,7 +234,7 @@ pub fn numero_por_extenso(n: i32) -> String {
             resultado.push_str(ATE_CEM[dezenas as usize]);
         }
 
-        resultado
+        Cow::Owned(resultado)
     }
 
     let num_abs = n.unsigned_abs();
@@ -202,7 +246,7 @@ pub fn numero_por_extenso(n: i32) -> String {
         return if n >= 0 {
             resolver_centenas(num_abs)
         } else {
-            format!("MENOS {}", resolver_centenas(num_abs))
+            Cow::Owned(format!("MENOS {}", resolver_centenas(num_abs)))
         };
     }
 
@@ -260,7 +304,7 @@ pub fn numero_por_extenso(n: i32) -> String {
         }
     }
 
-    resultado
+    Cow::Owned(resultado)
 }
 
 #[cfg(test)]

@@ -11,7 +11,7 @@ pub fn numero_extenso_bench(c: &mut Criterion) {
             b.iter(|| numero_extenso::numero_por_extenso(black_box(n)));
         });
     }
-    for &n in &["20", "        20       "] {
+    for &n in &["20", "        20       ", "        "] {
         group.bench_with_input(
             format!("padronizar_numeros_por_extenso/{n}"),
             &n,
