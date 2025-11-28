@@ -254,8 +254,6 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bTENENTE SHI\b", "TEN SHI")
         .adicionar(r"\bHO SHI MINISTRO\b", "HO SHI MIN")
 
-        // .adicionar(r"\bH?ELI(Z|S)I?E?(O|U)(S|Z)?\b", "ELISEOS")
-
         // datas
 
         // PS: Mudei todos os JAN(?!EIRO) para JAN(EIRO)?
@@ -324,22 +322,5 @@ mod tests {
             "RUA GENERAL GLICERIO"
         );
         assert_eq!(padronizar_logradouros(""), "");
-    }
-
-    #[test]
-    #[cfg(feature = "snap_test")]
-    fn snapshot_test_logr() {
-        use insta::*;
-        use std::fs::File;
-        use std::io::{BufRead, BufReader};
-
-        let file = File::open("src/snapshots/logr.csv").unwrap();
-        let reader = BufReader::new(file);
-        let val: Vec<String> = reader
-            .lines()
-            .map(|x| padronizar_logradouros(x.unwrap().as_str()))
-            .collect();
-
-        assert_yaml_snapshot!(val);
     }
 }

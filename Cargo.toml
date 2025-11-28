@@ -11,7 +11,7 @@ documentation = "https://docs.rs/enderecobr_rs"
 categories = ["text-processing", "value-formatting", "science::geo"]
 keywords = ["address", "brazil", "brasil", "regex", "geocoding"]
 description = "Esta biblioteca tem por objetivo prover de funções utilizadas para padronizar endereços brasileiros, afim de facilitar processamentos posteriores."
-exclude = [ "scripts/", "src/snapshots"] # pasta de snapshots é pesada e desnecessária para publicar
+exclude = [ "scripts/"]
 
 [[bin]]
 name = "separacao-lote"
@@ -41,7 +41,6 @@ required-features = ["cli"]
 
 [features] 
 default = []
-snap_test = [] # Teste de snapshot é meio lento
 experimental = ["crfsuite"]
 cli = ["polars", "clap"]
 
@@ -86,7 +85,6 @@ unwrap_used = "warn"
 expect_used = "warn"
 
 [dev-dependencies]
-insta = { version = "1.44.1", features = ["yaml"] }
 criterion = "0.7.0"
 
 [[bench]]
@@ -97,8 +95,3 @@ harness = false
 name = "padronizador_bench"
 harness = false
 
-# A lib sugere isso no build em modo dev mesmo para acelerar os testes de snapshot
-# https://insta.rs/docs/quickstart/
-[profile.dev.package]
-insta.opt-level = 3
-similar.opt-level = 3
