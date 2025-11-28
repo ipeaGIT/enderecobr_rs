@@ -25,7 +25,7 @@ fn criar_estado_map() -> HashMap<String, &'static Estado> {
     ESTADOS.iter().for_each(|e| {
         estados.insert(e.sigla.to_string(), e);
         estados.insert(e.codigo.to_string(), e);
-        estados.insert(normalizar(e.nome).to_string(), e);
+        estados.insert(normalizar(e.nome).into_owned(), e);
     });
     estados
 }

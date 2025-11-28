@@ -51,7 +51,7 @@ pub fn criar_municipio_map() -> HashMap<String, String> {
     for linha in municipios_csv.lines().skip(1) {
         let cols: Vec<&str> = linha.split(",").collect();
         let codigo = cols.first().unwrap();
-        let nome = normalizar(cols.get(1).unwrap());
+        let nome = normalizar(cols.get(1).unwrap()).into_owned();
 
         // Adiciona código do ibge no mapa
         mapa.insert(codigo.to_string(), nome.clone());

@@ -1,6 +1,8 @@
 #![doc = include_str!("../README.md")]
 
-use diacritics::remove_diacritics;
+use std::borrow::Cow;
+use unicode_normalization::UnicodeNormalization;
+
 use itertools::Itertools;
 use regex::{Regex, RegexSet};
 
@@ -239,13 +241,19 @@ impl Padronizador {
     ///
     /// Retorna uma nova `String` com o texto padronizado.
     pub fn padronizar(&self, valor: &str) -> String {
-        let mut preproc = normalizar(valor.to_uppercase().trim());
+        return self.padronizar_cow(valor).to_string();
+    }
+
+    // Função otimizada para não re-alocar strings quando desnecessário.
+    // TODO: Adaptar demais métodos para aceitar e retornar Cow<str>
+    fn padronizar_cow<'a>(&self, valor: &'a str) -> Cow<'a, str> {
+        let mut preproc = normalizar(valor);
         let mut ultimo_idx: Option<usize> = None;
 
-        while self.grupo_regex.is_match(preproc.as_str()) {
+        while self.grupo_regex.is_match(&preproc) {
             let idx_substituicao = self
                 .grupo_regex
-                .matches(preproc.as_str())
+                .matches(&preproc)
                 .iter()
                 .find(|idx| ultimo_idx.is_none_or(|ultimo| *idx > ultimo));
 
@@ -261,19 +269,22 @@ impl Padronizador {
             if par
                 .regexp_ignorar
                 .as_ref()
-                .map(|r| r.is_match(preproc.as_str()))
+                .map(|r| r.is_match(&preproc))
                 .unwrap_or(false)
             {
                 continue;
             }
 
-            preproc = par
-                .regexp
-                .replace_all(preproc.as_str(), par.substituicao.as_str())
-                .to_string();
+            let novo_valor = par.regexp.replace_all(&preproc, par.substituicao.as_str());
+            // Se chegou aqui, é porque a string deveria sofrer modificação e, consequentemente,
+            // retornar um Cow::Owned.
+            preproc = match novo_valor {
+                Cow::Owned(novo) => Cow::Owned(novo),
+                Cow::Borrowed(_) => preproc, // Não deveria acontecer
+            };
         }
 
-        preproc.to_string()
+        preproc
     }
 
     /// Retorna todas as regras atuais como um vetor de triplas.
@@ -326,14 +337,28 @@ impl Padronizador {
 /// # Exemplo
 /// ```
 /// use enderecobr_rs::normalizar;
-/// assert_eq!(normalizar("Olá, mundo"), "Ola, mundo");
+/// assert_eq!(normalizar("Olá, mundo"), "OLA, MUNDO");
+/// assert_eq!(normalizar("R. DO AÇAÍ 15º"), "R. DO ACAI 15O");
 /// ```
 ///
-pub fn normalizar(valor: &str) -> String {
-    // Remove mais casos problemático, mas dificulta a comparação com a implementação em R.
-    // use unicode_normalization::UnicodeNormalization;
-    // valor.nfkd().filter(|c| c.is_ascii()).collect::<String>()
-    remove_diacritics(valor)
+pub fn normalizar(valor: &str) -> Cow<'_, str> {
+    let valor = valor.trim();
+
+    if valor.is_ascii() {
+        if valor
+            .bytes()
+            .all(|c| !c.is_ascii_alphabetic() || c.is_ascii_uppercase())
+        {
+            return Cow::Borrowed(valor.trim());
+        }
+        return Cow::Owned(valor.trim().to_ascii_uppercase());
+    }
+
+    valor
+        .nfkd()
+        .filter(|c| c.is_ascii())
+        .map(|c| c.to_ascii_uppercase())
+        .collect()
 }
 
 pub use bairro::padronizar_bairros;
