@@ -93,6 +93,10 @@ criterion = "0.7.0"
 name = "numero_extenso_bench"
 harness = false
 
+[[bench]]
+name = "padronizador_bench"
+harness = false
+
 # A lib sugere isso no build em modo dev mesmo para acelerar os testes de snapshot
 # https://insta.rs/docs/quickstart/
 [profile.dev.package]
