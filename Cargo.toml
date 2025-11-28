@@ -87,6 +87,11 @@ expect_used = "warn"
 
 [dev-dependencies]
 insta = { version = "1.44.1", features = ["yaml"] }
+criterion = "0.7.0"
+
+[[bench]]
+name = "numero_extenso_bench"
+harness = false
 
 # A lib sugere isso no build em modo dev mesmo para acelerar os testes de snapshot
 # https://insta.rs/docs/quickstart/
