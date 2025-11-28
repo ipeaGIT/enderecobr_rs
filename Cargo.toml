@@ -83,3 +83,15 @@ match_bool = "warn"
 needless_bool = "deny"
 unwrap_used = "warn"
 expect_used = "warn"
+
+[dev-dependencies]
+criterion = "0.7.0"
+
+[[bench]]
+name = "numero_extenso_bench"
+harness = false
+
+[[bench]]
+name = "padronizador_bench"
+harness = false
+
