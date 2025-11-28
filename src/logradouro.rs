@@ -254,7 +254,7 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bTENENTE SHI\b", "TEN SHI")
         .adicionar(r"\bHO SHI MINISTRO\b", "HO SHI MIN")
 
-        .adicionar(r"\bH?ELI(Z|S)I?E?(O|U)(S|Z)?\b", "ELISEOS")
+        // .adicionar(r"\bH?ELI(Z|S)I?E?(O|U)(S|Z)?\b", "ELISEOS")
 
         // datas
 
