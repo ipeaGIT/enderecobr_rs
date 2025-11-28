@@ -1,4 +1,6 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, sync::LazyLock};
+
+use regex::Regex;
 
 const ATE_CEM: [&str; 101] = [
     "ZERO",
@@ -307,6 +309,77 @@ pub fn numero_por_extenso(n: i32) -> Cow<'static, str> {
     Cow::Owned(resultado)
 }
 
+// Em Rust, a constant é criada durante a compilação, então só posso chamar funções muito restritas
+// quando uso `const`.
+static REGEX_ROMANO: LazyLock<Regex> = LazyLock::new(criar_regex_romano);
+static REGEX_ROMANO_TRIAGEM: LazyLock<Regex> = LazyLock::new(criar_regex_romano_triagem);
+
+pub fn criar_regex_romano() -> Regex {
+    // Aceita 3999, depois disso começa a usar um traço em cima, que não existe em ASCII.
+    Regex::new(r"(?i)\bM{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})\b")
+        .expect("Regex romano inválida (bug interno)")
+}
+pub fn criar_regex_romano_triagem() -> Regex {
+    Regex::new(r"(?i)\b[MDCLXVI]+\b").expect("Regex romano triagem inválida (bug interno)")
+}
+
+pub fn padronizar_numero_romano_por_extenso(valor: &str) -> Cow<'_, str> {
+    let mut resultado_opt: Option<String> = None;
+    let mut ultimo = 0usize;
+
+    for m in REGEX_ROMANO_TRIAGEM.find_iter(valor) {
+        let inicio = m.start();
+        let fim = m.end();
+
+        if !REGEX_ROMANO.is_match(&valor[inicio..fim]) {
+            continue;
+        }
+
+        // Instancia a String apenas no primeiro match
+        let trecho_atual = resultado_opt.get_or_insert_with(|| String::with_capacity(valor.len()));
+
+        // Copia trecho antes do match
+        trecho_atual.push_str(&valor[ultimo..inicio]);
+
+        let romano = &valor[inicio..fim];
+        let n = romano_para_inteiro(romano);
+        trecho_atual.push_str(numero_por_extenso(n).as_ref());
+
+        ultimo = fim;
+    }
+
+    match resultado_opt {
+        None => Cow::Borrowed(valor),
+        Some(mut s) => {
+            s.push_str(&valor[ultimo..]);
+            Cow::Owned(s)
+        }
+    }
+}
+
+pub fn romano_para_inteiro(s: &str) -> i32 {
+    let mut total = 0;
+    let mut prev = 0;
+
+    for c in s.chars().rev() {
+        let atual: i32 = match c.to_ascii_uppercase() {
+            'I' => 1,
+            'V' => 5,
+            'X' => 10,
+            'L' => 50,
+            'C' => 100,
+            'D' => 500,
+            'M' => 1000,
+            _ => 0,
+        };
+
+        total += if atual < prev { -atual } else { atual };
+        prev = atual;
+    }
+
+    total
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -399,6 +472,67 @@ mod tests {
     fn testes_limites() {
         assert_eq!(numero_por_extenso(i32::MAX), "DOIS BILHOES CENTO QUARENTA SETE MILHOES QUATROCENTOS OITENTA TRES MIL SEISCENTOS QUARENTA SETE");
         assert_eq!(numero_por_extenso(i32::MIN), "MENOS DOIS BILHOES CENTO QUARENTA SETE MILHOES QUATROCENTOS OITENTA TRES MIL SEISCENTOS QUARENTA OITO");
+    }
+
+    #[test]
+    fn test_basic() {
+        assert_eq!(romano_para_inteiro("I"), 1);
+        assert_eq!(romano_para_inteiro("III"), 3);
+        assert_eq!(romano_para_inteiro("V"), 5);
+        assert_eq!(romano_para_inteiro("X"), 10);
+        assert_eq!(romano_para_inteiro("L"), 50);
+        assert_eq!(romano_para_inteiro("C"), 100);
+        assert_eq!(romano_para_inteiro("D"), 500);
+        assert_eq!(romano_para_inteiro("M"), 1000);
+    }
+
+    #[test]
+    fn test_subtractive_pairs() {
+        assert_eq!(romano_para_inteiro("IV"), 4);
+        assert_eq!(romano_para_inteiro("IX"), 9);
+        assert_eq!(romano_para_inteiro("XL"), 40);
+        assert_eq!(romano_para_inteiro("XC"), 90);
+        assert_eq!(romano_para_inteiro("CD"), 400);
+        assert_eq!(romano_para_inteiro("CM"), 900);
+    }
+
+    #[test]
+    fn test_mixed() {
+        assert_eq!(romano_para_inteiro("MCMXLIV"), 1944);
+        assert_eq!(romano_para_inteiro("MMXXV"), 2025);
+        assert_eq!(romano_para_inteiro("MCMLXXXIV"), 1984);
+        assert_eq!(romano_para_inteiro("MMMCMXCIX"), 3999);
+    }
+
+    #[test]
+    fn test_lowercase() {
+        assert_eq!(romano_para_inteiro("mcmxliv"), 1944);
+        assert_eq!(romano_para_inteiro("mmxxv"), 2025);
+    }
+
+    #[test]
+    fn test_edge_cases() {
+        assert_eq!(romano_para_inteiro("MXA"), 1010); // carácter inválido (A) ignorado
+        assert_eq!(romano_para_inteiro(""), 0); // zerado mesmo
+        assert_eq!(romano_para_inteiro("IIII"), 4); // sem validação
+    }
+
+    #[test]
+    fn teste_numero_romano_extenso() {
+        // Sem nenhum algarismo romano
+        assert_eq!(padronizar_numero_romano_por_extenso("RUA AZUL"), "RUA AZUL");
+
+        // Número com vários caracteres
+        assert_eq!(
+            padronizar_numero_romano_por_extenso("MMMDCCCLXXXVIII"),
+            "TRES MIL OITOCENTOS OITENTA OITO"
+        );
+
+        // Pior caso
+        assert_eq!(
+            padronizar_numero_romano_por_extenso("Rua xiii de xi de MMXXV de maio"),
+            "Rua TREZE de ONZE de DOIS MIL VINTE CINCO de maio"
+        );
     }
 
     #[test]
