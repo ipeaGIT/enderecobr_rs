@@ -23,7 +23,7 @@ pub fn numero_extenso_bench(c: &mut Criterion) {
     for &n in &[
         "RUA AZUL",
         "MMMDCCCLXXXVIII",
-        "Rua xiii de xi de MMXXV de maio",
+        "Rua xiii de xi de MMXXV de maio vixi",
     ] {
         group.bench_with_input(format!("padronizar_numeros_romanos/{n}"), &n, |b, &n| {
             b.iter(|| numero_extenso::padronizar_numero_romano_por_extenso(black_box(n)));

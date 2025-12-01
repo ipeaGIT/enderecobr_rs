@@ -316,7 +316,9 @@ static REGEX_ROMANO_TRIAGEM: LazyLock<Regex> = LazyLock::new(criar_regex_romano_
 
 pub fn criar_regex_romano() -> Regex {
     // Aceita 3999, depois disso começa a usar um traço em cima, que não existe em ASCII.
-    Regex::new(r"(?i)\bM{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})\b")
+    // Como essa regexp é só para validar o resultado da triagem, uso as âncoras
+    // de inicio e fim para garantir que toda a string é válida.
+    Regex::new(r"(?i)^M*(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$")
         .expect("Regex romano inválida (bug interno)")
 }
 pub fn criar_regex_romano_triagem() -> Regex {
@@ -327,11 +329,15 @@ pub fn padronizar_numero_romano_por_extenso(valor: &str) -> Cow<'_, str> {
     let mut resultado_opt: Option<String> = None;
     let mut ultimo = 0usize;
 
+    // Uso uma regexp de triagem porque o resultado ficou muito mais rápido no benchmark
+    // do que quando se usa direto a regexp que só captura grupos válidos.
     for m in REGEX_ROMANO_TRIAGEM.find_iter(valor) {
         let inicio = m.start();
         let fim = m.end();
 
-        if !REGEX_ROMANO.is_match(&valor[inicio..fim]) {
+        // A triagem não captura string vazia, mas vou manter
+        // porque tive problemas com isso.
+        if inicio == fim || !REGEX_ROMANO.is_match(&valor[inicio..fim]) {
             continue;
         }
 
@@ -530,8 +536,8 @@ mod tests {
 
         // Pior caso
         assert_eq!(
-            padronizar_numero_romano_por_extenso("Rua xiii de xi de MMXXV de maio"),
-            "Rua TREZE de ONZE de DOIS MIL VINTE CINCO de maio"
+            padronizar_numero_romano_por_extenso("Rua xiii de xi de MMXXV de maio, vixi"),
+            "Rua TREZE de ONZE de DOIS MIL VINTE CINCO de maio, vixi"
         );
     }
 
