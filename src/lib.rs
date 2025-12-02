@@ -11,6 +11,7 @@ pub mod cep;
 pub mod complemento;
 pub mod estado;
 pub mod logradouro;
+pub mod metaphone;
 pub mod municipio;
 pub mod numero;
 pub mod numero_extenso;
@@ -397,6 +398,7 @@ pub fn obter_padronizador_por_tipo(tipo: &str) -> Result<fn(&str) -> String, &st
         "municipio" | "mun" => Ok(padronizar_municipios),
         "cep" => Ok(|cep| padronizar_cep(cep).unwrap_or("".to_string())),
         "cep_leniente" => Ok(padronizar_cep_leniente),
+        "metaphone" => Ok(metaphone::metaphone),
 
         #[cfg(feature = "experimental")]
         "completo" => Ok(padronizar_endereco_bruto),
