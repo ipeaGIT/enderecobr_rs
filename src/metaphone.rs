@@ -1,4 +1,4 @@
-use std::sync::LazyLock;
+use std::{borrow::Cow, sync::LazyLock};
 
 use itertools::Itertools;
 
@@ -42,7 +42,8 @@ pub fn criar_padronizador_metaphone() -> Padronizador {
         // Phonetic Simplification: Similar Consonants
         // Represent similar consonants with single representation.
         // Transform "\u00c7" in "S"
-        // FIXME: o Ç é naturalmente removido no pré processamento.
+        // **NOTA**: o Ç é naturalmente removido no pré processamento,
+        // tenho que tratar antes de chamar o padronizador.
         // .adicionar("Ç", "S")
         //
         // Letter C: if followed by E or I, Transform in "S"
@@ -51,7 +52,7 @@ pub fn criar_padronizador_metaphone() -> Padronizador {
         // **Nota**: Adaptei a regex original `C(?![EIH])` para remover o look-around.
         // Supostamente, ele já tratava os casos problemáticos antes, mas preferi
         // forçar a substituição somente no caso das vogais A, O e U.
-        .adicionar("C[AOU]", "K") // remaining C become K
+        .adicionar("C([AOU])", "K$1") // remaining C become K
         // Letter G: if followed by E or I, Transform in "J" (GUE/GUI previosuly treated)
         .adicionar("G([EI])", "J$1")
         // Remaining G  (followed by A, O, U or consonant) remains G, not K.
@@ -126,9 +127,36 @@ static PADRONIZADOR_METAPHONE: LazyLock<Padronizador> = LazyLock::new(criar_padr
 /// ```
 ///
 pub fn metaphone(valor: &str) -> String {
+    // **NOTA**: o Ç é naturalmente removido no pré processamento,
+    // tenho que tratar antes de chamar o padronizador.
+
+    let tem_cedilha = valor.chars().any(|c| "Çç".contains(c));
+    // Evita criação desnecessária de nova string
+    let _valor: Cow<_> = if tem_cedilha {
+        Cow::Owned(
+            valor
+                .chars()
+                .map(|c| match c {
+                    'Ç' => 'S',
+                    'ç' => 's',
+                    c => c,
+                })
+                .collect::<String>(),
+        )
+    } else {
+        Cow::Borrowed(valor)
+    };
+
     // Forma de obter a variável lazy
     let padronizador = &*PADRONIZADOR_METAPHONE;
-    padronizador.padronizar(valor).chars().dedup().collect()
+
+    padronizador
+        .padronizar(&_valor)
+        .chars()
+        // Não consigo remover caracteres duplicados por regexp do Rust,
+        // pela falta de backreferences, logo tenho que fazer na mão.
+        .dedup()
+        .collect()
 }
 
 #[cfg(test)]
@@ -137,6 +165,6 @@ mod tests {
 
     #[test]
     fn padroniza_corretamente() {
-        assert_eq!(metaphone("MARYA CHAVIER HELENA PHILIPE CALHEIROS FILHA MANHA CHICO SCHMIDT SCENA ESCOVA QUILO"), "MARIA XAVIER ELENA FILIPE KA1EIROS FI1A MA3A XIKO SXMIDT SENA ESKOVA KILO");
+        assert_eq!(metaphone("MARYA CHAVIER HELENA PHILIPE CALHEIROS FILHA MANHA CHICO SCHMIDT SCENA ESCOVA QUILO MAÇÃ"), "MARIA XAVIER ELENA FILIPE KA1EIROS FI1A MA3A XIKO SXMIDT SENA ESKOVA KILO MASA");
     }
 }

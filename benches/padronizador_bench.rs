@@ -32,10 +32,14 @@ pub fn metaphone_bench(c: &mut Criterion) {
     let metaphone = criar_padronizador_metaphone();
     let mut group = c.benchmark_group("metaphone");
 
-    let n = "MARYA CHAVIER HELENA PHILIPE CALHEIROS FILHA MANHA CHICO SCHMIDT SCENA ESCOVA QUILO";
-    group.bench_with_input(n, &n, |b, &n| {
-        b.iter(|| metaphone.padronizar(black_box(n)));
-    });
+    for &n in &[
+        "MARYA CHAVIER HELENA PHILIPE CALHEIROS FILHA MANHA CHICO SCHMIDT SCENA ESCOVA QUILO",
+        "MAÇÃ",
+    ] {
+        group.bench_with_input(n, &n, |b, &n| {
+            b.iter(|| metaphone.padronizar(black_box(n)));
+        });
+    }
 }
 
 criterion_group!(
