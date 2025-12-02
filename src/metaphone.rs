@@ -123,7 +123,7 @@ static PADRONIZADOR_METAPHONE: LazyLock<Padronizador> = LazyLock::new(criar_padr
 /// assert_eq!(metaphone("Helena"), "ELENA");
 /// assert_eq!(metaphone("Philippe"), "FILIPE");
 /// assert_eq!(metaphone("Chavier"), "XAVIER");
-/// assert_eq!(metaphone(""), "XAVIER");
+/// assert_eq!(metaphone("Maçã"), "MASA");
 /// ```
 ///
 pub fn metaphone(valor: &str) -> String {
