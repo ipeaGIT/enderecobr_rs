@@ -24,85 +24,85 @@ const ATE_CEM: [&str; 101] = [
     "DEZOITO",
     "DEZENOVE",
     "VINTE",
-    "VINTE UM",
-    "VINTE DOIS",
-    "VINTE TRES",
-    "VINTE QUATRO",
-    "VINTE CINCO",
-    "VINTE SEIS",
-    "VINTE SETE",
-    "VINTE OITO",
-    "VINTE NOVE",
+    "VINTE E UM",
+    "VINTE E DOIS",
+    "VINTE E TRES",
+    "VINTE E QUATRO",
+    "VINTE E CINCO",
+    "VINTE E SEIS",
+    "VINTE E SETE",
+    "VINTE E OITO",
+    "VINTE E NOVE",
     "TRINTA",
-    "TRINTA UM",
-    "TRINTA DOIS",
-    "TRINTA TRES",
-    "TRINTA QUATRO",
-    "TRINTA CINCO",
-    "TRINTA SEIS",
-    "TRINTA SETE",
-    "TRINTA OITO",
-    "TRINTA NOVE",
+    "TRINTA E UM",
+    "TRINTA E DOIS",
+    "TRINTA E TRES",
+    "TRINTA E QUATRO",
+    "TRINTA E CINCO",
+    "TRINTA E SEIS",
+    "TRINTA E SETE",
+    "TRINTA E OITO",
+    "TRINTA E NOVE",
     "QUARENTA",
-    "QUARENTA UM",
-    "QUARENTA DOIS",
-    "QUARENTA TRES",
-    "QUARENTA QUATRO",
-    "QUARENTA CINCO",
-    "QUARENTA SEIS",
-    "QUARENTA SETE",
-    "QUARENTA OITO",
-    "QUARENTA NOVE",
+    "QUARENTA E UM",
+    "QUARENTA E DOIS",
+    "QUARENTA E TRES",
+    "QUARENTA E QUATRO",
+    "QUARENTA E CINCO",
+    "QUARENTA E SEIS",
+    "QUARENTA E SETE",
+    "QUARENTA E OITO",
+    "QUARENTA E NOVE",
     "CINQUENTA",
-    "CINQUENTA UM",
-    "CINQUENTA DOIS",
-    "CINQUENTA TRES",
-    "CINQUENTA QUATRO",
-    "CINQUENTA CINCO",
-    "CINQUENTA SEIS",
-    "CINQUENTA SETE",
-    "CINQUENTA OITO",
-    "CINQUENTA NOVE",
+    "CINQUENTA E UM",
+    "CINQUENTA E DOIS",
+    "CINQUENTA E TRES",
+    "CINQUENTA E QUATRO",
+    "CINQUENTA E CINCO",
+    "CINQUENTA E SEIS",
+    "CINQUENTA E SETE",
+    "CINQUENTA E OITO",
+    "CINQUENTA E NOVE",
     "SESSENTA",
-    "SESSENTA UM",
-    "SESSENTA DOIS",
-    "SESSENTA TRES",
-    "SESSENTA QUATRO",
-    "SESSENTA CINCO",
-    "SESSENTA SEIS",
-    "SESSENTA SETE",
-    "SESSENTA OITO",
-    "SESSENTA NOVE",
+    "SESSENTA E UM",
+    "SESSENTA E DOIS",
+    "SESSENTA E TRES",
+    "SESSENTA E QUATRO",
+    "SESSENTA E CINCO",
+    "SESSENTA E SEIS",
+    "SESSENTA E SETE",
+    "SESSENTA E OITO",
+    "SESSENTA E NOVE",
     "SETENTA",
-    "SETENTA UM",
-    "SETENTA DOIS",
-    "SETENTA TRES",
-    "SETENTA QUATRO",
-    "SETENTA CINCO",
-    "SETENTA SEIS",
-    "SETENTA SETE",
-    "SETENTA OITO",
-    "SETENTA NOVE",
+    "SETENTA E UM",
+    "SETENTA E DOIS",
+    "SETENTA E TRES",
+    "SETENTA E QUATRO",
+    "SETENTA E CINCO",
+    "SETENTA E SEIS",
+    "SETENTA E SETE",
+    "SETENTA E OITO",
+    "SETENTA E NOVE",
     "OITENTA",
-    "OITENTA UM",
-    "OITENTA DOIS",
-    "OITENTA TRES",
-    "OITENTA QUATRO",
-    "OITENTA CINCO",
-    "OITENTA SEIS",
-    "OITENTA SETE",
-    "OITENTA OITO",
-    "OITENTA NOVE",
+    "OITENTA E UM",
+    "OITENTA E DOIS",
+    "OITENTA E TRES",
+    "OITENTA E QUATRO",
+    "OITENTA E CINCO",
+    "OITENTA E SEIS",
+    "OITENTA E SETE",
+    "OITENTA E OITO",
+    "OITENTA E NOVE",
     "NOVENTA",
-    "NOVENTA UM",
-    "NOVENTA DOIS",
-    "NOVENTA TRES",
-    "NOVENTA QUATRO",
-    "NOVENTA CINCO",
-    "NOVENTA SEIS",
-    "NOVENTA SETE",
-    "NOVENTA OITO",
-    "NOVENTA NOVE",
+    "NOVENTA E UM",
+    "NOVENTA E DOIS",
+    "NOVENTA E TRES",
+    "NOVENTA E QUATRO",
+    "NOVENTA E CINCO",
+    "NOVENTA E SEIS",
+    "NOVENTA E SETE",
+    "NOVENTA E OITO",
+    "NOVENTA E NOVE",
     "CEM",
 ];
 
@@ -202,9 +202,9 @@ pub fn padronizar_numeros_por_extenso(texto: &str) -> Cow<'_, str> {
 /// ```
 /// use enderecobr_rs::numero_extenso::numero_por_extenso;
 /// assert_eq!(numero_por_extenso(0), "ZERO");
-/// assert_eq!(numero_por_extenso(42), "QUARENTA DOIS");
-/// assert_eq!(numero_por_extenso(-1500), "MENOS MIL QUINHENTOS");
-/// assert_eq!(numero_por_extenso(2_001_000), "DOIS MILHOES MIL");
+/// assert_eq!(numero_por_extenso(42), "QUARENTA E DOIS");
+/// assert_eq!(numero_por_extenso(-1500), "MENOS MIL E QUINHENTOS");
+/// assert_eq!(numero_por_extenso(2_001_000), "DOIS MILHOES E MIL");
 /// ```
 pub fn numero_por_extenso(n: i32) -> Cow<'static, str> {
     // Função auxiliar: converte números de 0 a 999
@@ -228,7 +228,7 @@ pub fn numero_por_extenso(n: i32) -> Cow<'static, str> {
 
         if centena > 0 && dezenas > 0 {
             // Espaço entre centena e dezenas, se ambas existirem
-            resultado.push(' ');
+            resultado.push_str(" E ");
         }
 
         if dezenas > 0 {
@@ -271,7 +271,13 @@ pub fn numero_por_extenso(n: i32) -> Cow<'static, str> {
         // Se restar menos de 1000, processa diretamente e termina
         if valor_restante > 0 && valor_restante < 1000 {
             if !resultado.is_empty() {
-                resultado.push(' ');
+                // Adiciono o E quando estou no "ultimo termo" do número,
+                // seja dezenas ou centenas redondas (ex: QUINHENTOS).
+                if valor_restante < 100 || valor_restante % 100 == 0 {
+                    resultado.push_str(" E ");
+                } else {
+                    resultado.push(' ');
+                }
             }
             resultado.push_str(&resolver_centenas(valor_restante));
             break;
@@ -287,17 +293,25 @@ pub fn numero_por_extenso(n: i32) -> Cow<'static, str> {
         }
 
         if !resultado.is_empty() {
-            // Adiciona espaço caso já tenha algo na string
-            resultado.push(' ');
+            // Adiciono o E quando estou no "ultimo termo" do número.
+            if valor_restante == 0 {
+                resultado.push_str(" E ");
+            } else {
+                // Adiciona espaço caso já tenha algo na string
+                resultado.push(' ');
+            }
         }
 
-        // Se o grupo for maior que 1, escreve o número (ex: "DOIS MIL")
+        // Se o grupo de 3 dígitos for diferente de 1, que já é resolvido
+        // no vetor ORDENS_GRANDEZA, escreve o número desse grupo (ex: "DOIS")
+        // para receber o sufixo no if abaixo (ex: "MIL")
         if mais_significativo != 1 {
             resultado.push_str(&resolver_centenas(mais_significativo));
             resultado.push(' ');
         }
 
-        // Seleciona singular ou plural baseado no valor do grupo
+        // Seleciona o sufixo singular ou plural baseado no valor do
+        // grupo de 3 dígitos
         let (singular, plural) = ORDENS_GRANDEZA[(ordem_grandeza - 1) as usize];
         if mais_significativo == 1 {
             resultado.push_str(singular);
@@ -314,6 +328,7 @@ pub fn numero_por_extenso(n: i32) -> Cow<'static, str> {
 static REGEX_ROMANO: LazyLock<Regex> = LazyLock::new(criar_regex_romano);
 static REGEX_ROMANO_TRIAGEM: LazyLock<Regex> = LazyLock::new(criar_regex_romano_triagem);
 
+#[allow(clippy::expect_used)]
 pub fn criar_regex_romano() -> Regex {
     // Aceita 3999, depois disso começa a usar um traço em cima, que não existe em ASCII.
     // Como essa regexp é só para validar o resultado da triagem, uso as âncoras
@@ -321,6 +336,8 @@ pub fn criar_regex_romano() -> Regex {
     Regex::new(r"(?i)^M*(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$")
         .expect("Regex romano inválida (bug interno)")
 }
+
+#[allow(clippy::expect_used)]
 pub fn criar_regex_romano_triagem() -> Regex {
     Regex::new(r"(?i)\b[MDCLXVI]+\b").expect("Regex romano triagem inválida (bug interno)")
 }
@@ -396,21 +413,21 @@ mod tests {
         assert_eq!(numero_por_extenso(1), "UM");
         assert_eq!(numero_por_extenso(10), "DEZ");
         assert_eq!(numero_por_extenso(15), "QUINZE");
-        assert_eq!(numero_por_extenso(25), "VINTE CINCO");
+        assert_eq!(numero_por_extenso(25), "VINTE E CINCO");
         assert_eq!(numero_por_extenso(100), "CEM");
-        assert_eq!(numero_por_extenso(101), "CENTO UM");
+        assert_eq!(numero_por_extenso(101), "CENTO E UM");
         assert_eq!(numero_por_extenso(200), "DUZENTOS");
-        assert_eq!(numero_por_extenso(999), "NOVECENTOS NOVENTA NOVE");
+        assert_eq!(numero_por_extenso(999), "NOVECENTOS E NOVENTA E NOVE");
     }
 
     #[test]
     fn testes_milhares() {
         assert_eq!(numero_por_extenso(1000), "MIL");
-        assert_eq!(numero_por_extenso(1500), "MIL QUINHENTOS");
-        assert_eq!(numero_por_extenso(2001), "DOIS MIL UM");
+        assert_eq!(numero_por_extenso(1500), "MIL E QUINHENTOS");
+        assert_eq!(numero_por_extenso(2001), "DOIS MIL E UM");
         assert_eq!(
             numero_por_extenso(12345),
-            "DOZE MIL TREZENTOS QUARENTA CINCO"
+            "DOZE MIL TREZENTOS E QUARENTA E CINCO"
         );
     }
 
@@ -422,23 +439,23 @@ mod tests {
         assert_eq!(numero_por_extenso(10_000_000), "DEZ MILHOES");
         assert_eq!(numero_por_extenso(11_000_000), "ONZE MILHOES");
         assert_eq!(numero_por_extenso(20_000_000), "VINTE MILHOES");
-        assert_eq!(numero_por_extenso(99_000_000), "NOVENTA NOVE MILHOES");
+        assert_eq!(numero_por_extenso(99_000_000), "NOVENTA E NOVE MILHOES");
 
         // Combinados com milhares e unidades
         assert_eq!(
             numero_por_extenso(1_234_567),
-            "UM MILHAO DUZENTOS TRINTA QUATRO MIL QUINHENTOS SESSENTA SETE"
+            "UM MILHAO DUZENTOS E TRINTA E QUATRO MIL QUINHENTOS E SESSENTA E SETE"
         );
-        assert_eq!(numero_por_extenso(2_001_001), "DOIS MILHOES MIL UM");
+        assert_eq!(numero_por_extenso(2_001_001), "DOIS MILHOES MIL E UM");
         assert_eq!(
             numero_por_extenso(99_999_999),
-            "NOVENTA NOVE MILHOES NOVECENTOS NOVENTA NOVE MIL NOVECENTOS NOVENTA NOVE"
+            "NOVENTA E NOVE MILHOES NOVECENTOS E NOVENTA E NOVE MIL NOVECENTOS E NOVENTA E NOVE"
         );
 
         // Casos limites
-        assert_eq!(numero_por_extenso(1_000_001), "UM MILHAO UM");
-        assert_eq!(numero_por_extenso(1_001_000), "UM MILHAO MIL");
-        assert_eq!(numero_por_extenso(1_000_100), "UM MILHAO CEM");
+        assert_eq!(numero_por_extenso(1_000_001), "UM MILHAO E UM");
+        assert_eq!(numero_por_extenso(1_001_000), "UM MILHAO E MIL");
+        assert_eq!(numero_por_extenso(1_000_100), "UM MILHAO E CEM");
     }
 
     #[test]
@@ -450,18 +467,18 @@ mod tests {
         // Combinados com milhões, milhares e unidades
         assert_eq!(
         numero_por_extenso(1_234_567_890),
-        "UM BILHAO DUZENTOS TRINTA QUATRO MILHOES QUINHENTOS SESSENTA SETE MIL OITOCENTOS NOVENTA"
+        "UM BILHAO DUZENTOS E TRINTA E QUATRO MILHOES QUINHENTOS E SESSENTA E SETE MIL OITOCENTOS E NOVENTA"
     );
         assert_eq!(
             numero_por_extenso(2_001_001_001),
-            "DOIS BILHOES UM MILHAO MIL UM"
+            "DOIS BILHOES UM MILHAO MIL E UM"
         );
 
         // Casos limites
-        assert_eq!(numero_por_extenso(1_000_000_001), "UM BILHAO UM");
-        assert_eq!(numero_por_extenso(1_001_000_000), "UM BILHAO UM MILHAO");
-        assert_eq!(numero_por_extenso(1_000_100_000), "UM BILHAO CEM MIL");
-        assert_eq!(numero_por_extenso(1_000_001_000), "UM BILHAO MIL");
+        assert_eq!(numero_por_extenso(1_000_000_001), "UM BILHAO E UM");
+        assert_eq!(numero_por_extenso(1_001_000_000), "UM BILHAO E UM MILHAO");
+        assert_eq!(numero_por_extenso(1_000_100_000), "UM BILHAO E CEM MIL");
+        assert_eq!(numero_por_extenso(1_000_001_000), "UM BILHAO E MIL");
     }
 
     #[test]
@@ -470,14 +487,14 @@ mod tests {
         assert_eq!(numero_por_extenso(-100), "MENOS CEM");
         assert_eq!(
             numero_por_extenso(-1234),
-            "MENOS MIL DUZENTOS TRINTA QUATRO"
+            "MENOS MIL DUZENTOS E TRINTA E QUATRO"
         );
     }
 
     #[test]
     fn testes_limites() {
-        assert_eq!(numero_por_extenso(i32::MAX), "DOIS BILHOES CENTO QUARENTA SETE MILHOES QUATROCENTOS OITENTA TRES MIL SEISCENTOS QUARENTA SETE");
-        assert_eq!(numero_por_extenso(i32::MIN), "MENOS DOIS BILHOES CENTO QUARENTA SETE MILHOES QUATROCENTOS OITENTA TRES MIL SEISCENTOS QUARENTA OITO");
+        assert_eq!(numero_por_extenso(i32::MAX), "DOIS BILHOES CENTO E QUARENTA E SETE MILHOES QUATROCENTOS E OITENTA E TRES MIL SEISCENTOS E QUARENTA E SETE");
+        assert_eq!(numero_por_extenso(i32::MIN), "MENOS DOIS BILHOES CENTO E QUARENTA E SETE MILHOES QUATROCENTOS E OITENTA E TRES MIL SEISCENTOS E QUARENTA E OITO");
     }
 
     #[test]
@@ -531,13 +548,13 @@ mod tests {
         // Número com vários caracteres
         assert_eq!(
             padronizar_numero_romano_por_extenso("MMMDCCCLXXXVIII"),
-            "TRES MIL OITOCENTOS OITENTA OITO"
+            "TRES MIL OITOCENTOS E OITENTA E OITO"
         );
 
         // Pior caso
         assert_eq!(
             padronizar_numero_romano_por_extenso("Rua xiii de xi de MMXXV de maio, vixi"),
-            "Rua TREZE de ONZE de DOIS MIL VINTE CINCO de maio, vixi"
+            "Rua TREZE de ONZE de DOIS MIL E VINTE E CINCO de maio, vixi"
         );
     }
 
@@ -552,7 +569,7 @@ mod tests {
         // Caso simples
         assert_eq!(
             padronizar_numeros_por_extenso("RUA 222"),
-            "RUA DUZENTOS VINTE DOIS"
+            "RUA DUZENTOS E VINTE E DOIS"
         );
 
         assert_eq!(
@@ -561,12 +578,12 @@ mod tests {
         );
 
         // Só número
-        assert_eq!(padronizar_numeros_por_extenso("1001"), "MIL UM");
+        assert_eq!(padronizar_numeros_por_extenso("1001"), "MIL E UM");
 
         // Vários números na string
         assert_eq!(
             padronizar_numeros_por_extenso("RUA 222 NUMERO 14 APT 101"),
-            "RUA DUZENTOS VINTE DOIS NUMERO QUATORZE APT CENTO UM"
+            "RUA DUZENTOS E VINTE E DOIS NUMERO QUATORZE APT CENTO E UM"
         );
     }
 }
