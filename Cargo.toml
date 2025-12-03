@@ -13,6 +13,11 @@ keywords = ["address", "brazil", "brasil", "regex", "geocoding"]
 description = "Esta biblioteca tem por objetivo prover de funções utilizadas para padronizar endereços brasileiros, afim de facilitar processamentos posteriores."
 exclude = [ "scripts/"]
 
+[workspace]
+members = [
+  "./tests/snapshot/"
+]
+
 [[bin]]
 name = "separacao-lote"
 path = "src/bin/separacao-lote.rs"
