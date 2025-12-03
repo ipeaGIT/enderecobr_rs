@@ -1,13 +1,21 @@
 use std::fmt::Display;
 
+use clap::Parser;
 use enderecobr_rs::padronizar_logradouros;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
+use tabled::settings::{Style, Width};
+use tabled::{Table, Tabled};
 
 trait SerializadorSnapshot<T> {
     fn carregar(&self, nome_teste: &str, etapa_teste: &str) -> Vec<T>;
-    fn salvar(&self, nome_teste: &str, etapa_teste: &str, valores: Vec<T>) -> Result<(), String>;
+    fn salvar(
+        &self,
+        nome_teste: &str,
+        etapa_teste: &str,
+        valores: Vec<T>,
+    ) -> Result<String, String>;
 }
 
 //////////////
@@ -23,7 +31,7 @@ impl SerializadorSnapshot<String> for SerializadorString {
         nome_teste: &str,
         etapa_teste: &str,
         valores: Vec<String>,
-    ) -> Result<(), String> {
+    ) -> Result<String, String> {
         let file_path = Path::new(BASE_PATH).join(format!("{}_{}.txt", nome_teste, etapa_teste));
 
         // Criar diretório base se não existir
@@ -35,7 +43,10 @@ impl SerializadorSnapshot<String> for SerializadorString {
         for valor in valores {
             writeln!(file, "{}", valor).map_err(|e| e.to_string())?;
         }
-        Ok(())
+        Ok(file_path
+            .to_str()
+            .ok_or("Caminho do arquivo inválido")?
+            .to_string())
     }
     fn carregar(&self, nome_teste: &str, etapa_teste: &str) -> Vec<String> {
         let file_path = Path::new(BASE_PATH).join(format!("{}_{}.txt", nome_teste, etapa_teste));
@@ -47,20 +58,8 @@ impl SerializadorSnapshot<String> for SerializadorString {
 
         BufReader::new(file)
             .lines()
-            .filter_map(|line| line.ok())
+            .map_while(|line| line.ok())
             .collect()
-    }
-}
-
-#[derive(Default)]
-struct SerializadorI32;
-
-impl SerializadorSnapshot<i32> for SerializadorI32 {
-    fn salvar(&self, nome_teste: &str, etapa_teste: &str, valores: Vec<i32>) -> Result<(), String> {
-        todo!()
-    }
-    fn carregar(&self, nome_teste: &str, etapa_teste: &str) -> Vec<i32> {
-        todo!()
     }
 }
 
@@ -69,7 +68,7 @@ impl SerializadorSnapshot<i32> for SerializadorI32 {
 //////////////////
 
 trait SnapshotTester {
-    fn salvar_snapshot(&self) -> Result<(), String>;
+    fn salvar_snapshot(&self) -> Result<String, String>;
     fn comparar_snapshot(&self) -> Result<String, String>;
 }
 
@@ -92,7 +91,7 @@ where
     T: Display,
     U: PartialEq + Display,
 {
-    fn salvar_snapshot(&self) -> Result<(), String> {
+    fn salvar_snapshot(&self) -> Result<String, String> {
         let valores_brutos = self.serializador_entrada.carregar(self.nome, "bruto");
         let valores_processados: Vec<U> = valores_brutos
             .iter()
@@ -107,30 +106,39 @@ where
         let valores_brutos = self.serializador_entrada.carregar(self.nome, "bruto");
         let valores_snapshot = self.serializador_saida.carregar(self.nome, "snapshot");
 
-        let mut res = String::new();
-        valores_brutos
+        let res: Vec<_> = valores_brutos
             .iter()
             .zip(valores_snapshot.iter())
             .filter_map(|(bruto, snap)| {
                 let atual = (self.processador)(bruto);
                 if atual != *snap {
-                    Some((bruto, snap, atual))
+                    Some(Diff {
+                        original: bruto.to_string(),
+                        snapshot: snap.to_string(),
+                        atual: atual.to_string(),
+                    })
                 } else {
                     None
                 }
             })
-            .for_each(|(bruto, snap, atual)| {
-                res.push_str(format!("{:}\t| {:}\t| {:}\n", bruto, snap, atual).as_str());
-            });
+            .collect();
 
         if !res.is_empty() {
-            res.insert_str(
-                0,
-                "Original\t| Snapshot\t| Atual\n--------------------------------------------\n",
-            );
+            return Ok(Table::new(res)
+                .with(Style::modern())
+                .with(Width::wrap(100))
+                .to_string());
         }
-        Ok(res)
+
+        Ok("Nenhuma mudança identificada.".to_string())
     }
+}
+
+#[derive(Tabled)]
+struct Diff {
+    original: String,
+    snapshot: String,
+    atual: String,
 }
 
 /////////////////
@@ -150,25 +158,37 @@ fn obter_snapshot_tester_dyn(nome_teste: &str) -> Box<dyn SnapshotTester> {
             processador: |x: &String| padronizar_logradouros(x),
         }),
 
-        "num extenso" => Box::new(SnapshotTesterImpl {
-            nome: "numero_extenso",
-            serializador_entrada: SerializadorI32,
-            serializador_saida: SerializadorString,
-            processador: |x: &i32| x.to_string(),
-        }),
-
         _ => panic!("Nenhum teste encontrado"),
     }
 }
 
 ////////////////
 
-fn main() -> Result<(), String> {
-    // obter_snapshot_tester_dyn("logr").salvar_snapshot();
-    let res = obter_snapshot_tester_dyn("logr")
-        .comparar_snapshot()
-        .map_err(|x| x.to_string())?;
+/// Utilitário que serve para comparar o resultado desta lib com valores
+/// previamente salvos.
+#[derive(Parser)]
+#[clap(author, version)]
+struct Args {
+    /// Testes a serem realizados
+    tipo_teste: Vec<String>,
 
-    println!("{}", res);
+    /// Salvar snapshot
+    #[arg(short('s'), long, default_value = "false")]
+    salvar: bool,
+}
+
+fn main() -> Result<(), String> {
+    let args = Args::parse();
+    for tipo_teste in args.tipo_teste {
+        let tester = obter_snapshot_tester_dyn(&tipo_teste);
+        if args.salvar {
+            let arq = tester.salvar_snapshot()?;
+            println!("Snapshot salvo em {}", arq);
+        } else {
+            let diffs = tester.comparar_snapshot();
+            println!("{:}", diffs?);
+        }
+    }
+
     Ok(())
 }
