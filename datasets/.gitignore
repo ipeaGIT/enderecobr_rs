@@ -1,0 +1,15 @@
+# ignora tudo em dados/
+dados/**
+
+# mas não ignora o diretório dados em si
+!dados/
+
+# e não ignora os .gitkeep
+!dados/.gitkeep
+!dados/intermediarios/
+!dados/intermediarios/.gitkeep
+!dados/brutos/
+!dados/brutos/.gitkeep
+!dados/snapshot_test
+!dados/snapshot_test/.gitkeep
+
