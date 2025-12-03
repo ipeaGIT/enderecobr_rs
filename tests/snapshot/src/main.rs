@@ -1,17 +1,27 @@
 use std::fmt::Display;
 
 use clap::Parser;
-use enderecobr_rs::padronizar_logradouros;
-use std::fs::{self, File};
+use enderecobr_rs::{
+    padronizar_bairros, padronizar_complementos, padronizar_estados_para_nome,
+    padronizar_logradouros, padronizar_municipios, padronizar_numeros,
+};
+use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use tabled::settings::{Style, Width};
 use tabled::{Table, Tabled};
 
 trait SerializadorSnapshot<T> {
-    fn carregar(&self, nome_teste: &str, etapa_teste: &str) -> Vec<T>;
+    fn carregar(
+        &self,
+        base_path: &str,
+        nome_teste: &str,
+        etapa_teste: &str,
+    ) -> Result<Vec<T>, String>;
+
     fn salvar(
         &self,
+        base_path: &str,
         nome_teste: &str,
         etapa_teste: &str,
         valores: Vec<T>,
@@ -20,26 +30,26 @@ trait SerializadorSnapshot<T> {
 
 //////////////
 
-const BASE_PATH: &str = "tests/snapshot/data";
-
 #[derive(Default)]
 struct SerializadorString;
 
 impl SerializadorSnapshot<String> for SerializadorString {
     fn salvar(
         &self,
+        base_path: &str,
         nome_teste: &str,
         etapa_teste: &str,
         valores: Vec<String>,
     ) -> Result<String, String> {
-        let file_path = Path::new(BASE_PATH).join(format!("{}_{}.txt", nome_teste, etapa_teste));
+        let file_path = Path::new(base_path).join(format!("{}_{}.csv", nome_teste, etapa_teste));
 
-        // Criar diretório base se não existir
-        if let Some(parent) = file_path.parent() {
-            fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-
-        let mut file = File::create(&file_path).map_err(|e| e.to_string())?;
+        let mut file = File::create(&file_path).map_err(|e| {
+            format!(
+                "Erro ao salvar o arquivo {:}: {:}",
+                file_path.to_str().unwrap_or(""),
+                e
+            )
+        })?;
         for valor in valores {
             writeln!(file, "{}", valor).map_err(|e| e.to_string())?;
         }
@@ -48,18 +58,26 @@ impl SerializadorSnapshot<String> for SerializadorString {
             .ok_or("Caminho do arquivo inválido")?
             .to_string())
     }
-    fn carregar(&self, nome_teste: &str, etapa_teste: &str) -> Vec<String> {
-        let file_path = Path::new(BASE_PATH).join(format!("{}_{}.txt", nome_teste, etapa_teste));
+    fn carregar(
+        &self,
+        base_path: &str,
+        nome_teste: &str,
+        etapa_teste: &str,
+    ) -> Result<Vec<String>, String> {
+        let file_path = Path::new(base_path).join(format!("{}_{}.csv", nome_teste, etapa_teste));
 
-        let file = match File::open(&file_path) {
-            Ok(file) => file,
-            Err(_) => return Vec::new(),
-        };
+        let file = File::open(&file_path).map_err(|e| {
+            format!(
+                "Erro ao abrir arquivo {:}: {:}",
+                file_path.to_str().unwrap_or(""),
+                e
+            )
+        })?;
 
-        BufReader::new(file)
+        Ok(BufReader::new(file)
             .lines()
             .map_while(|line| line.ok())
-            .collect()
+            .collect())
     }
 }
 
@@ -68,8 +86,8 @@ impl SerializadorSnapshot<String> for SerializadorString {
 //////////////////
 
 trait SnapshotTester {
-    fn salvar_snapshot(&self) -> Result<String, String>;
-    fn comparar_snapshot(&self) -> Result<String, String>;
+    fn salvar_snapshot(&self, base_path: &str) -> Result<String, String>;
+    fn comparar_snapshot(&self, base_path: &str) -> Result<String, String>;
 }
 
 struct SnapshotTesterImpl<T, U, I, O>
@@ -91,20 +109,26 @@ where
     T: Display,
     U: PartialEq + Display,
 {
-    fn salvar_snapshot(&self) -> Result<String, String> {
-        let valores_brutos = self.serializador_entrada.carregar(self.nome, "bruto");
+    fn salvar_snapshot(&self, base_path: &str) -> Result<String, String> {
+        let valores_brutos = self
+            .serializador_entrada
+            .carregar(base_path, self.nome, "bruto")?;
         let valores_processados: Vec<U> = valores_brutos
             .iter()
             .map(|x| (self.processador)(x))
             .collect();
 
         self.serializador_saida
-            .salvar(self.nome, "snapshot", valores_processados)
+            .salvar(base_path, self.nome, "snapshot", valores_processados)
     }
 
-    fn comparar_snapshot(&self) -> Result<String, String> {
-        let valores_brutos = self.serializador_entrada.carregar(self.nome, "bruto");
-        let valores_snapshot = self.serializador_saida.carregar(self.nome, "snapshot");
+    fn comparar_snapshot(&self, base_path: &str) -> Result<String, String> {
+        let valores_brutos = self
+            .serializador_entrada
+            .carregar(base_path, self.nome, "bruto")?;
+        let valores_snapshot = self
+            .serializador_saida
+            .carregar(base_path, self.nome, "snapshot")?;
 
         let res: Vec<_> = valores_brutos
             .iter()
@@ -157,7 +181,36 @@ fn obter_snapshot_tester_dyn(nome_teste: &str) -> Box<dyn SnapshotTester> {
             serializador_saida: SerializadorString,
             processador: |x: &String| padronizar_logradouros(x),
         }),
-
+        "num" => Box::new(SnapshotTesterImpl {
+            nome: "numero",
+            serializador_entrada: SerializadorString,
+            serializador_saida: SerializadorString,
+            processador: |x: &String| padronizar_numeros(x),
+        }),
+        "comp" => Box::new(SnapshotTesterImpl {
+            nome: "complemento",
+            serializador_entrada: SerializadorString,
+            serializador_saida: SerializadorString,
+            processador: |x: &String| padronizar_complementos(x),
+        }),
+        "loc" => Box::new(SnapshotTesterImpl {
+            nome: "localidade",
+            serializador_entrada: SerializadorString,
+            serializador_saida: SerializadorString,
+            processador: |x: &String| padronizar_bairros(x),
+        }),
+        "mun" => Box::new(SnapshotTesterImpl {
+            nome: "municipio",
+            serializador_entrada: SerializadorString,
+            serializador_saida: SerializadorString,
+            processador: |x: &String| padronizar_municipios(x),
+        }),
+        "uf" => Box::new(SnapshotTesterImpl {
+            nome: "uf",
+            serializador_entrada: SerializadorString,
+            serializador_saida: SerializadorString,
+            processador: |x: &String| padronizar_estados_para_nome(x),
+        }),
         _ => panic!("Nenhum teste encontrado"),
     }
 }
@@ -169,6 +222,9 @@ fn obter_snapshot_tester_dyn(nome_teste: &str) -> Box<dyn SnapshotTester> {
 #[derive(Parser)]
 #[clap(author, version)]
 struct Args {
+    /// Caminho Base
+    caminho: String,
+
     /// Testes a serem realizados
     tipo_teste: Vec<String>,
 
@@ -179,13 +235,24 @@ struct Args {
 
 fn main() -> Result<(), String> {
     let args = Args::parse();
-    for tipo_teste in args.tipo_teste {
+    let tipos_testes = if !args.tipo_teste.is_empty() {
+        args.tipo_teste
+    } else {
+        ["logr", "num", "comp", "loc", "mun", "uf"]
+            .iter()
+            .map(|x| x.to_string())
+            .collect()
+    };
+
+    for tipo_teste in tipos_testes {
         let tester = obter_snapshot_tester_dyn(&tipo_teste);
         if args.salvar {
-            let arq = tester.salvar_snapshot()?;
+            println!("Salvando snapshot para {}", tipo_teste);
+            let arq = tester.salvar_snapshot(&args.caminho)?;
             println!("Snapshot salvo em {}", arq);
         } else {
-            let diffs = tester.comparar_snapshot();
+            println!("Comparando snapshot para {}", tipo_teste);
+            let diffs = tester.comparar_snapshot(&args.caminho);
             println!("{:}", diffs?);
         }
     }
