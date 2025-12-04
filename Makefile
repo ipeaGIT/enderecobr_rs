@@ -1,7 +1,7 @@
 .PHONY: build doc test testes-comparativos
 
-ARQ_COMPARACAO = /mnt/storage6/usuarios/CGDTI/IpeaDataLab/projetos/2025_poc_enderecos/benchmark.parquet
-BIN_TESTE_COMPARATIVO = target/release/teste-comparativo
+DIR_DATASETS = ./datasets
+DIR_SNAPSHOT = ./datasets/dados/snapshot_test
 
 # ==== Utilitários ====
 
@@ -17,21 +17,17 @@ doc:
 test:
 	cargo test
 
-# ==== Testes comparativos com a implementação em R ====
+snapshot-test: snapshot-download
+	cargo run --release -p snapshot -- $(DIR_SNAPSHOT)
 
-testes-comparativos: diff/logr.csv diff/num.csv diff/comp.csv diff/bairro.csv diff/cep.csv
+snapshot-criar:
+	cargo run --release -p snapshot -- -s $(DIR_SNAPSHOT)
 
-diff/logr.csv: $(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO)
-	$(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO) --arquivo-saida $@ --tipo-padronizador logr --campo-bruto logradouro --campo-referencia logradouro_padr
+snapshot-upload:
+	$(MAKE) -C $(DIR_DATASETS) hf-publicar-snapshot-test
 
-diff/num.csv: $(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO)
-	$(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO) --arquivo-saida $@ --tipo-padronizador num --campo-bruto numero --campo-referencia numero_padr
+snapshot-download:
+	$(MAKE) -C $(DIR_DATASETS) snapshot-download
 
-diff/comp.csv: $(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO)
-	$(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO) --arquivo-saida $@ --tipo-padronizador comp --campo-bruto complemento --campo-referencia complemento_padr
-
-diff/bairro.csv: $(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO)
-	$(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO) --arquivo-saida $@ --tipo-padronizador bairro --campo-bruto bairro --campo-referencia bairro_padr
-
-diff/cep.csv: $(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO)
-	$(BIN_TESTE_COMPARATIVO) $(ARQ_COMPARACAO) --arquivo-saida $@ --tipo-padronizador cep --campo-bruto cep --campo-referencia cep_padr
+snapshot-download-force:
+	$(MAKE) -C $(DIR_DATASETS) -B snapshot-download
