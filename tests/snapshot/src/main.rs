@@ -9,7 +9,7 @@ use enderecobr_rs::{
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
-use tabled::settings::{Style, Width};
+use tabled::settings::Style;
 use tabled::{Table, Tabled};
 
 trait SerializadorSnapshot<T> {
@@ -159,7 +159,7 @@ where
         let tempo_por_qtd = duracao / valores_snapshot.len() as u128;
 
         println!(
-            "Avaliação de {}: \n- Processado {} dados em {} ns ({} ns/reg => {:.0} reg/s)",
+            "## Avaliação de {}: \n\n> Processado {} dados em {} ns ({} ns/reg => {:.0} reg/s)",
             self.nome,
             valores_snapshot.len(),
             duracao,
@@ -168,10 +168,7 @@ where
         );
 
         if !res.is_empty() {
-            return Ok(Table::new(res)
-                .with(Style::modern())
-                .with(Width::wrap(50))
-                .to_string());
+            return Ok(Table::new(res).with(Style::markdown()).to_string());
         }
 
         Ok("Nenhuma mudança identificada.".to_string())
@@ -267,9 +264,10 @@ fn main() -> Result<(), String> {
             let arq = tester.salvar_snapshot(&args.caminho)?;
             println!("Snapshot salvo em {}", arq);
         } else {
-            println!("Comparando snapshot para {}", tipo_teste);
             let diffs = tester.comparar_snapshot(&args.caminho);
+            println!();
             println!("{:}", diffs?);
+            println!();
         }
     }
 
