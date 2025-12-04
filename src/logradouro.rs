@@ -123,6 +123,9 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"^LARGO L(RG|GO)\b(\.|,)?", "LARGO")
         .adicionar(r"^LARGO?\b(-|,|\.) *", "LARGO ")
 
+        // .adicionar(r"\b(LN)\b", "LINHA") // Sem testes
+        .adicionar(r"\b(GL|GB)\b", "GLEBA")
+
         // estabelecimentos
         .adicionar(r"^AER(OP)?\b(\.|,)?", "AEROPORTO") // sera que vale? tem uns casos estranhos aqui, e.g. "AER GUANANDY, 1", "AER WASHINGTON LUIZ, 3318"
         .adicionar(r"^AEROPORTO (AEROPORTO|AER)\b(\.|,)?", "AEROPORTO")
@@ -182,6 +185,9 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bENGA\b\.?", "ENGENHEIRA")
         .adicionar(r"\bPD?E\b\.", "PADRE") // PE pode ser só pe mesmo, então forcando o PE. (com ponto) pra ser PADRE
         .adicionar(r"\bMONS\b\.?", "MONSENHOR")
+
+        // Erros de digitação comuns para presidente. => Sem testes
+        // .adicionar(r"\bP(PREISI|PREZI|PRSI|PERSI|PESI)DENTE\b", "PRESIDENTE")
 
         .adicionar(r"\bPRES(ID)?\b\.?", "PRESIDENTE")
         .adicionar(r"\bGOV\b\.?", "GOVERNADOR")
@@ -253,6 +259,8 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         // correções de problemas ocasionados pelos filtros acima
         .adicionar(r"\bTENENTE SHI\b", "TEN SHI")
         .adicionar(r"\bHO SHI MINISTRO\b", "HO SHI MIN")
+
+        .adicionar(r"\bCAMPOS? H?ELI(Z|S)I?E?(O|U)(S|Z)?\b", "CAMPOS ELISIOS")
 
         // datas
 
