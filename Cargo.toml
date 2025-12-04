@@ -15,7 +15,8 @@ exclude = [ "scripts/"]
 
 [workspace]
 members = [
-  "./tests/snapshot/"
+  "./tests/snapshot/",
+  "./bindings/python/"
 ]
 
 [[bin]]
