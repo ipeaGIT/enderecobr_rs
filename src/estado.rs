@@ -6,7 +6,7 @@ use crate::{normalizar, Padronizador};
 
 #[derive(Debug, Clone, Copy)]
 struct Estado {
-    pub codigo: u8,
+    pub codigo: &'static str,
     pub nome: &'static str,
     pub sigla: &'static str,
 }
@@ -27,6 +27,7 @@ fn criar_estado_map() -> HashMap<String, &'static Estado> {
         estados.insert(e.codigo.to_string(), e);
         estados.insert(normalizar(e.nome).into_owned(), e);
     });
+    estados.shrink_to_fit();
     estados
 }
 
@@ -35,7 +36,7 @@ static PADRONIZADOR: LazyLock<Padronizador> = LazyLock::new(criar_padronizador);
 fn criar_padronizador() -> Padronizador {
     let mut padronizador = Padronizador::default();
 
-    padronizador.adicionar(r"0+(\d)", "$1");
+    padronizador.adicionar(r"\b0+(\d+)\b", "$1");
     padronizador.adicionar(r"\s{2,}", " ");
 
     padronizador.preparar();
@@ -67,15 +68,14 @@ fn criar_padronizador() -> Padronizador {
 /// - remoção de zeros à esquerda;
 /// - busca, a partir do código numérico ou da abreviação da UF, do nome completo de cada estado;
 ///
-pub fn padronizar_estados_para_sigla(valor: &str) -> String {
+pub fn padronizar_estados_para_sigla(valor: &str) -> &'static str {
     let padronizador = &*PADRONIZADOR;
-    let valor_padr = padronizador.padronizar(valor);
+    let valor_padr = padronizador.padronizar_cow(valor);
 
     let mapa = &*ESTADOS_MAP;
-    mapa.get(&valor_padr)
+    mapa.get(&valor_padr.into_owned())
         .map(|e| e.sigla)
         .unwrap_or("")
-        .to_string()
 }
 
 /// Padroniza uma string representando estados brasileiros para seu código do IBGE.
@@ -101,14 +101,14 @@ pub fn padronizar_estados_para_sigla(valor: &str) -> String {
 /// - remoção de zeros à esquerda;
 /// - busca, a partir do código numérico ou da abreviação da UF, do nome completo de cada estado;
 ///
-pub fn padronizar_estados_para_codigo(valor: &str) -> String {
+pub fn padronizar_estados_para_codigo(valor: &str) -> &'static str {
     let padronizador = &*PADRONIZADOR;
-    let valor_padr = padronizador.padronizar(valor);
+    let valor_padr = padronizador.padronizar_cow(valor);
 
     let mapa = &*ESTADOS_MAP;
-    mapa.get(&valor_padr)
-        .map(|e| e.codigo.to_string())
-        .unwrap_or("".to_string())
+    mapa.get(&valor_padr.into_owned())
+        .map(|e| e.codigo)
+        .unwrap_or("")
 }
 
 /// Padroniza uma string representando estados brasileiros para seu nome por extenso,
@@ -135,152 +135,151 @@ pub fn padronizar_estados_para_codigo(valor: &str) -> String {
 /// - remoção de zeros à esquerda;
 /// - busca, a partir do código numérico ou da abreviação da UF, do nome completo de cada estado;
 ///
-pub fn padronizar_estados_para_nome(valor: &str) -> String {
+pub fn padronizar_estados_para_nome(valor: &str) -> &'static str {
     let padronizador = &*PADRONIZADOR;
-    let valor_padr = padronizador.padronizar(valor);
+    let valor_padr = padronizador.padronizar_cow(valor);
 
     let mapa = &*ESTADOS_MAP;
-    mapa.get(&valor_padr)
+    mapa.get(&valor_padr.into_owned())
         .map(|e| e.nome)
         .unwrap_or("")
-        .to_string()
 }
 
 // ============ Dados Brutos ============
 
 const ESTADOS: [Estado; 27] = [
     Estado {
-        codigo: 11,
+        codigo: "11",
         nome: "RONDONIA",
         sigla: "RO",
     },
     Estado {
-        codigo: 12,
+        codigo: "12",
         nome: "ACRE",
         sigla: "AC",
     },
     Estado {
-        codigo: 13,
+        codigo: "13",
         nome: "AMAZONAS",
         sigla: "AM",
     },
     Estado {
-        codigo: 14,
+        codigo: "14",
         nome: "RORAIMA",
         sigla: "RR",
     },
     Estado {
-        codigo: 15,
+        codigo: "15",
         nome: "PARA",
         sigla: "PA",
     },
     Estado {
-        codigo: 16,
+        codigo: "16",
         nome: "AMAPA",
         sigla: "AP",
     },
     Estado {
-        codigo: 17,
+        codigo: "17",
         nome: "TOCANTINS",
         sigla: "TO",
     },
     Estado {
-        codigo: 21,
+        codigo: "21",
         nome: "MARANHAO",
         sigla: "MA",
     },
     Estado {
-        codigo: 22,
+        codigo: "22",
         nome: "PIAUI",
         sigla: "PI",
     },
     Estado {
-        codigo: 23,
+        codigo: "23",
         nome: "CEARA",
         sigla: "CE",
     },
     Estado {
-        codigo: 24,
+        codigo: "24",
         nome: "RIO GRANDE DO NORTE",
         sigla: "RN",
     },
     Estado {
-        codigo: 25,
+        codigo: "25",
         nome: "PARAIBA",
         sigla: "PB",
     },
     Estado {
-        codigo: 26,
+        codigo: "26",
         nome: "PERNAMBUCO",
         sigla: "PE",
     },
     Estado {
-        codigo: 27,
+        codigo: "27",
         nome: "ALAGOAS",
         sigla: "AL",
     },
     Estado {
-        codigo: 28,
+        codigo: "28",
         nome: "SERGIPE",
         sigla: "SE",
     },
     Estado {
-        codigo: 29,
+        codigo: "29",
         nome: "BAHIA",
         sigla: "BA",
     },
     Estado {
-        codigo: 31,
+        codigo: "31",
         nome: "MINAS GERAIS",
         sigla: "MG",
     },
     Estado {
-        codigo: 32,
+        codigo: "32",
         nome: "ESPIRITO SANTO",
         sigla: "ES",
     },
     Estado {
-        codigo: 33,
+        codigo: "33",
         nome: "RIO DE JANEIRO",
         sigla: "RJ",
     },
     Estado {
-        codigo: 35,
+        codigo: "35",
         nome: "SAO PAULO",
         sigla: "SP",
     },
     Estado {
-        codigo: 41,
+        codigo: "41",
         nome: "PARANA",
         sigla: "PR",
     },
     Estado {
-        codigo: 42,
+        codigo: "42",
         nome: "SANTA CATARINA",
         sigla: "SC",
     },
     Estado {
-        codigo: 43,
+        codigo: "43",
         nome: "RIO GRANDE DO SUL",
         sigla: "RS",
     },
     Estado {
-        codigo: 50,
+        codigo: "50",
         nome: "MATO GROSSO DO SUL",
         sigla: "MS",
     },
     Estado {
-        codigo: 51,
+        codigo: "51",
         nome: "MATO GROSSO",
         sigla: "MT",
     },
     Estado {
-        codigo: 52,
+        codigo: "52",
         nome: "GOIAS",
         sigla: "GO",
     },
     Estado {
-        codigo: 53,
+        codigo: "53",
         nome: "DISTRITO FEDERAL",
         sigla: "DF",
     },

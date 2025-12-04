@@ -71,7 +71,7 @@ pub mod enderecobr {
     }
 
     #[pyfunction]
-    fn padronizar_estados_para_nome(valor: &str) -> String {
+    fn padronizar_estados_para_nome(valor: &str) -> &'static str {
         enderecobr_rs::padronizar_estados_para_nome(valor)
     }
 

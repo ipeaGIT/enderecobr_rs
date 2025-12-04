@@ -66,7 +66,7 @@ fn obter_padronizador(tipo: &TipoCampo) -> fn(&str) -> String {
         TipoCampo::Complemento => padronizar_complementos,
         TipoCampo::Localidade => padronizar_bairros,
         TipoCampo::Municipio => padronizar_municipios,
-        TipoCampo::Estado => padronizar_estados_para_nome,
+        TipoCampo::Estado => |x| padronizar_estados_para_nome(x).to_string(),
         TipoCampo::Cep => padronizar_cep_leniente,
     }
 }
