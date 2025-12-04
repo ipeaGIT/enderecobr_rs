@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::time::Instant;
 
 use clap::Parser;
 use enderecobr_rs::{
@@ -130,6 +131,13 @@ where
             .serializador_saida
             .carregar(base_path, self.nome, "snapshot")?;
 
+        assert_eq!(
+            valores_snapshot.len(),
+            valores_brutos.len(),
+            "Os arquivos com os dados brutos e de snapshot têm tamanhos diferentes."
+        );
+
+        let inicio = Instant::now();
         let res: Vec<_> = valores_brutos
             .iter()
             .zip(valores_snapshot.iter())
@@ -147,10 +155,22 @@ where
             })
             .collect();
 
+        let duracao = inicio.elapsed().as_nanos();
+        let tempo_por_qtd = duracao / valores_snapshot.len() as u128;
+
+        println!(
+            "Avaliação de {}: \n- Processado {} dados em {} ns ({} ns/reg => {:.0} reg/s)",
+            self.nome,
+            valores_snapshot.len(),
+            duracao,
+            tempo_por_qtd,
+            (1f64 / tempo_por_qtd as f64) * 1_000_000_000f64
+        );
+
         if !res.is_empty() {
             return Ok(Table::new(res)
                 .with(Style::modern())
-                .with(Width::wrap(100))
+                .with(Width::wrap(50))
                 .to_string());
         }
 
