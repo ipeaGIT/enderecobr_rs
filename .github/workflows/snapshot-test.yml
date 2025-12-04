@@ -14,7 +14,7 @@ jobs:
         id: runmake
         run: |
           set +e
-          OUTPUT=$(make snapshot-test)
+          OUTPUT=$(make -s -j 4 snapshot-test)
           echo "output<<EOF" >> $GITHUB_OUTPUT
           echo "$OUTPUT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
