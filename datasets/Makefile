@@ -3,6 +3,22 @@ DIR_BRUTOS = ./dados/brutos
 DIR_INTERMEDIARIOS = ./dados/intermediarios
 DIR_SNAPSHOTS = ./dados/snapshot_test
 DIR_SQLS = ./sql
+HF_DATASET = galmeida/enderecobr_rs
+
+SNAPSHOT_BASE_URL = https://huggingface.co/datasets/galmeida/enderecobr_rs/resolve/main/snapshot_test
+
+SNAPSHOT_FILES = complemento_bruto.csv complemento_snapshot.csv localidade_bruto.csv localidade_snapshot.csv logradouro_bruto.csv logradouro_snapshot.csv municipio_bruto.csv municipio_snapshot.csv numero_bruto.csv numero_snapshot.csv uf_bruto.csv uf_snapshot.csv
+
+.PHONY: hf-publicar-dataset hf-publicar-snapshot-test snapshot-criar-bruto snapshot-download
+
+### Envio para o HF Hub
+
+hf-publicar-dataset:
+	hf upload $(HF_DATASET) --repo-type=dataset dados/dataset.parquet train.parquet
+	hf upload $(HF_DATASET) --repo-type=dataset README_HF.md README.md
+
+hf-publicar-snapshot-test:
+	hf upload $(HF_DATASET) --repo-type=dataset $(DIR_SNAPSHOTS) snapshot_test/
 
 ### Download Brutos
 
@@ -64,7 +80,13 @@ $(DIR_DADOS)/dataset.parquet: $(DIR_SQLS)/dataset_total.sql $(DIR_INTERMEDIARIOS
 	duckdb < $<
 
 ### Cria arquivos simplificados para os testes de snapshot
+
 # $(DIR_SNAPSHOTS)/numero_bruto.csv $(DIR_SNAPSHOTS)/complemento_bruto.csv $(DIR_SNAPSHOTS)/localidade_bruto.csv $(DIR_SNAPSHOTS)/municipio_bruto.csv $(DIR_SNAPSHOTS)/uf_bruto.csv
-$(DIR_SNAPSHOTS)/logradouro_bruto.csv: $(DIR_SQLS)/snapshot_test_bruto.sql $(DIR_DADOS)/dataset.parquet
+snapshot-criar-bruto: $(DIR_SQLS)/snapshot_test_bruto.sql $(DIR_DADOS)/dataset.parquet
 	duckdb < $<
+
+$(DIR_SNAPSHOTS)/%.csv:
+	curl --location -o $@ $(SNAPSHOT_BASE_URL)/$*.csv?download=true
+
+snapshot-download: $(SNAPSHOT_FILES:%=$(DIR_SNAPSHOTS)/%)
 

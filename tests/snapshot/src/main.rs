@@ -189,10 +189,6 @@ struct Diff {
 // Utilitários
 ////////////////
 
-fn talvez_baixar_dataset_bruto() {
-    todo!()
-}
-
 fn obter_snapshot_tester_dyn(nome_teste: &str) -> Box<dyn SnapshotTester> {
     match nome_teste {
         "logr" => Box::new(SnapshotTesterImpl {
