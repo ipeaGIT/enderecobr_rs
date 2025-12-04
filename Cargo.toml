@@ -11,7 +11,7 @@ documentation = "https://docs.rs/enderecobr_rs"
 categories = ["text-processing", "value-formatting", "science::geo"]
 keywords = ["address", "brazil", "brasil", "regex", "geocoding"]
 description = "Esta biblioteca tem por objetivo prover de funções utilizadas para padronizar endereços brasileiros, afim de facilitar processamentos posteriores."
-exclude = [ "scripts/"]
+exclude = [ "scripts/", "datasets/"]
 
 [workspace]
 members = [
