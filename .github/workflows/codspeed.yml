@@ -1,5 +1,5 @@
-# https://github.com/shenxiangzhuang/bleuscore/blob/master/.github/workflows/codspeed.yml
-name: CodSpeed Benchmarks
+# https://github.com/CodSpeedHQ/action?tab=readme-ov-file#rust-with-cargo-codspeed-and-codspeed-criterion-compat--codspeed-bencher-compat
+name: CodSpeed
 
 on:
   push:
@@ -14,6 +14,9 @@ jobs:
   benchmarks:
     name: Run benchmarks
     runs-on: ubuntu-latest
+    # permissions: # optional for public repositories
+    #   contents: read
+    #   id-token: write # for OpenID Connect authentication with CodSpeed
     steps:
       - uses: actions/checkout@v6
       - name: Setup rust toolchain, cache and cargo-codspeed binary
@@ -27,5 +30,5 @@ jobs:
       - name: Run the benchmarks
         uses: CodSpeedHQ/action@v4
         with:
-          mode: instrumentation
+          mode: simulation
           run: cargo codspeed run
