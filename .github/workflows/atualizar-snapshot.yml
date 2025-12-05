@@ -13,14 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # https://github.com/marketplace/actions/huggingface-login
-      - name: Login to HuggingFace Hub
-        uses: osbm/huggingface_login@v0.1
-        with:
-          username: ${{ secrets.HF_USERNAME }}
-          password: ${{ secrets.HF_PASSWORD }}
-          add_to_git_credentials: true
-
       - name: Criar e enviar novos snapshots
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          (make -j 4 snapshot-criar) && (make snapshot-upload)
+          uv tool install hf
+          hf auth login --token "$HF_TOKEN" --add-to-git-credential
+          make -j 4 snapshot-criar
+          make snapshot-upload
