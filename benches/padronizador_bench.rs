@@ -2,7 +2,8 @@ use std::hint::black_box;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use enderecobr_rs::{
-    logradouro::criar_padronizador_logradouros, normalizar, padronizar_estados_para_nome,
+    logradouro::criar_padronizador_logradouros, metaphone::criar_padronizador_metaphone,
+    normalizar, padronizar_estados_para_nome,
 };
 
 pub fn padronizador_bench(c: &mut Criterion) {
@@ -39,10 +40,26 @@ pub fn normalizador_bench(c: &mut Criterion) {
     }
 }
 
+pub fn metaphone_bench(c: &mut Criterion) {
+    // Metaphone é um padronizador comum também mas ele tende a aplicar muitas substituições
+    let metaphone = criar_padronizador_metaphone();
+    let mut group = c.benchmark_group("metaphone");
+
+    for &n in &[
+        "MARYA CHAVIER HELENA PHILIPE CALHEIROS FILHA MANHA CHICO SCHMIDT SCENA ESCOVA QUILO",
+        "MAÇÃ",
+    ] {
+        group.bench_with_input(n, &n, |b, &n| {
+            b.iter(|| metaphone.padronizar(black_box(n)));
+        });
+    }
+}
+
 criterion_group!(
     benches,
     padronizador_bench,
     normalizador_bench,
-    padronizador_estado_bench
+    padronizador_estado_bench,
+    metaphone_bench,
 );
 criterion_main!(benches);
