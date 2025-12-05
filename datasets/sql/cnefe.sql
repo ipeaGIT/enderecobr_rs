@@ -10,6 +10,6 @@ copy (
       m.uf,
   from '/mnt/storage6/bases/DADOS/PUBLICO/CNEFE/parquet/2022/arquivos/*.parquet'
   inner join '../src/data/municipios.csv' as m on cod_ibge = code_muni
-  using sample 100_000
+  using sample 150_000
 )
 to './dados/intermediarios/cnefe.parquet' (format parquet);

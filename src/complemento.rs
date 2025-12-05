@@ -150,6 +150,10 @@ pub fn criar_padronizador_complemento() -> Padronizador {
       .adicionar(r"\bFDS\b\.?", "FUNDOS")
       .adicionar(r"-FUNDOS", " FUNDOS")
 
+
+      .adicionar(r"\b(GL|GB)\b\.?", "GLEBA")
+      .adicionar(r"\b(LN)\b\.?", "LINHA")
+
       // tipos de logradouro
 
       .adicionar(r"\bAV\b\.?", "AVENIDA") // "APARTAMENTO 401 EDIFICIO RES 5O AV"? "GUARABU AV"? "TRAVESSA AV JOAO XXIII"?

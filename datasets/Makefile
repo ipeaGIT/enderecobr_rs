@@ -14,11 +14,11 @@ SNAPSHOT_FILES = complemento_bruto.csv complemento_snapshot.csv localidade_bruto
 ### Envio para o HF Hub
 
 hf-publicar-dataset:
-	hf upload $(HF_DATASET) --repo-type=dataset dados/dataset.parquet train.parquet
-	hf upload $(HF_DATASET) --repo-type=dataset README_HF.md README.md
+	hf upload $(HF_DATASET) --repo-type=dataset --commit-message "feat: Atualiza dataset básico de endereços" dados/dataset.parquet train.parquet
+	hf upload $(HF_DATASET) --repo-type=dataset --commit-message "doc: Atualiza README" README_HF.md README.md
 
 hf-publicar-snapshot-test:
-	hf upload $(HF_DATASET) --repo-type=dataset $(DIR_SNAPSHOTS) snapshot_test/
+	hf upload $(HF_DATASET) --repo-type=dataset --commit-message "feat: Atualiza arquivos do teste de snapshot" $(DIR_SNAPSHOTS) snapshot_test/
 
 ### Download Brutos
 
@@ -81,12 +81,15 @@ $(DIR_DADOS)/dataset.parquet: $(DIR_SQLS)/dataset_total.sql $(DIR_INTERMEDIARIOS
 
 ### Cria arquivos simplificados para os testes de snapshot
 
-# $(DIR_SNAPSHOTS)/numero_bruto.csv $(DIR_SNAPSHOTS)/complemento_bruto.csv $(DIR_SNAPSHOTS)/localidade_bruto.csv $(DIR_SNAPSHOTS)/municipio_bruto.csv $(DIR_SNAPSHOTS)/uf_bruto.csv
-snapshot-criar-bruto: $(DIR_SQLS)/snapshot_test_bruto.sql $(DIR_DADOS)/dataset.parquet
-	duckdb < $<
-
+# Quando mando criar um arquivo específico do snapshot, dou preferência para baixar
+# em vez de construir baseado no dataset.
 $(DIR_SNAPSHOTS)/%.csv:
 	curl --location -o $@ $(SNAPSHOT_BASE_URL)/$*.csv?download=true
 
+# Download de todos os snapshots, baseado no target anterior (by ChatGPT).
 snapshot-download: $(SNAPSHOT_FILES:%=$(DIR_SNAPSHOTS)/%)
+
+# Força criação do novo dataset de snapshot.
+snapshot-criar-bruto:
+	duckdb < $(DIR_SQLS)/snapshot_test_bruto.sql
 

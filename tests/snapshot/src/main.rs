@@ -222,7 +222,7 @@ fn obter_snapshot_tester_dyn(nome_teste: &str) -> Box<dyn SnapshotTester> {
             nome: "uf",
             serializador_entrada: SerializadorString,
             serializador_saida: SerializadorString,
-            processador: |x: &String| padronizar_estados_para_nome(x),
+            processador: |x: &String| padronizar_estados_para_nome(x).to_string(),
         }),
         _ => panic!("Nenhum teste encontrado"),
     }

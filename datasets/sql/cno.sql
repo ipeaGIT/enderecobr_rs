@@ -12,7 +12,7 @@ copy (
   "Nome do município" as municipio,
   "Estado" as uf,
   from read_csv('zip://dados/brutos/cno.zip/cno.csv', encoding='ISO_8859_1')
-  using sample 100_000
+  using sample 150_000
 )
 to './dados/intermediarios/cno.parquet' (format parquet);
 
