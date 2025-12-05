@@ -85,6 +85,31 @@ pub mod enderecobr {
         enderecobr_rs::padronizar_cep_leniente(valor)
     }
 
+    #[pyfunction]
+    fn metaphone(valor: &str) -> String {
+        enderecobr_rs::metaphone::metaphone(valor)
+    }
+
+    #[pyfunction]
+    fn padronizar_numeros_por_extenso(valor: &str) -> String {
+        enderecobr_rs::numero_extenso::padronizar_numeros_por_extenso(valor).to_string()
+    }
+
+    #[pyfunction]
+    fn padronizar_numero_romano_por_extenso(valor: &str) -> String {
+        enderecobr_rs::numero_extenso::padronizar_numero_romano_por_extenso(valor).to_string()
+    }
+
+    #[pyfunction]
+    fn numero_por_extenso(valor: i32) -> String {
+        enderecobr_rs::numero_extenso::numero_por_extenso(valor).to_string()
+    }
+
+    #[pyfunction]
+    fn romano_para_inteiro(valor: &str) -> i32 {
+        enderecobr_rs::numero_extenso::romano_para_inteiro(valor)
+    }
+
     // TODO: terminar casos de tipos diferenciados
     //
     // pub use cep::padronizar_cep;

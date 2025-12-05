@@ -342,6 +342,24 @@ pub fn criar_regex_romano_triagem() -> Regex {
     Regex::new(r"(?i)\b[MDCLXVI]+\b").expect("Regex romano triagem inválida (bug interno)")
 }
 
+/// Substitui números romanos em um texto por suas representações por extenso (em palavras).
+/// Apenas sequências que formam números romanos válidos (1–3999) são convertidas.
+/// Evita alocação de Strings usando `Cow::Borrowed` se nenhuma substituição for feita.
+///
+/// # Exemplos
+///
+/// ```
+/// use enderecobr_rs::numero_extenso::padronizar_numero_romano_por_extenso;
+/// assert_eq!(padronizar_numero_romano_por_extenso("Capítulo IX"), "Capítulo NOVE");
+/// assert_eq!(
+///     padronizar_numero_romano_por_extenso("Séculos XV e XX"),
+///     "Séculos QUINZE e VINTE"
+/// );
+/// assert_eq!(
+///     padronizar_numero_romano_por_extenso("Rei João VI e Papa Bento XVI"),
+///     "Rei João SEIS e Papa Bento DEZESSEIS"
+/// );
+/// ```
 pub fn padronizar_numero_romano_por_extenso(valor: &str) -> Cow<'_, str> {
     let mut resultado_opt: Option<String> = None;
     let mut ultimo = 0usize;
@@ -380,6 +398,25 @@ pub fn padronizar_numero_romano_por_extenso(valor: &str) -> Cow<'_, str> {
     }
 }
 
+/// Converte um número romano em sua representação por extenso (número inteiro).
+///
+/// Aceita entradas em maiúsculas ou minúsculas. A conversão segue a regra padrão de números romanos,
+/// onde símbolos menores à esquerda de maiores são subtraídos. Suporta valores de 1 a 3999.
+///
+/// # Exemplos
+///
+/// ```
+/// use enderecobr_rs::numero_extenso::romano_para_inteiro;
+/// assert_eq!(romano_para_inteiro("IX"), 9);
+/// assert_eq!(romano_para_inteiro("xlII"), 42);
+/// assert_eq!(romano_para_inteiro("MCMXC"), 1990);
+/// assert_eq!(romano_para_inteiro("mmmcmxcix"), 3999);
+/// ```
+///
+/// # Notas
+///
+/// - Caracteres inválidos são tratados como 0 e podem gerar resultados inesperados.
+/// - Não valida se a sequência romana é gramaticalmente correta (ex: "IIII" retorna 4).
 pub fn romano_para_inteiro(s: &str) -> i32 {
     let mut total = 0;
     let mut prev = 0;
