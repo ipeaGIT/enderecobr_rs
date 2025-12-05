@@ -14,9 +14,9 @@ jobs:
   benchmarks:
     name: Run benchmarks
     runs-on: ubuntu-latest
-    # permissions: # optional for public repositories
-    #   contents: read
-    #   id-token: write # for OpenID Connect authentication with CodSpeed
+    permissions: # optional for public repositories
+      contents: read
+      id-token: write # for OpenID Connect authentication with CodSpeed
     steps:
       - uses: actions/checkout@v6
       - name: Setup rust toolchain, cache and cargo-codspeed binary
