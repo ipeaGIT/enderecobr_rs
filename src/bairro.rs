@@ -116,8 +116,8 @@ pub fn criar_padronizador_bairros() -> Padronizador {
         .adicionar(r"\bTEN\b\.?", "TENENTE")
         .adicionar(r"\bBRIGADEIRO (F\.?|FARIA) (L|LIMA)\b\.?", "BRIGADEIRO FARIA LIMA")
 
-        // Erros de digitação comuns para presidente. => Sem caso de teste
-        // .adicionar(r"\bP(PREISI|PREZI|PRSI|PERSI|PESI)DENTE\b", "PRESIDENTE")
+        // Erros de digitação comuns para presidente. => Sem caso de teste no snapshot
+        .adicionar(r"\b(PREISI|PREZI|PRSI|PERSI|PESI)DENTE\b", "PRESIDENTE")
 
         // consertar esse presidente
         .adicionar(r"\bPRES(ID)?\b\.?(.)", "PRESIDENTE$2")
@@ -134,6 +134,7 @@ pub fn criar_padronizador_bairros() -> Padronizador {
         .adicionar(r"\bD\b\.? (PEDRO|JOAO|HENRIQUE)", "DOM $1")
         .adicionar(r"\bI(NF)?\.? DOM\b", "INFANTE DOM")
 
+        // Unifica a grafia, mesmo que o nome oficial realmente seja diferente.
         .adicionar(r"\bCAMPOS? H?ELI(Z|S)I?E?(O|U)(S|Z)?\b", "CAMPOS ELISIOS")
 
         // datas

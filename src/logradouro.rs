@@ -123,8 +123,8 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"^LARGO L(RG|GO)\b(\.|,)?", "LARGO")
         .adicionar(r"^LARGO?\b(-|,|\.) *", "LARGO ")
 
-        // .adicionar(r"\b(LN)\b", "LINHA") // Sem testes
-        .adicionar(r"\b(GL|GB)\b", "GLEBA")
+        .adicionar(r"\b(LN)\.?\b", "LINHA")
+        .adicionar(r"\b(GL|GB)\.?\b", "GLEBA")
 
         // estabelecimentos
         .adicionar(r"^AER(OP)?\b(\.|,)?", "AEROPORTO") // sera que vale? tem uns casos estranhos aqui, e.g. "AER GUANANDY, 1", "AER WASHINGTON LUIZ, 3318"
@@ -187,7 +187,7 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bMONS\b\.?", "MONSENHOR")
 
         // Erros de digitação comuns para presidente. => Sem testes
-        // .adicionar(r"\bP(PREISI|PREZI|PRSI|PERSI|PESI)DENTE\b", "PRESIDENTE")
+        .adicionar(r"\b(PREISI|PREZI|PRSI|PERSI|PESI)DENTE\b", "PRESIDENTE")
 
         .adicionar(r"\bPRES(ID)?\b\.?", "PRESIDENTE")
         .adicionar(r"\bGOV\b\.?", "GOVERNADOR")
@@ -260,6 +260,7 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bTENENTE SHI\b", "TEN SHI")
         .adicionar(r"\bHO SHI MINISTRO\b", "HO SHI MIN")
 
+        // Unifica a grafia, mesmo que o nome oficial realmente seja diferente.
         .adicionar(r"\bCAMPOS? H?ELI(Z|S)I?E?(O|U)(S|Z)?\b", "CAMPOS ELISIOS")
 
         // datas

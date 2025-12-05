@@ -1,0 +1,26 @@
+name: atualizar-snapshot
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - "[v]?[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+jobs:
+  run-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # https://github.com/marketplace/actions/huggingface-login
+      - name: Login to HuggingFace Hub
+        uses: osbm/huggingface_login@v0.1
+        with:
+          username: ${{ secrets.HF_USERNAME }}
+          password: ${{ secrets.HF_PASSWORD }}
+          add_to_git_credentials: true
+
+      - name: Criar e enviar novos snapshots
+        run: |
+          (make -j 4 snapshot-criar) && (make snapshot-upload)

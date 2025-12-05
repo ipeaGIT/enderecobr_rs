@@ -1,10 +1,12 @@
 name: ci-python
 
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+  # Matando temporariamente pois está demorando muito
+  # para algo rodado a cada commit.
+  # push:
+  #   branches: ["main"]
+  # pull_request:
+  #   branches: ["main"]
   workflow_dispatch:
 
 # Trecho adaptado do maturin.yml para evitar rodar todos os builds sempre

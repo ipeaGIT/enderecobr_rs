@@ -12,7 +12,7 @@ copy (
           m.uf
   FROM read_csv('zip://dados/brutos/cnes.zip/cnes_estabelecimentos.csv') as e
   LEFT JOIN '../src/data/municipios.csv' as m on m.cod_ibge = e.co_ibge
-  using sample 100_000
+  using sample 150_000
 )
 to './dados/intermediarios/cnes.parquet' (format parquet);
 

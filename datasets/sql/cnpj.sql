@@ -11,6 +11,6 @@ copy (
   FROM
       read_parquet('/mnt/storage6/bases/DADOS/PUBLICO/CNPJ/parquet/estabelecimentos/*.parquet') as d
   left join 'dados/intermediarios/municipios_cnpj.parquet' as m on m.cod_municipio_cnpj = d.municipio
-  using sample 100_000
+  using sample 150_000
 )
 to './dados/intermediarios/cnpj.parquet' (format parquet);
