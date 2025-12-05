@@ -465,3 +465,188 @@ def obter_padronizador_tipos_logradouros() -> Padronizador:
     Útil para adicionar padrões de substituição não incluídos originalmente.
     """
     ...
+
+def metaphone(valor: str) -> str:
+    """
+    Gera um código fonético (Metaphone-BR adaptado) para nomes em português.
+
+    Aplica transformações fonéticas a um nome visando representar sua pronúncia
+    aproximada em português brasileiro. Útil para agrupar nomes com sonoridade
+    similar, mesmo com grafias diferentes.
+
+    Parameters
+    ----------
+    valor : str
+        Nome ou texto a ser convertido em código fonético. Pode conter acentos,
+        caracteres especiais, espaços e letras minúsculas.
+
+    Returns
+    -------
+    str
+        Código fonético em maiúsculas, com transformações aplicadas segundo regras
+        adaptadas do Metaphone para o português brasileiro.
+
+    Notes
+    -----
+    O processo inclui:
+
+        - Remoção de acentos, números e conversão para maiúsculas;
+        - Eliminação de letras silenciosas (ex: 'H' inicial);
+        - Simplificação de dígrafos (ex: 'LH' → 'L', 'CH' → 'X');
+        - Agrupamento de consoantes com sonoridade similar (ex: C/K/S, G/J);
+        - Tratamento de sons nasais e vogais duplicadas;
+        - Compactação de espaços e letras repetidas.
+
+    Esta é uma adaptação que não segue rigorosamente nenhum algoritmo Metaphone
+    publicado, mas foi inspirada neles, considerando o contexto do português brasileiro.
+
+    Examples
+    --------
+    >>> enderecobr.metaphone("João Silva")
+    'JOAO SILVA'
+    >>> enderecobr.metaphone("Marya")
+    'MARIA'
+    >>> enderecobr.metaphone("Helena")
+    'ELENA'
+    >>> enderecobr.metaphone("Philippe")
+    'FILIPE'
+    >>> enderecobr.metaphone("Chavier")
+    'XAVIER'
+    >>> enderecobr.metaphone("Maçã")
+    'MASA'
+
+    """
+    ...
+
+def padronizar_numeros_por_extenso(valor: str) -> str:
+    """
+    Converte sequências de dígitos em uma string para seus equivalentes por extenso em português.
+
+    A função percorre a string de entrada e, ao encontrar números inteiros (em formato ASCII),
+    os substitui pelo nome completo do número (ex: "2" → "dois"), utilizando a função `numero_por_extenso`.
+
+    Parameters
+    ----------
+    valor : str
+        String de entrada que pode conter dígitos a serem convertidos.
+
+    Returns
+    -------
+    str
+        Nova string com dígitos convertidos por extenso. Retorna a string original se não houver dígitos.
+
+    Notes
+    -----
+    - Números muito grandes ou inválidos (ex: overflow no parse para `i32`) são deixados inalterados.
+    - Não trata números negativos ou decimais.
+    - Se a string de entrada não contém nenhum dígito ASCII, retorna a string original.
+
+    Examples
+    --------
+    >>> enderecobr.padronizar_numeros_por_extenso("RUA 2")
+    'RUA DOIS'
+    >>> enderecobr.padronizar_numeros_por_extenso("RUA -2")
+    'RUA -DOIS'
+    >>> enderecobr.padronizar_numeros_por_extenso("RUA -2.2")
+    'RUA -DOIS.DOIS'
+    >>> enderecobr.padronizar_numeros_por_extenso("Sem números")
+    'Sem números'
+
+    """
+    ...
+
+def padronizar_numero_romano_por_extenso(valor: str) -> str:
+    """
+    Substitui números romanos em um texto por suas representações por extenso (em palavras).
+    Apenas sequências que formam números romanos válidos (1–3999) são convertidas.
+
+    Parameters
+    ----------
+    valor : str
+        Texto contendo números romanos a serem convertidos.
+
+    Returns
+    -------
+    str
+        Texto com números romanos substituídos por suas formas por extenso (maiúsculas).
+        Retorna o texto original se nenhuma substituição for necessária.
+
+    Examples
+    --------
+    >>> enderecobr.padronizar_numero_romano_por_extenso("Capítulo IX")
+    'Capítulo NOVE'
+
+    >>> enderecobr.padronizar_numero_romano_por_extenso("Séculos XV e XX")
+    'Séculos QUINZE e VINTE'
+
+    >>> enderecobr.padronizar_numero_romano_por_extenso("Rei João VI e Papa Bento XVI")
+    'Rei João SEIS e Papa Bento DEZESSEIS'
+
+    """
+    ...
+
+def numero_por_extenso(n: int) -> str:
+    """
+    Converte um número inteiro para sua representação por extenso em português.
+
+    Retorna uma string com o número por extenso em letras maiúsculas.
+
+    Parameters
+    ----------
+    n : int
+        Número inteiro a ser convertido.
+
+    Returns
+    -------
+    str
+        Representação por extenso do número em português.
+
+    Examples
+    --------
+    >>> enderecobr.numero_por_extenso(0)
+    'ZERO'
+    >>> enderecobr.numero_por_extenso(42)
+    'QUARENTA E DOIS'
+    >>> enderecobr.numero_por_extenso(-1500)
+    'MENOS MIL E QUINHENTOS'
+    >>> enderecobr.numero_por_extenso(2_001_000)
+    'DOIS MILHOES E MIL'
+
+    """
+    ...
+
+def romano_para_inteiro(valor: str) -> int:
+    """
+    Converte um número romano em sua representação por extenso (número inteiro).
+
+    Aceita entradas em maiúsculas ou minúsculas. A conversão segue a regra padrão de números romanos,
+    onde símbolos menores à esquerda de maiores são subtraídos. Suporta valores de 1 a 3999.
+
+    Parameters
+    ----------
+    valor : str
+        String contendo a representação de um número romano (ex: "IX", "MCMXC").
+
+    Returns
+    -------
+    int
+        Valor inteiro correspondente ao número romano. Retorna resultados inesperados se a string
+        contiver caracteres inválidos (não tratados como erro).
+
+    Examples
+    --------
+    >>> enderecobr.romano_para_inteiro("IX")
+    9
+    >>> enderecobr.romano_para_inteiro("xlII")
+    42
+    >>> enderecobr.romano_para_inteiro("MCMXC")
+    1990
+    >>> enderecobr.romano_para_inteiro("mmmcmxcix")
+    3999
+
+    Notes
+    -----
+    - Caracteres inválidos são tratados como 0 e podem gerar resultados inesperados.
+    - A função não valida a correção gramatical da sequência romana (ex: "IIII" retorna 4).
+    """
+    ...
