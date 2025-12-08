@@ -91,7 +91,7 @@ unwrap_used = "warn"
 expect_used = "warn"
 
 [dev-dependencies]
-criterion = "0.7.0"
+criterion = "0.8.1"
 
 [[bench]]
 name = "numero_extenso_bench"
