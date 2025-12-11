@@ -13,6 +13,8 @@
 import datetime
 import pathlib
 import shutil
+import time
+from typing import Callable, TypeVar
 
 import duckdb
 import numpy as np
@@ -30,6 +32,19 @@ def backup_duckdb():
     backup_name = f"{src.stem}_{ts}{src.suffix}"
     backup_path = src.parent / backup_name
     shutil.copy2(src, backup_path)  # mantém metadados
+
+
+R = TypeVar("R")
+
+
+def retry_duckdb(func: Callable[..., R], retries=5, delay=5) -> R:
+    for i in range(retries):
+        try:
+            return func()
+        except duckdb.IOException:
+            print(f"Tentantiva #{i} de acessar DuckDB")
+            time.sleep(delay)
+    raise Exception("DESISTO!")
 
 
 def ensure_tables():
@@ -50,8 +65,8 @@ def load_missing_embeddings():
             "SELECT id, logradouro, numero, complemento, localidade, municipio, uf  FROM dataset WHERE id NOT IN (SELECT id FROM embeddings) LIMIT 100;"
         ).fetchall()
 
-        ids = []
-        texts = []
+        ids: list[int] = []
+        texts: list[str] = []
         for row in rows:
             text = f"""Endereço Estruturado:
 Logradouro: {row[1]}
@@ -67,14 +82,22 @@ UF: {row[6]}
     return ids, texts
 
 
+def salvar_embeddings(ids, embeddings):
+    with duckdb.connect(DUCKDB_PATH) as con:
+        for idx, emb in zip(ids, embeddings):
+            con.execute(
+                "INSERT INTO embeddings(id, embeddings) VALUES (?, ?);", (idx, emb)
+            )
+
+
 def main():
     backup_duckdb()
-    ensure_tables()
+    retry_duckdb(ensure_tables)
     model = SentenceTransformer(MODEL_NAME)
 
     while True:
         print("Carregando valores faltantes")
-        ids, texts = load_missing_embeddings()
+        ids, texts = retry_duckdb(load_missing_embeddings)
         if len(ids) == 0:
             return
 
@@ -90,11 +113,7 @@ def main():
 
         # Insere/atualiza na DB destino
         print("Salvando embeddings")
-        with duckdb.connect(DUCKDB_PATH) as con:
-            for idx, emb in zip(ids, embeddings):
-                con.execute(
-                    "INSERT INTO embeddings(id, embeddings) VALUES (?, ?);", (idx, emb)
-                )
+        retry_duckdb(lambda: salvar_embeddings(ids, embeddings))
 
 
 if __name__ == "__main__":
