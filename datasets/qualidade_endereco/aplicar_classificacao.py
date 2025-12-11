@@ -74,33 +74,36 @@ def main():
     backup_duckdb()
 
     for i in range(100):
-        con = duckdb.connect(DUCKDB_PATH)
-        rows = con.execute("""
-    SELECT logradouro, numero, complemento, localidade, id
-    FROM dataset
-    WHERE qualidade IS NULL
-    USING SAMPLE 10;
-    """).fetchall()
-        con.close()
+        with duckdb.connect(DUCKDB_PATH, read_only=True) as con:
+            rows = con.execute("""
+            SELECT logradouro, numero, complemento, localidade, id
+            FROM dataset
+            WHERE qualidade IS NULL
+            USING SAMPLE 20;
+            """).fetchall()
+
+        if len(rows) == 0:
+            return
 
         dataset_pred = classify.batch([criar_exemplo_inferencia(r) for r in rows])
 
-        con = duckdb.connect(DUCKDB_PATH)
-        for row, pred in zip(rows, dataset_pred):
-            if pred is None or pred.qualidade is None:
-                continue
+        with duckdb.connect(DUCKDB_PATH) as con:
+            for row, pred in zip(rows, dataset_pred):
+                if pred is None or pred.qualidade is None:
+                    continue
 
-            con.execute(
-                """UPDATE dataset 
-    SET qualidade = ?, qualidade_justificativa = ?, qualidade_rotulador = 'LLM'
-    WHERE id = ?;""",
-                (
-                    pred.qualidade,
-                    pred.reasoning,
-                    row[-1],  # id
-                ),
-            )
-        con.close()
+                con.execute(
+                    """
+                    UPDATE dataset 
+                    SET qualidade = ?, qualidade_justificativa = ?, 
+                    qualidade_rotulador = 'LLM'
+                    WHERE id = ?;""",
+                    (
+                        pred.qualidade,
+                        pred.reasoning,
+                        row[-1],  # id
+                    ),
+                )
 
 
 if __name__ == "__main__":
