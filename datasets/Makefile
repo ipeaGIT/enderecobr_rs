@@ -93,3 +93,11 @@ snapshot-download: $(SNAPSHOT_FILES:%=$(DIR_SNAPSHOTS)/%)
 snapshot-criar-bruto:
 	duckdb < $(DIR_SQLS)/snapshot_test_bruto.sql
 
+duckdb-init:
+	duckdb $(DIR_DADOS)/dataset.duckdb < $(DIR_SQLS)/preparar_duckdb.sql
+
+duckdb-migration:
+	duckdb $(DIR_DADOS)/dataset.duckdb < $(DIR_SQLS)/duckdb_migration.sql
+
+qualidade-aplicar-llm:
+	./qualidade_endereco/aplicar_classificacao.py
