@@ -50,12 +50,14 @@ def retry_duckdb(func: Callable[..., R], retries=5, delay=5) -> R:
 def ensure_tables():
     """Cria a tabela destino se não existir."""
     with duckdb.connect(DUCKDB_PATH) as con:
-        con.execute("""
+        con.execute(
+            """
         CREATE TABLE IF NOT EXISTS embeddings (
             id int,
             embeddings float[1024]
         );
-        """)
+        """
+        )
 
 
 def load_missing_embeddings():
@@ -67,7 +69,7 @@ def load_missing_embeddings():
                 SELECT id, logradouro, numero, complemento, localidade, municipio, uf  
                 FROM dataset 
                 WHERE id NOT IN (SELECT id FROM embeddings)
-            ) SELECT * FROM a USING SAMPLE 100;"""
+            ) SELECT * FROM a USING SAMPLE 1024;"""
         ).fetchall()
 
         ids: list[int] = []
@@ -88,11 +90,9 @@ UF: {row[6]}
 
 
 def salvar_embeddings(ids, embeddings):
+    batch = [(i, e.tolist()) for i, e in zip(ids, embeddings)]
     with duckdb.connect(DUCKDB_PATH) as con:
-        for idx, emb in zip(ids, embeddings):
-            con.execute(
-                "INSERT INTO embeddings(id, embeddings) VALUES (?, ?);", (idx, emb)
-            )
+        con.executemany("INSERT INTO embeddings(id, embeddings) VALUES (?, ?);", batch)
 
 
 def main():
@@ -103,6 +103,7 @@ def main():
     while True:
         print("Carregando valores faltantes")
         ids, texts = retry_duckdb(load_missing_embeddings)
+
         if len(ids) == 0:
             return
 
@@ -113,7 +114,6 @@ def main():
             convert_to_numpy=True,
             normalize_embeddings=True,
             show_progress_bar=True,
-            device=["cpu"],
         ).astype(np.float32)
 
         # Insere/atualiza na DB destino
