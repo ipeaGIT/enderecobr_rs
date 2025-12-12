@@ -82,10 +82,13 @@ def retry_duckdb(func: Callable[..., R], retries=5, delay=5) -> R:
 def carregar_dados() -> list[tuple]:
     with duckdb.connect(DUCKDB_PATH, read_only=True) as con:
         return con.execute("""
-        SELECT logradouro, numero, complemento, localidade, id
-        FROM dataset
-        WHERE qualidade IS NULL
-        USING SAMPLE 5;
+        WITH a AS (
+            SELECT logradouro, numero, complemento, localidade, id
+            FROM dataset
+            WHERE qualidade IS NULL
+            AND id IN (SELECT id FROM embeddings)
+        ) SELECT * FROM a
+        USING SAMPLE 10;
         """).fetchall()
 
 
@@ -116,7 +119,7 @@ def main():
 
     backup_duckdb()
 
-    for i in range(100):
+    while True:
         rows = retry_duckdb(carregar_dados)
 
         if len(rows) == 0:

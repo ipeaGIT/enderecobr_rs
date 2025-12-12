@@ -62,7 +62,12 @@ def load_missing_embeddings():
     """Carrega textos sem embedding."""
     with duckdb.connect(DUCKDB_PATH, read_only=True) as con:
         rows = con.execute(
-            "SELECT id, logradouro, numero, complemento, localidade, municipio, uf  FROM dataset WHERE id NOT IN (SELECT id FROM embeddings) LIMIT 100;"
+            """
+            WITH a AS (
+                SELECT id, logradouro, numero, complemento, localidade, municipio, uf  
+                FROM dataset 
+                WHERE id NOT IN (SELECT id FROM embeddings)
+            ) SELECT * FROM a USING SAMPLE 100;"""
         ).fetchall()
 
         ids: list[int] = []
