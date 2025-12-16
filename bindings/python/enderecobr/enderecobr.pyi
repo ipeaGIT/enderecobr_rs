@@ -650,3 +650,274 @@ def romano_para_inteiro(valor: str) -> int:
     - A função não valida a correção gramatical da sequência romana (ex: "IIII" retorna 4).
     """
     ...
+
+def padronizar_cep(valor: str) -> str:
+    """
+    Padroniza CEPs em formato textual para uma string formatada.
+
+    Esta função valida e formata CEPs brasileiros (Código de Endereçamento Postal),
+    garantindo o formato correto XXXXX-XXX. Realiza validação rigorosa dos dígitos.
+
+    Parameters
+    ----------
+    valor : str
+        CEP em formato textual, que deve conter apenas dígitos numéricos (0-9),
+        podendo conter formatação como espaços, pontos ou hífens.
+
+    Returns
+    -------
+    str
+        CEP padronizado no formato XXXXX-XXX.
+
+    Raises
+    ------
+    ValueError
+        Se o CEP contiver caracteres não numéricos ou tiver mais de 8 dígitos.
+
+    Examples
+    --------
+    >>> import enderecobr
+    >>> enderecobr.padronizar_cep("22290-140")
+    '22290-140'
+    >>> enderecobr.padronizar_cep("22290 140")
+    '22290-140'
+    >>> enderecobr.padronizar_cep("1000000")
+    '01000-000'
+
+    Notes
+    -----
+    - Remove espaços, pontos e outros caracteres não numéricos
+    - Completa com zeros à esquerda se necessário
+    - Valida o número de dígitos (máximo 8)
+    - Retorna erro para caracteres inválidos
+    """
+    ...
+
+def padronizar_cep_numerico(valor: int) -> str:
+    """
+    Padroniza CEPs em formato numérico para uma string formatada.
+
+    Converte um valor numérico inteiro para o formato padrão de CEP brasileiro XXXXX-XXX.
+
+    Parameters
+    ----------
+    valor : int
+        CEP em formato numérico inteiro (ex: 22290140).
+
+    Returns
+    -------
+    str
+        CEP padronizado no formato XXXXX-XXX.
+
+    Raises
+    ------
+    ValueError
+        Se o valor tiver mais de 8 dígitos.
+
+    Examples
+    --------
+    >>> import enderecobr
+    >>> enderecobr.padronizar_cep_numerico(22290140)
+    '22290-140'
+    >>> enderecobr.padronizar_cep_numerico(1000000)
+    '01000-000'
+
+    Notes
+    -----
+    - Completa com zeros à esquerda se necessário
+    - Valida o número de dígitos (máximo 8)
+    - Retorna erro para valores com mais de 8 dígitos
+    """
+    ...
+
+def padronizar_estados_para_codigo(valor: str) -> str:
+    """
+    Padroniza uma string representando estados brasileiros para seu código numérico.
+
+    Parameters
+    ----------
+    valor : str
+        String contendo a sigla (ex: 'MA', 'ma') ou nome de um estado brasileiro.
+        Pode conter espaços extras ou formatação irregular.
+
+    Returns
+    -------
+    str
+        Código numérico do estado (2 dígitos). Retorna string vazia se o valor
+        for inválido, vazio ou não corresponder a um estado.
+
+    Examples
+    --------
+    >>> import enderecobr
+    >>> enderecobr.padronizar_estados_para_codigo("MA")
+    '21'
+    >>> enderecobr.padronizar_estados_para_codigo("maranhao")
+    '21'
+    >>> enderecobr.padronizar_estados_para_codigo("21")
+    '21'
+
+    Notes
+    -----
+    Operações realizadas durante a padronização:
+    - Remoção de espaços em branco no início e fim
+    - Conversão para caixa alta
+    - Mapeamento para o código numérico de cada estado
+    """
+    ...
+
+def padronizar_estados_para_sigla(valor: str) -> str:
+    """
+    Padroniza uma string representando estados brasileiros para sua sigla.
+
+    Parameters
+    ----------
+    valor : str
+        String contendo o código numérico (ex: '21') ou nome de um estado brasileiro.
+        Pode conter espaços extras ou formatação irregular.
+
+    Returns
+    -------
+    str
+        Sigla do estado em caixa alta (ex: 'MA'). Retorna string vazia se o valor
+        for inválido, vazio ou não corresponder a um estado.
+
+    Examples
+    --------
+    >>> import enderecobr
+    >>> enderecobr.padronizar_estados_para_sigla("21")
+    'MA'
+    >>> enderecobr.padronizar_estados_para_sigla("maranhao")
+    'MA'
+    >>> enderecobr.padronizar_estados_para_sigla("MA")
+    'MA'
+
+    Notes
+    -----
+    Operações realizadas durante a padronização:
+    - Remoção de espaços em branco no início e fim
+    - Conversão para caixa alta
+    - Mapeamento para a sigla de cada estado
+    """
+    ...
+
+def padronizar_numeros_para_int(valor: str) -> int:
+    """
+    Converte uma string representando um número de endereço para seu valor inteiro.
+
+    Converte strings de números de endereços para valores inteiros, tratando
+    casos especiais como "S/N" (sem número).
+
+    Parameters
+    ----------
+    valor : str
+        String contendo um número de endereço, que pode estar em formato
+        textual com zeros à esquerda, espaços ou variações de "S/N".
+
+    Returns
+    -------
+    int
+        Valor inteiro do número. Retorna 0 para casos de "S/N".
+
+    Raises
+    ------
+    ValueError
+        Se a string não puder ser convertida para um número válido.
+
+    Examples
+    --------
+    >>> import enderecobr
+    >>> enderecobr.padronizar_numeros_para_int("210")
+    210
+    >>> enderecobr.padronizar_numeros_para_int("0210")
+    210
+    >>> enderecobr.padronizar_numeros_para_int("S/N")
+    0
+    >>> enderecobr.padronizar_numeros_para_int("SN")
+    0
+
+    Notes
+    -----
+    - Remove zeros à esquerda
+    - Converte variações de "S/N" para 0
+    - Valida o formato numérico
+    """
+    ...
+
+def padronizar_numeros_para_string(valor: str) -> str:
+    """
+    Converte uma string representando um número de endereço para formato padronizado.
+
+    Converte strings de números de endereços para um formato padronizado,
+    removendo zeros à esquerda e tratando casos especiais.
+
+    Parameters
+    ----------
+    valor : str
+        String contendo um número de endereço, que pode estar em formato
+        textual com zeros à esquerda, espaços ou variações de "S/N".
+
+    Returns
+    -------
+    str
+        String padronizada do número. Retorna "S/N" para casos de sem número.
+
+    Raises
+    ------
+    ValueError
+        Se a string não puder ser convertida para um número válido.
+
+    Examples
+    --------
+    >>> import enderecobr
+    >>> enderecobr.padronizar_numeros_para_string("210")
+    '210'
+    >>> enderecobr.padronizar_numeros_para_string("0210")
+    '210'
+    >>> enderecobr.padronizar_numeros_para_string("S/N")
+    'S/N'
+    >>> enderecobr.padronizar_numeros_para_string("sn")
+    'S/N'
+
+    Notes
+    -----
+    - Remove zeros à esquerda
+    - Padroniza variações de "S/N" para "S/N"
+    - Valida o formato numérico
+    """
+    ...
+
+def normalizar(valor: str) -> str:
+    """
+    Normaliza uma string removendo acentos e convertendo para maiúsculas.
+
+    Função utilitária que realiza a normalização básica de textos, removendo
+    diacríticos e convertendo para caixa alta, preparando para processamento
+    posterior de padronização.
+
+    Parameters
+    ----------
+    valor : str
+        String a ser normalizada.
+
+    Returns
+    -------
+    str
+        String normalizada sem acentos e em maiúsculas.
+
+    Examples
+    --------
+    >>> import enderecobr
+    >>> enderecobr.normalizar("Olá, mundo")
+    'OLA, MUNDO'
+    >>> enderecobr.normalizar("R. DO AÇAÍ 15º")
+    'R. DO ACAI 15O'
+
+    Notes
+    -----
+    Operações realizadas:
+    - Remoção de espaços extras no início e fim
+    - Conversão para maiúsculas
+    - Remoção de acentos e caracteres não ASCII
+    - Preserva apenas caracteres ASCII
+    """
+    ...
