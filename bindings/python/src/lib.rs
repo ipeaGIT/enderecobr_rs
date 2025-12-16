@@ -110,14 +110,40 @@ pub mod enderecobr {
         enderecobr_rs::numero_extenso::romano_para_inteiro(valor)
     }
 
-    // TODO: terminar casos de tipos diferenciados
-    //
-    // pub use cep::padronizar_cep;
-    // pub use cep::padronizar_cep_numerico;
-    // pub use estado::padronizar_estados_para_codigo;
-    // pub use estado::padronizar_estados_para_sigla;
-    // pub use numero::padronizar_numeros_para_int;
-    // pub use numero::padronizar_numeros_para_string;
+    #[pyfunction]
+    fn padronizar_cep(valor: &str) -> PyResult<String> {
+        enderecobr_rs::padronizar_cep(valor).map_err(|e| pyo3::exceptions::PyValueError::new_err(e))
+    }
+
+    #[pyfunction]
+    fn padronizar_cep_numerico(valor: i32) -> PyResult<String> {
+        enderecobr_rs::padronizar_cep_numerico(valor).map_err(|e| pyo3::exceptions::PyValueError::new_err(e))
+    }
+
+    #[pyfunction]
+    fn padronizar_estados_para_codigo(valor: &str) -> &'static str {
+        enderecobr_rs::padronizar_estados_para_codigo(valor)
+    }
+
+    #[pyfunction]
+    fn padronizar_estados_para_sigla(valor: &str) -> &'static str {
+        enderecobr_rs::padronizar_estados_para_sigla(valor)
+    }
+
+    #[pyfunction]
+    fn padronizar_numeros_para_int(valor: &str) -> PyResult<i32> {
+        enderecobr_rs::padronizar_numeros_para_int(valor).map_err(|e| pyo3::exceptions::PyValueError::new_err(e))
+    }
+
+    #[pyfunction]
+    fn padronizar_numeros_para_string(valor: &str) -> PyResult<String> {
+        enderecobr_rs::padronizar_numeros_para_string(valor).map_err(|e| pyo3::exceptions::PyValueError::new_err(e))
+    }
+
+    #[pyfunction]
+    fn normalizar(valor: &str) -> String {
+        enderecobr_rs::normalizar(valor).to_string()
+    }
 
     // ========= Padronizadores pré prontos ==========
 
