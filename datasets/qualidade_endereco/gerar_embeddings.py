@@ -5,6 +5,7 @@
 #   "sentence_transformers",
 #   "numpy",
 #   "duckdb",
+#   "pyarrow",
 # ]
 # ///
 
@@ -18,6 +19,7 @@ from typing import Callable, TypeVar
 
 import duckdb
 import numpy as np
+import pyarrow as pa
 from sentence_transformers import SentenceTransformer
 
 MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
@@ -69,7 +71,7 @@ def load_missing_embeddings():
                 SELECT id, logradouro, numero, complemento, localidade, municipio, uf  
                 FROM dataset 
                 WHERE id NOT IN (SELECT id FROM embeddings)
-            ) SELECT * FROM a USING SAMPLE 1024;"""
+            ) SELECT * FROM a USING SAMPLE 10024;"""
         ).fetchall()
 
         ids: list[int] = []
@@ -89,14 +91,24 @@ UF: {row[6]}
     return ids, texts
 
 
+# def salvar_embeddings(ids, embeddings):
+#     batch = [(i, e.tolist()) for i, e in zip(ids, embeddings)]
+#     with duckdb.connect(DUCKDB_PATH) as con:
+#         con.executemany("INSERT INTO embeddings(id, embeddings) VALUES (?, ?);", batch)
+
+
 def salvar_embeddings(ids, embeddings):
-    batch = [(i, e.tolist()) for i, e in zip(ids, embeddings)]
+    arr_ids = pa.array(ids)
+    arr_emb = pa.array([e.tolist() for e in embeddings])
+    table = pa.Table.from_arrays([arr_ids, arr_emb], names=["id", "embeddings"])
+
     with duckdb.connect(DUCKDB_PATH) as con:
-        con.executemany("INSERT INTO embeddings(id, embeddings) VALUES (?, ?);", batch)
+        con.register("tmp_arrow", table)
+        con.execute("INSERT INTO embeddings SELECT * FROM tmp_arrow")
 
 
 def main():
-    backup_duckdb()
+    # backup_duckdb()
     retry_duckdb(ensure_tables)
     model = SentenceTransformer(MODEL_NAME)
 
