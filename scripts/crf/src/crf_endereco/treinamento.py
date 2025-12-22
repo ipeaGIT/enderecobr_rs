@@ -25,9 +25,10 @@ select
     coalesce(municipio, ''),
     coalesce(uf, ''),
     coalesce(origem, ''),
-from './dados/treino.parquet'
+from dataset
+where qualidade = 'Processar';
 """
-    con = duckdb.connect()
+    con = duckdb.connect("datasets/dados/dataset.duckdb")
     print("Coletando dados...")
     dados = con.sql(query).fetchall()
     con.close()
@@ -66,7 +67,7 @@ from './dados/treino.parquet'
         max_iterations=50,
         all_possible_transitions=False,
         min_freq=5,
-        model_filename="./dados/tagger.crf",
+        model_filename="./datasets/dados/tagger.crf",
     )
     _ = crf.fit(x, y)
 

@@ -41,7 +41,7 @@ def main():
     # input funcionar adequadamente.
     import readline as _
 
-    crf = sklearn_crfsuite.CRF(model_filename="./dados/tagger.crf")
+    crf = sklearn_crfsuite.CRF(model_filename="./datasets/dados/tagger.crf")
     extrator = ExtratorFeature()
 
     while True:
