@@ -790,7 +790,7 @@ dependencies = [
 
 [[package]]
 name = "enderecobr_rs"
-version = "0.0.6"
+version = "0.1.0"
 dependencies = [
  "clap",
  "crfsuite",
