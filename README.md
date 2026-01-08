@@ -1,14 +1,16 @@
 # enderecobr_rs <img align="right" src="./assets/logo.svg" alt="" width="180">
 
-[![crates.io Latest Release](https://img.shields.io/crates/v/enderecobr_rs.svg)](https://crates.io/crates/enderecobr_rs)
-[![docs.rs Rust](https://docs.rs/enderecobr_rs/badge.svg)](https://docs.rs/enderecobr_rs/)
-[![PyPi Latest Release](https://img.shields.io/pypi/v/enderecobr.svg)](https://pypi.org/project/enderecobr)
-[![CI](https://github.com/ipeaGIT/enderecobr_rs/workflows/CI/badge.svg)](https://github.com/ipeaGIT/enderecobr_rs/actions)
-[![readthedocs Python](https://app.readthedocs.org/projects/enderecobr-py/badge)](https://enderecobr-py.readthedocs.io)
-[![codecov](https://codecov.io/gh/ipeaGIT/enderecobr_rs/graph/badge.svg?token=ckgU5oGbxf)](https://codecov.io/gh/ipeaGIT/enderecobr_rs)
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+| ***Rust*** | ***Python*** | ***R*** |
+|-----|-----|-----|
+| [![crates.io Latest Release](https://img.shields.io/crates/v/enderecobr_rs.svg)](https://crates.io/crates/enderecobr_rs) <br /> [![docs.rs Rust](https://docs.rs/enderecobr_rs/badge.svg)](https://docs.rs/enderecobr_rs/) <br /> [![codecov](https://codecov.io/gh/ipeaGIT/enderecobr_rs/graph/badge.svg?token=ckgU5oGbxf)](https://codecov.io/gh/ipeaGIT/enderecobr_rs) <br /> [![CI](https://github.com/ipeaGIT/enderecobr_rs/workflows/CI/badge.svg)](https://github.com/ipeaGIT/enderecobr_rs/actions) <br /> ![Crates.io Downloads (latest version)](https://img.shields.io/crates/dv/enderecobr_rs) | [![PyPi Latest Release](https://img.shields.io/pypi/v/enderecobr.svg)](https://pypi.org/project/enderecobr) <br /> [![readthedocs Python](https://app.readthedocs.org/projects/enderecobr-py/badge)](https://enderecobr-py.readthedocs.io) | [![R-repo](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/ipeaGIT/enderecobr) <br /> [![CRAN status](https://www.r-pkg.org/badges/version/enderecobr)](https://CRAN.R-project.org/package=enderecobr) <br /> [![CRAN/METACRAN Total downloads](https://cranlogs.r-pkg.org/badges/grand-total/enderecobr?color=blue)](https://CRAN.R-project.org/package=enderecobr) |
 
-Documentações: [R](https://ipeagit.github.io/enderecobr/) [Python](https://enderecobr-py.readthedocs.io) [Rust](https://docs.rs/enderecobr_rs/)
+
+
+
+
+
+
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 **enderecobr_rs** é uma biblioteca em Rust que disponibiliza diversas funções para padronizar endereços brasileiros,
 corrigindo erros comuns, expandindo abreviações etc, afim de facilitar processamentos posteriores. Ela usa 
@@ -29,6 +31,12 @@ utilizando internamente as funções desta lib. Algumas funções ou classes/str
 Rust podem não estar expostas em outras linguagens. Vide [documentação](https://docs.rs/enderecobr_rs) 
 do Rust para identificar tais situações. Para solicitar esse tipo de mudança ou bindings em outras 
 linguagens de programação, por favor abrir uma Issue ou Pull request neste repositório.
+
+## Documentação:
+
+- [R](https://ipeagit.github.io/enderecobr/)
+- [Rust](https://docs.rs/enderecobr_rs/)
+- [Python](https://enderecobr-py.readthedocs.io)
 
 ## Instalação
 
