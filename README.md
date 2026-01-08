@@ -10,27 +10,25 @@
 
 Documentações: [R](https://ipeagit.github.io/enderecobr/) [Python](https://enderecobr-py.readthedocs.io) [Rust](https://docs.rs/enderecobr_rs/)
 
-> Versão experimental!
+**enderecobr_rs** é uma biblioteca em Rust que disponibiliza diversas funções para padronizar endereços brasileiros,
+corrigindo erros comuns, expandindo abreviações etc, afim de facilitar processamentos posteriores. Ela usa 
+majoritariamente expressões regulares nas padronizações, com exceção do módulo experimental de separação 
+de endereços, que utiliza um modelo probabilístico de [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field) já embutido na bilioteca.
 
-Esta biblioteca tem por objetivo prover de funções utilizadas para padronizar endereços brasileiros,
-corrigindo erros comuns, expandindo abreviações etc, afim de facilitar processamentos posteriores.
+Obs. Esta biblioteca é uma adaptação e expansão para Rust da versão original em R 
+do [enderecobr](https://github.com/ipeaGIT/enderecobr) visando ganho de eficiência e 
+expandir a implementação do pacote **endereçobr** em diferentes linguagens usando a 
+versão em Rust como base.
 
-Esta biblioteca é uma adaptação para Rust do [enderecobr](https://github.com/ipeaGIT/enderecobr)
-visando ganho de eficiência e expandir seu uso para demais linguagens de programação,
-utilizando esta implementação como base das demais.
-
-Ela usa majoritariamente expressões regulares nas padronizações, com exceção do módulo
-experimental de separação de endereços, que utiliza um modelo probabilístico de
-[Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field) já embutido na bilioteca.
 
 ## Bindings
 
-O repositório da versão em R se mantém em [enderecobr](https://github.com/ipeaGIT/enderecobr), utilizando
-internamente as funções desta lib. A versão em Python é feita no subdiretório `bindings/python` deste projeto.
-Algumas funções ou classes/structs da implementação em Rust podem não estar expostas em algumas linguagens.
-Vide [documentação](https://docs.rs/enderecobr_rs) do Rust para identificar tais situações.
-Para solicitar esse tipo de mudança ou bindings em outras linguagens de programação, abrir uma Issue ou
-Pull request neste repositório.
+Este é o repositório do enderecobr em Rust e em Python. A versão em Python é feita no subdiretório 
+`bindings/python` deste projeto. O repositório da versão em R se mantém em [enderecobr](https://github.com/ipeaGIT/enderecobr), 
+utilizando internamente as funções desta lib. Algumas funções ou classes/structs da implementação em 
+Rust podem não estar expostas em outras linguagens. Vide [documentação](https://docs.rs/enderecobr_rs) 
+do Rust para identificar tais situações. Para solicitar esse tipo de mudança ou bindings em outras 
+linguagens de programação, por favor abrir uma Issue ou Pull request neste repositório.
 
 ## Instalação
 
