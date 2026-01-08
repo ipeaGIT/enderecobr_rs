@@ -256,7 +256,7 @@ impl Padronizador {
                 .grupo_regex
                 .matches(&preproc)
                 .iter()
-                .find(|idx| ultimo_idx.is_none_or(|ultimo| *idx > ultimo));
+                .find(|idx| ultimo_idx.map_or(true, |ultimo| *idx > ultimo));
 
             let Some(idx) = idx_substituicao else {
                 break;
