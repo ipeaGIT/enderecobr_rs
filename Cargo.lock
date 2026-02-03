@@ -588,9 +588,9 @@ dependencies = [
 
 [[package]]
 name = "crfsuite"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1a5fd32fb51cc02e861f36269503585c0f48f56766a58587aa856e7134c1262"
+checksum = "3baf0edc57e48d59fe0ba537d1db15b9475f17d6e0cc07b5323cc85a165b9bdd"
 dependencies = [
  "crfsuite-sys",
  "libc",
