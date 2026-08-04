@@ -54,7 +54,7 @@ cli = ["polars", "clap"]
 clap = { version = "4.5.54", features = ["derive"], optional = true }
 crfsuite = { version = "0.3.2", optional = true}
 diacritics = "0.2.2"
-itertools = "0.14.0"
+itertools = "0.15.0"
 # Feature de timezone é temporário até corrigirem a issue abaixo
 # https://github.com/pola-rs/polars/issues/25148
 polars = { version = "0.52.0", features = ["lazy", "parquet", "timezones"], optional = true }
