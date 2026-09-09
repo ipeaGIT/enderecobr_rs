@@ -14,8 +14,9 @@ jobs:
 
     steps:
       - name: Create GitHub Release
-        run: gh release create "$GITHUB_REF_NAME" \
-          --title "$GITHUB_REF_NAME" \
-          --generate-notes
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
