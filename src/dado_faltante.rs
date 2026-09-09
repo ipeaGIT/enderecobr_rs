@@ -11,6 +11,7 @@ pub fn criar_identificador_dado_faltante() -> IdentificadorPadroes {
         r"^N(AO)? *(CONSTA|TEM|SEI)?$".to_string(),
         r"^N(AO)? *(POSSUI|LOCALIZ|ESPECIF|INFO|FORNEC|EXIST|PENS|LEMB|SAB)[^ ]*$".to_string(),
         r"^N(AO)? *SABE *INFO[^ ]*$".to_string(),
+        r"^(END[^ ]* *)?SIGIL[^ ]*$".to_string(),
     ]);
 
     identificador
@@ -38,10 +39,13 @@ pub fn is_dado_faltante(valor: &str) -> bool {
 /// Retorna uma string vazia caso o input seja um dado faltante. Vide [`is_dado_faltante`].
 pub fn zerar_dado_faltante<'a>(valor: &'a str) -> Cow<'a, str> {
     let identificador = &*IDENTIFICADOR;
-    if identificador.identificar(valor) {
-        Cow::Borrowed("")
+    let normalizado = normalizar(valor); // Normalizo ante de verificar se é faltante
+
+    if identificador.identificar(&normalizado) {
+        Cow::Owned(String::new())
     } else {
-        Cow::Borrowed(valor)
+        // Retorno o texto normalizado, aproveitando o CoW que a função já retorna
+        normalizado
     }
 }
 

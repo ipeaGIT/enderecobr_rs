@@ -94,7 +94,7 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"^(LOCALIDADE|RUA) LOC\b(\.|,)?", "LOCALIDADE")
         .adicionar(r"^LOCALIDADE?\b(-|,|\.) *", "LOCALIDADE ")
 
-        .adicionar(r"^VL\b(\.|,)?", "VILA")
+        .adicionar(r"^VLA?\b(\.|,)?", "VILA")
         .adicionar(r"^VILA VILA\b(\.|,)?", "VILA")
         .adicionar(r"^VILA?\b(-|,|\.) *", "VILA ")
 
@@ -212,8 +212,13 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\bUNID\b\.?", "UNIDADE")
         .adicionar(r"\b(CJ|CONJ)\b\.?", "CONJUNTO")
         .adicionar(r"\bLT\b\.?", "LOTE")
+        .adicionar(r"\bLOTE[ ]*-[ ]*", "LOTE ")
         .adicionar(r"\bLTS\b\.?", "LOTES")
-        .adicionar(r"\bQDA?\b\.?", "QUADRA")
+        // Tratamento de Quadras
+        .adicionar(r"\b(QDA?|QR)\b\.?", "QUADRA")
+        .adicionar(r"\bQUADRA QUADRA\b", "QUADRA")
+        .adicionar(r"\bQUADRA[ ]*-[ ]*", "QUADRA ")
+
         .adicionar(r"\bLJ\b\.?", "LOJA")
         .adicionar(r"\bLJS\b\.?", "LOJAS")
         .adicionar(r"\bAPTO?\b\.?", "APARTAMENTO")
@@ -282,7 +287,11 @@ pub fn criar_padronizador_logradouros() -> Padronizador {
         .adicionar(r"\b(\d+) DE? SET(EMBRO)?\b", "$1 DE SETEMBRO")
         .adicionar(r"\b(\d+) DE? OUT(UBRO)?\b", "$1 DE OUTUBRO")
         .adicionar(r"\b(\d+) DE? NOV(EMBRO)?\b", "$1 DE NOVEMBRO")
-        .adicionar(r"\b(\d+) DE? DEZ(EMBRO)?\b", "$1 DE DEZEMBRO");
+        .adicionar(r"\b(\d+) DE? DEZ(EMBRO)?\b", "$1 DE DEZEMBRO")
+
+        // Remove sequencias de coisas que não são letras ou números do inicio e do final
+        .adicionar(r"^[^A-Z0-9(]+|[^A-Z0-9)]+$", "")
+    ;
 
     // ALM é um caso complicado, pode ser alameda ou almirante. Inclusive no mesmo endereço podem aparecer os dois rs
 

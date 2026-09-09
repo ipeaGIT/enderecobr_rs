@@ -27,7 +27,7 @@ pub fn criar_padronizador_numeros() -> Padronizador {
         .adicionar(r"(\d+)\.(\d{3})", "$1$2")
         // SN ou S.N. ou S N ou .... -> S/N
         .adicionar(
-            r"^(S|SE|SEM)?(\/|;|-|\\|\.| )*(N|N\.)(A|O|E|U|C|R|S|UM|UME|UMER|UMERO)?(0| |º|\.)*$",
+            r"^((S|SE|SEM)?(\/|;|-|\\|\.| )*(N|N\.)(A|O|E|U|C|R|S|UM|UME|UMER|UMERO)?(0| |º|\.)*)+$",
             "S/N",
         )
         .adicionar(r"^N(AO|O)? TEM$", "S/N")
@@ -169,6 +169,7 @@ mod tests {
             ("S./N.", "S/N"),
             ("S./Nº.", "S/N"),
             ("SEM NUMERO", "S/N"),
+            ("S./N. S N", "S/N"), // https://github.com/ipea/enderecobr_rs/issues/55
             ("X", "S/N"),
             ("XX", "S/N"),
             ("0", "S/N"),

@@ -789,7 +789,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "enderecobr_py"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "enderecobr_rs",
  "pyo3",
@@ -797,7 +797,7 @@ dependencies = [
 
 [[package]]
 name = "enderecobr_rs"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "clap",
  "crfsuite",
