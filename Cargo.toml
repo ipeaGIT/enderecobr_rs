@@ -58,7 +58,7 @@ diacritics = "0.2.2"
 itertools = "0.15.0"
 # Feature de timezone é temporário até corrigirem a issue abaixo
 # https://github.com/pola-rs/polars/issues/25148
-polars = { version = "0.52.0", features = ["lazy", "parquet", "timezones"], optional = true }
+polars = { version = "0.55.2", features = ["lazy", "parquet", "timezones"], optional = true }
 regex = "1.13.1"
 rustc-hash = "2.1.3"
 unicode-normalization = "0.1.25"
